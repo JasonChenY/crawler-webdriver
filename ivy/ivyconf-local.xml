@@ -1,0 +1,8 @@
+<ivysettings>
+  <resolvers>
+    <filesystem name="local">
+      <ivy pattern="${ivy.local.default.root}/${ivy.local.default.ivy.pattern}" />
+      <artifact pattern="${ivy.local.default.root}/${ivy.local.default.artifact.pattern}" />
+    </filesystem>
+  </resolvers>
+</ivysettings>

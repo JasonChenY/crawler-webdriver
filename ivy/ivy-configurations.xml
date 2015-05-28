@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+
+<configurations defaultconfmapping="default">
+    <conf name="default" extends="master"/>
+    <conf name="master" description="contains the artifact but no dependencies"/>
+</configurations>

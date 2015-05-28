@@ -1,0 +1,56 @@
+{
+       "name": "tencent",
+       "actions" :
+       [ 
+           {
+               "element": "http:xxxx",
+               "cmd" : "load",
+               "wait" : ""
+           }, 
+           {
+               "element" : "xpath.country",
+               "cmd" : "setvalue",
+               "value" : "cn",
+               "wait" : "",
+           },
+           {
+               "element": "xpath.search",
+               "cmd" : "click/submit",
+               "wait" : "newwind",
+               "newwindow_title" : "xxxx",
+           },
+       ],
+
+       "extracts" : {
+           "job_location": "XXX",
+           "job_title": "yyy",
+       },
+
+       "procedure" : {
+           "loop_elements" : "xpath.goto_nextpage",
+           "skipfirst" : true,
+           "cmd" : "click",
+           "wait" : "newwind",
+           "newwindow_title": "xxxxx",
+           "procedure" : {
+               "loop_elements" : "xpath.joblist",
+               "extracts" : {
+                   "test1": "XXX",
+                   "test2": "yyy",
+               },
+               "cmd" : "click",
+               "wait" : "newwindow",
+               "newwindow_title" : "xxxx",
+               "procedure" : {
+                   "extracts" : {
+                       "job_description": "XXX",
+                       "job_url": "",
+                   },
+               },
+               "restore" : "navigate-back",
+           },
+           "restore" : "close window",
+       },
+       "restore": "close window",
+}
+
