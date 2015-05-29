@@ -39,7 +39,7 @@ public class Schema {
         }
     }
     private void init(Reader input) throws Exception {
-        JSONParser parser = new JSONParser();;
+        JSONParser parser = new JSONParser();
         JSONObject obj = (JSONObject) parser.parse(input);
         name = (String) obj.get("name");
         actions = new Actions(obj.get("actions"));
@@ -57,9 +57,33 @@ public class Schema {
         BufferedReader bf = new BufferedReader(new InputStreamReader(input));
         init(bf);
     }
+    public class Element {
+        public String element;
+        public String how;
+        public Element(Object o) throws Exception {
+            if ( o == null ) return;
+            Map<String, String> map = (Map<String,String>)o;
 
+            Iterator iter = map.entrySet().iterator();
+            while(iter.hasNext()){
+                Map.Entry entry = (Map.Entry)iter.next();
+                String name = (String)entry.getKey();
+                String value = (String)entry.getValue();
+                System.out.println("      " + name + " : " + value);
+                if ( name.equals("element") ) element = value;
+                if ( name.equals("how") ) how = value;
+            }
+        }
+        public Element(String name, String h) {
+            element = name;
+            how = h;
+        }
+        public void print(String ident) {
+            System.out.println(ident + "{" + "element:'" + element + "',how:'" + how + "'}");
+        }
+    }
     public class Extracts  {
-        public Map<String, String> items = new HashMap<String, String>();
+        public Map<String, Element> items = new HashMap<String, Element>();
         public Extracts(Object obj) throws Exception {
             if ( obj == null ) return;
             ContainerFactory containerFactory = new ContainerFactory(){
@@ -70,12 +94,24 @@ public class Schema {
                     return new LinkedHashMap();
                 }
             };
-            items = (Map)(new JSONParser()).parse(((JSONObject)obj).toString(), containerFactory);
-            Iterator iter = items.entrySet().iterator();
+
+            Map<String, Object> output = (Map)(new JSONParser()).parse(((JSONObject)obj).toString(), containerFactory);
+
+            Iterator iter = output.entrySet().iterator();
             System.out.println("Extracts: ");
             while(iter.hasNext()){
                 Map.Entry entry = (Map.Entry)iter.next();
-                System.out.println(entry.getKey() + "=>" + entry.getValue());
+                System.out.println(entry.getKey() + " : ");
+                items.put((String)entry.getKey(), new Element(entry.getValue()));
+            }
+        }
+        public void print(String ident) {
+            System.out.println(ident + "{");
+            Iterator iter = items.entrySet().iterator();
+            while(iter.hasNext()){
+                Map.Entry entry = (Map.Entry)iter.next();
+                System.out.println(ident + "    '" + entry.getKey() + "':");
+                ((Element)entry.getValue()).print(ident + "    ");
             }
         }
     }
@@ -109,7 +145,7 @@ public class Schema {
         public boolean skipFirst = false;
         public Extracts extracts;
         public Command command;
-        public Waitfor wait;
+        public Expected expected;
         public Procedure procedure;
         public Restore restore;
 
@@ -125,31 +161,69 @@ public class Schema {
             System.out.println(skipFirst);
             extracts = new Extracts(obj.get("extracts"));
             command = new Command(obj.get("command"));
-            wait = new Waitfor(obj.get("wait"));
+            expected = new Expected(obj.get("expected"));
             procedure = new Procedure(obj.get("procedure"));
             restore = new Restore(obj.get("restore"));
         }
     }
 
-    public class Waitfor {
-        public String wait_str;
-        public Waitfor(Object o) {
-            wait_str  = (String)o;
+    public class Expected {
+        public String condition;
+        public Element element;
+        public String value; /* optional */
+        public Expected(Object o) throws Exception {
+            if ( o == null ) return;
+
+            ContainerFactory containerFactory = new ContainerFactory(){
+                public List creatArrayContainer() {
+                    return new LinkedList();
+                }
+                public Map createObjectContainer() {
+                    return new LinkedHashMap();
+                }
+            };
+
+            Map<String, Object> output = (Map)(new JSONParser()).parse(((JSONObject)o).toString(), containerFactory);
+
+            Iterator iter = output.entrySet().iterator();
+            System.out.println("Expected: ");
+            String ele_name = null;
+            String ele_how = null;
+            while(iter.hasNext()){
+                Map.Entry entry = (Map.Entry)iter.next();
+                String name = (String)entry.getKey();
+                String val = (String)entry.getValue();
+                System.out.println("      " + name + " : " + val);
+                switch ( name ) {
+                    case "condition": condition = val; break;
+                    case "element": ele_name = val; break;
+                    case "how": ele_how = val; break;
+                    case "value" : value = val; break;
+                    default: break;
+                }
+            }
+            if ( ele_name != null & ele_how != null ) element = new Element(ele_name, ele_how);
         }
     }
     public class Action {
-        public String element;
+        public Element element;
         public Command command;
         public String setvalue;
-        public Waitfor wait;
+        public Expected expected;
 
         public Action(Object o) throws Exception {
+            if ( o == null ) return;
             JSONObject obj = (JSONObject)o;
-            element = (String) obj.get("element");
+
+            String name = (String) obj.get("element");
+            String how = (String) obj.get("how");
+            element = new Element(name, how);
+
             command = new Command(o);
             setvalue = (String)obj.get("value");
-            wait = new Waitfor(obj.get("wait"));
-            System.out.println(element);
+            expected = new Expected(obj.get("expected"));
+
+            System.out.println(name + " " + how);
         }
     }
 

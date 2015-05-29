@@ -1,50 +1,121 @@
 {
+      "Syntax" : "how: CLASS_NAME,
+                       CSS,
+                       ID,
+                       ID_OR_NAME,
+                       LINK_TEXT,
+                       NAME,
+                       PARTIAL_LINK_TEXT,
+                       TAG_NAME,
+                       XPATH,
+                       UNSET,
+                   cmd: load, click, submit,
+                   expected:titleIs
+                            titleContains
+                            urlToBe
+                            urlContains
+                            urlMatches
+                            presenceOfElementLocated
+                            visibilityOfElementLocated
+                            visibilityOfAllElementsLocatedBy
+                            presenceOfAllElementsLocatedBy
+                            textToBePresentInElementLocated
+                            textToBePresentInElementValue
+                            frameToBeAvailableAndSwitchToIt
+                            invisibilityOfElementLocated
+                            invisibilityOfElementWithText
+                            elementToBeClickable
+                            elementToBeSelected
+                            elementSelectionStateToBe
+                   ",
        "name": "google",
        "actions" :
        [ 
            {
                "element": "http:xxxx",
+               "how" : "UNSET",
                "cmd" : "load",
-               "wait" : ""
+               "expected" : {
+                     "condition" : "titleIs",
+                     "element" : "",
+                     "value" : "xxxx",
+               },
            }, 
            {
-               "element" : "xpath.country",
-               "cmd" : "setvalue",
+               "element" : "//INPUT[@id='search']",
+               "how" : "XPATH",
+               "cmd" : "sendKeys",
                "value" : "cn",
-               "wait" : "",
+               "expected" : {
+                    "condition" : "elementToBeSelected",
+                    "element" : "xxx",
+                    "how" : ""
+                    "value" : " ",
+               },
            },
            {
-               "element": "xpath.search",
+               "element": "Search",
+               "how" : "ID", 
                "cmd" : "click/submit",
-               "wait" : "newwind",
-               "newwindow_title" : "xxxx",
+               "expected" : {
+                    "condition" : "titleContains",
+                    "element" : "xxx",
+                    "how" : ""
+                    "value" : "xxx",
+               },
            },
        ],
 
        "extracts" : {
-           "job_location": "XXX",
-           "job_title": "yyy",
+           "companyname": {
+               "element": "XXX",
+               "how": "ID",
+           },
+           "size" : {
+               "element": "yyy",
+               "how": "ID_OR_NAME",
+           }
        },
 
        "procedure" : {
            "loop_elements" : "xpath.goto_nextpage",
            "skipfirst" : true,
            "cmd" : "click",
-           "wait" : "newwind",
-           "newwindow_title": "xxxxx",
+           "expected" : {
+                 "condition" : "newWindow",
+                 "element" : "xxx",
+                 "how" : ""
+                 "value" : "xxx",
+           },
            "procedure" : {
                "loop_elements" : "xpath.joblist",
                "extracts" : {
-                   "test1": "XXX",
-                   "test2": "yyy",
+                   "job_location": {
+                       "element": "XXX",
+                       "how" : "XPATH",
+                   },
+                   "job_date" : {
+                       "element": "yyy",
+                       "how" : "XPATH",
+                   }
                },
                "cmd" : "click",
-               "wait" : "newwindow",
-               "newwindow_title" : "xxxx",
+               "expected" : {
+                   "condition" : "newWindow",
+                   "element" : "xxx",
+                   "how" : ""
+                   "value" : "xxx",
+               },
                "procedure" : {
                    "extracts" : {
-                       "job_description": "XXX",
-                       "job_url": "",
+                       "job_description": {
+                            "element" : "XXX",
+                            "how" : "NAME",
+                       },
+                       "job_url": {
+                           "element" : "yyy",
+                           "how" : "XPATH",
+                       }
                    },
                },
                "restore" : "navigate-back",
