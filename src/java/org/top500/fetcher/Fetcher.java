@@ -3,8 +3,11 @@ package org.top500.fetcher;
 import org.top500.schema.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Fetcher extends RunListener {
+    public static final Logger LOG = LoggerFactory.getLogger(Fetcher.class);
     private final List<Schema> _schemas;
 
     public Fetcher(List<Schema> schemas) {
@@ -82,16 +85,18 @@ public class Fetcher extends RunListener {
 
     public void Started(Object o) {
         FetcherThread thread = (FetcherThread)o;
-        System.out.println("RunListener " + thread.getName() + " started");
+        LOG.debug("RunListener get Started for " + thread.getName());
     }
 
     public void Finished(Object o) {
         FetcherThread thread = (FetcherThread)o;
-        System.out.println("RunListener " + thread.getName() + " finsihed");
+        LOG.debug("RunListener get Finished for " + thread.getName());
     }
 
     public static void main(String[] args) {
         try {
+            WebDriverService.CreateAndStartService(8899);
+
             List<Schema> schemas = new ArrayList<Schema>();
             schemas.add(new Schema("schema.template"));
             schemas.add(new Schema("schema2"));
@@ -100,12 +105,14 @@ public class Fetcher extends RunListener {
             schemas.add(new Schema("schema5"));
             schemas.add(new Schema("schema6"));
             Fetcher fetcher = new Fetcher(schemas);
-            fetcher.fetch_all();
+            //fetcher.fetch_all();
 
             System.out.println("--------ThreadPool Test------------");
             RunNotifier notifer = new RunNotifier();
             notifer.addListener(fetcher);
             fetcher.fetch_in_batch(notifer);
+
+            WebDriverService.StopService();
         } catch ( Exception e ) {
             e.printStackTrace();
         }

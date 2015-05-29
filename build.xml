@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+
+<project name="${name}" default="build" xmlns:ivy="antlib:org.apache.ivy.ant" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+ <property file="${user.home}/build.properties" />
+ <property file="${basedir}/build.properties" />
+ <property file="${basedir}/default.properties" />
+ <property name="release.dir" value="${build.dir}/release" />
+
+ <property name="groupId" value="Test" />
+ <property name="artifactId" value="WebDriver" />
+ <property name="maven-repository-url" value="https://repository.apache.org/service/local/staging/deploy/maven2" />
+ <property name="maven-repository-id" value="apache.releases.https" />
+ <property name="maven-jar" value="${release.dir}/${artifactId}-${version}.jar" />
+ <property name="maven-javadoc-jar" value="${release.dir}/${artifactId}-${version}-javadoc.jar" />
+ <property name="maven-sources-jar" value="${release.dir}/${artifactId}-${version}-sources.jar" />
+
+ <path id="classpath">
+  <pathelement location="${build.classes}" />
+  <fileset dir="${build.lib.dir}">
+   <include name="*.jar" />
+  </fileset>
+ </path>
+
+ <presetdef name="javac">
+   <javac includeantruntime="false" />
+ </presetdef>
+
+ <!-- ====================================================== -->
+ <!-- Stuff needed by all targets -->
+ <!-- ====================================================== -->
+ <target name="init" depends="ivy-init" description="--> stuff required by all targets">
+  <mkdir dir="${build.dir}" />
+  <mkdir dir="${build.classes}" />
+  <mkdir dir="${release.dir}" />
+
+  <touch datetime="01/25/1971 2:00 pm">
+   <fileset dir="${conf.dir}" includes="**/*.template" />
+  </touch>
+
+  <copy todir="${conf.dir}" verbose="true">
+   <fileset dir="${conf.dir}" includes="**/*.template" />
+   <mapper type="glob" from="*.template" to="*" />
+  </copy>
+ </target>
+ 
+ <target name="compile" description="--> Just compile, no dependency check">
+  <javac 
+  	encoding="${build.encoding}" 
+  	srcdir="${src.dir}"
+        includes="**/*.java" 
+  	destdir="${build.classes}"
+        debug="${javac.debug}" 
+  	optimize="${javac.optimize}" 
+  	target="${javac.version}"
+        source="${javac.version}" 
+  	deprecation="${javac.deprecation}">
+   <compilerarg value="-Xlint:-path"/>
+   <classpath refid="classpath" />
+  </javac>
+  <copy todir="${build.classes}">
+   <fileset dir="${src.dir}" includes="**/*.html" />
+   <fileset dir="${src.dir}" includes="**/*.css" />
+   <fileset dir="${src.dir}" includes="**/*.properties" />
+  </copy>
+ </target>
+
+ <target name="build" depends="init, resolve-default, compile">
+ </target>
+
+ <!-- ================================================================== -->
+ <!-- Ivy targets -->
+ <!-- ================================================================== -->
+
+ <!-- target: resolve ================================================= -->
+ <target name="resolve-default" depends="clean-lib, init" description="--> resolve and retrieve dependencies with ivy">
+  <ivy:resolve file="${ivy.file}" conf="default" log="download-only" />
+  <ivy:retrieve pattern="${build.lib.dir}/[artifact]-[revision].[ext]" symlink="false" log="quiet" />
+  <antcall target="copy-libs" />
+ </target>
+
+ <target name="resolve-test" depends="clean-lib, init" description="--> resolve and retrieve dependencies with ivy">
+  <ivy:resolve file="${ivy.file}" conf="test" log="download-only" />
+  <ivy:retrieve pattern="${build.lib.dir}/[artifact]-[revision].[ext]" symlink="false" log="quiet" />
+  <antcall target="copy-libs" />
+ </target>
+
+ <target name="copy-libs" description="--> copy the libs in lib, which are not ivy enabled">
+  <copy todir="${build.lib.dir}/" failonerror="false">
+   <fileset dir="${lib.dir}" includes="**/*.jar" />
+  </copy>
+ </target>
+
+ <!-- target: report ================================================== -->
+ <target name="report" depends="resolve-test" description="--> generates a report of dependencies">
+  <ivy:report todir="${build.dir}" />
+ </target>
+
+ <!-- target: ivy-init ================================================ -->
+ <target name="ivy-init" depends="ivy-probe-antlib, ivy-init-antlib" description="--> initialise Ivy settings">
+  <ivy:settings file="${ivy.dir}/ivysettings.xml" />
+ </target>
+
+ <!-- target: ivy-probe-antlib ======================================== -->
+ <target name="ivy-probe-antlib" description="--> probe the antlib library">
+  <condition property="ivy.found">
+   <typefound uri="antlib:org.apache.ivy.ant" name="cleancache" />
+  </condition>
+ </target>
+
+ <!-- target: ivy-download ============================================ -->
+ <target name="ivy-download" description="--> download ivy">
+  <available file="${ivy.jar}" property="ivy.jar.found" />
+  <antcall target="ivy-download-unchecked" />
+ </target>
+
+ <!-- target: ivy-download-unchecked ================================== -->
+ <target name="ivy-download-unchecked" unless="ivy.jar.found" description="--> fetch any ivy file">
+  <get src="${ivy.repo.url}" dest="${ivy.jar}" usetimestamp="true" />
+ </target>
+
+ <!-- target: ivy-init-antlib ========================================= -->
+ <target name="ivy-init-antlib" depends="ivy-download" unless="ivy.found" description="--> attempt to use Ivy with Antlib">
+  <typedef uri="antlib:org.apache.ivy.ant" onerror="fail"
+   loaderRef="ivyLoader">
+   <classpath>
+    <pathelement location="${ivy.jar}" />
+   </classpath>
+  </typedef>
+  <fail>
+   <condition>
+    <not>
+     <typefound uri="antlib:org.apache.ivy.ant" name="cleancache" />
+    </not>
+   </condition>
+   You need Apache Ivy 2.0 or later from http://ant.apache.org/
+   It could not be loaded from ${ivy.repo.url}
+  </fail>
+ </target>
+	
+ <!-- ================================================================== -->
+ <!-- Clean. Delete the build files, and their directories -->
+ <!-- ================================================================== -->
+
+ <!-- target: clean =================================================== -->
+ <target name="clean" depends="clean-build, clean-lib" description="--> clean the project" />
+
+ <!-- target: clean-local ============================================= -->
+ <target name="clean-local" depends="" description="--> cleans the local repository for the current module">
+  <delete dir="${ivy.local.default.root}/${ivy.organisation}/${ivy.module}" />
+ </target>
+
+ <!-- target: clean-lib =============================================== -->
+ <target name="clean-lib" description="--> clean the project libraries directory (dependencies)">
+  <delete includeemptydirs="true" dir="${build.lib.dir}" />
+ </target>
+
+ <!-- target: clean-build ============================================= -->
+ <target name="clean-build" description="--> clean the project built files">
+  <delete includeemptydirs="true" dir="${build.dir}" />
+ </target>
+
+ <!-- ================================================================== -->
+ <!-- RAT targets -->
+ <!-- ================================================================== -->
+ <target name="rat-sources-typedef" description="--> run RAT antlib task">
+  <typedef resource="org/apache/rat/anttasks/antlib.xml">
+   <classpath>
+    <fileset dir="." includes="rat*.jar" />
+   </classpath>
+  </typedef>
+ </target>
+
+ <target name="rat-sources" depends="rat-sources-typedef"
+  description="--> runs the tasks over src/java">
+  <rat:report xmlns:rat="antlib:org.apache.rat.anttasks">
+   <fileset dir="src">
+    <include name="java/**/*" />
+    <include name="plugin/**/src/**/*" />
+   </fileset>
+  </rat:report>
+ </target>
+</project>
