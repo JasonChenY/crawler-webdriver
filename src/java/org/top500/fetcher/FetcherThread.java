@@ -54,7 +54,7 @@ public class FetcherThread extends Thread {
 
     private static int fetch_n_pages = 2;
     private static int fetch_n_jobs_perpage = 2;
-    private static Date fetch_jobs_after = new Date();
+    private static int fetch_n_days = 7;
 
     private WebDriver driver = null;
     private Wait<WebDriver> wait = null;
@@ -292,6 +292,14 @@ public class FetcherThread extends Thread {
                     else
                         value = element.getText();
 
+                    if ( key.equals(Job.JOB_DATE) ) {
+                        value = DateUtils.formatDate(value, _schema.getJob_date_format());
+                    }
+
+                    if ( key.equals(Job.JOB_LOCATION) ) {
+                        value = LocationUtils.format(value, _schema.getJob_location_format_regex());
+                    }
+
                     job.addField(key, value);
                     LOG.debug(key + ":" + value);
                 }
@@ -316,12 +324,10 @@ public class FetcherThread extends Thread {
                     final Job newjob = new Job();
                     String newprefix = xpath_prefix_loop + "[" + Integer.toString(i+1) + "]/";
                     Extracts(newprefix, procedure.extracts, newjob);
-                    if ( newjob.getField(Job.JOB_URL) != null ) {
-                        /* check wether the job is newer than configured date */
-                        if ( false ) {
-                            LOG.debug("Job older than configured date, ignore");
-                            continue;
-                        }
+
+                    if ( DateUtils.nDaysAgo(newjob.getField(Job.JOB_DATE), fetch_n_days) ) {
+                        LOG.debug("Job older than configured date, ignore");
+                        continue;
                     }
                     Actions(newprefix, procedure.actions);
                     Procedure(procedure.procedure, newjob);

@@ -122,6 +122,8 @@
         },
       ],
     }
-  }
+  },
+  "job_date_format" : "MMM dd yyyy",
+  "job_location_format_regex" : "s/\\s*([^,]*)[^;]*;?/$1,/g",
 }
 

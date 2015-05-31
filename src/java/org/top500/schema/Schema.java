@@ -28,6 +28,8 @@ public class Schema {
     public String name;
     public Actions actions;
     public Procedure procedure;
+    private String job_date_format;
+    private String job_location_format_regex;
 
     public static void main(String[] args) {
         try {
@@ -48,7 +50,16 @@ public class Schema {
         name = (String) obj.get("name");
         actions = new Actions(obj.get("actions"));
         procedure = new Procedure(obj.get("procedure"));
+        job_date_format = (String)obj.get("job_date_format");
+        job_location_format_regex = (String)obj.get("job_location_format_regex");
     }
+    public String getJob_date_format() {
+        return job_date_format;
+    }
+    public String getJob_location_format_regex() {
+        return job_location_format_regex;
+    }
+
     public Schema(Reader input) throws Exception {
         init(input);
     }

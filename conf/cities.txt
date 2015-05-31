@@ -1,0 +1,36 @@
+上海=Shanghai
+北京=Beijing
+深圳=Shenzhen
+杭州=Hangzhou
+西安=Xian, Xi an
+成都=Chengdou
+武汉=Wuhan
+南京=Nanjing
+无锡=Wuxi
+扬州=Yangzhou
+大连=Dalian
+香港=Hongkong, Hong Kong, ZHO_Hong Kong
+重庆=Chongqing
+广州=Guangzhou
+苏州=Suzhou
+厦门=Xiamen
+福建=Fujian
+沈阳=Shenyang
+天津=Tianjing
+珠海=Zhuhai
+台北=ZHO_Taipei
+全国=Any
+成都=Chengdu
+新加坡=singapore
+合肥=Hefei
+宁波=Ningbo
+山西=Shanxi
+石家庄=Shijiazhuang
+厦门=Xiamen
+郑州=Zhengzhou
+中山=Zhongshan
+青岛=Qingdao
+台北=Taipei
+
+
+
