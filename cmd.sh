@@ -10,5 +10,6 @@ export CLASSPATH
 #java org.top500.schema.Schema schema.template
 #java org.top500.indexer.Indexer
 
+rm webdriver.log
 java org.top500.fetcher.Fetcher conf/seed.txt
 

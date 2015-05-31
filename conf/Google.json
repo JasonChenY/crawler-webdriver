@@ -6,7 +6,7 @@
       "element": "https://www.google.com/about/careers/search",
       "how" : "url",
       "cmd" : "load",
-      "expected" : {
+      "expection" : {
         "condition" : "visibilityOfElementLocated",
         "element" : "//DIV[@class='filters gadget']",
       },
@@ -15,7 +15,7 @@
       "element" : "//DIV[@class='primary-filters']/DIV[1]/DIV[1]/DIV[1]/A",
       "how" : "XPATH",
       "cmd" : "click",
-      "expected" : {
+      "expection" : {
         "condition" : "presenceOfElementLocated",
         "element" : "//DIV[@class='kd-tabs kd-settings-nav']/DIV[@class='kd-buttonbar kd-tabbar-vert']",
       },
@@ -24,7 +24,7 @@
       "element" : "Asia Pacific",
       "how" : "LINK_TEXT",
       "cmd" : "click",
-      "expected" : {
+      "expection" : {
         "condition": "visibilityOfElementLocated",
         "element": "//DIV[@class='country CN']",
       }
@@ -33,7 +33,7 @@
       "element": "//DIV[@class='country CN']/DIV[@title='China']/DIV",
       "how" : "XPATH",
       "cmd" : "click",
-      "expected" : {
+      "expection" : {
         "condition": "elementToBeClickable",
         "element" : "//DIV[@class='kd-formbuttons']/A[@class='kd-button kd-button-submit primary']",
       },
@@ -41,7 +41,7 @@
     {
       "element": "//DIV[@class='kd-formbuttons']/A[@class='kd-button kd-button-submit primary']",
       "cmd" : "click",
-      "expected" : {
+      "expection" : {
         "comment:condition": "onlywait",
         "condition": "visibilityOfAllElementsLocatedBy",
         "element": "//DIV[@class='sr sr-a']",
@@ -59,7 +59,7 @@
           {
             "element": "DIV/DIV[@class='sr-content']/A",
             "cmd": "click",
-            "expected": {
+            "expection": {
               "comment:condition": "onlywait",
               "condition": "visibilityOfElementLocated",
               "element": "//DIV[@class='details']/DIV[@class='detail-item'][3]",
@@ -102,7 +102,7 @@
         "actions": [
           {
             "cmd": "back",
-            "expected": {
+            "expection": {
               "condition": "onlywait",
             }
           }
@@ -115,7 +115,7 @@
         {
           "element": "//DIV[@class='kd-buttonbar pages']/A[@title='Next']",
           "cmd": "click",
-          "expected": {
+          "expection": {
             "condition": "visibilityOfAllElementsLocatedBy",
             "element": "//DIV[@class='sr sr-a']",
           }

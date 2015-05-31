@@ -11,6 +11,7 @@ import java.lang.Thread;
 import java.util.List;
 import java.util.Set;
 import java.util.Date;
+import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,8 @@ public class FetcherThread extends Thread {
     private WebDriver driver = null;
     private Wait<WebDriver> wait = null;
     private int driver_wait;
+
+    private Stack windows_stack = new Stack();
 
     public FetcherThread(String name, Schema schema) {
         super(name);
@@ -120,6 +123,10 @@ public class FetcherThread extends Thread {
 
     private void fetch() throws Exception {
         try {
+            String window = driver.getWindowHandle();
+            LOG.debug("Inital window handle: " + window);
+            windows_stack.push(window);
+
             Actions(null, _schema.actions);
             Procedure(_schema.procedure, null);
         } catch ( Exception e ) {
@@ -157,7 +164,7 @@ public class FetcherThread extends Thread {
     private boolean Action(String xpath_prefix, Schema.Action action) {
         LOG.debug("Action on " + (xpath_prefix==null?"":xpath_prefix) + action.element.element);
 
-        String current = driver.getWindowHandle();
+        String currentWindowHandle = driver.getWindowHandle();
         Set<String> currentWindowHandles = driver.getWindowHandles();
         for(String handle : currentWindowHandles) {
             LOG.debug("existing window handle: " + handle);
@@ -175,6 +182,18 @@ public class FetcherThread extends Thread {
         } else if ( action.command.code == Schema.CmdType.Refresh ) {
             LOG.debug("Action refresh");
             driver.navigate().refresh();
+        } else if ( action.command.code == Schema.CmdType.Restore ) {
+            String topWindowHandle = (String)windows_stack.peek();
+            if ( !driver.getWindowHandle().equals(topWindowHandle) ) {
+                LOG.warn("Something wrong to restore, current window not equal topwindow");
+                return false;
+            } else {
+                windows_stack.pop();
+                String previousWindowHandle = (String)windows_stack.peek();
+                LOG.debug("Restore saved window" + previousWindowHandle);
+                driver.close();
+                driver.switchTo().window(previousWindowHandle);
+            }
         } else {
             By locator = getLocator(xpath_prefix, action.element);
             WebElement element = locator.findElement(driver);
@@ -194,20 +213,20 @@ public class FetcherThread extends Thread {
             }
         }
 
-        /* Expected handling */
-        if ( action.expected == null ) {
+        /* Expection handling */
+        if ( action.expection == null ) {
             LOG.debug("no Expection, go on");
         } else {
-            if ( action.expected.element != null )
-                LOG.debug("Expection: " + action.expected.condition + " " + action.expected.element.element);
+            if ( action.expection.element != null )
+                LOG.debug("Expection: " + action.expection.condition + " " + action.expection.element.element);
             else
-                LOG.debug("Expection: " + action.expected.condition);
+                LOG.debug("Expection: " + action.expection.condition);
 
-            By wait_locator = getLocator(null, action.expected.element);
+            By wait_locator = getLocator(null, action.expection.element);
 
-            switch (action.expected.condition) {
+            switch (action.expection.condition) {
                 case "titleIs":
-                    wait.until(titleIs(action.expected.value));
+                    wait.until(titleIs(action.expection.value));
                     break;
                 case "presenceOfElementLocated":
                     wait.until(presenceOfElementLocated(wait_locator));
@@ -220,9 +239,11 @@ public class FetcherThread extends Thread {
                     break;
                 case "newWindowIsOpened":
                     try {
-                        wait.until(newWindowIsOpened(currentWindowHandles));
-                        String handle = driver.getWindowHandle();
-                        LOG.debug("new window handle: " + handle + " title:" + driver.getTitle());
+                        String newwindow = wait.until(newWindowIsOpened(currentWindowHandles));
+                        windows_stack.push(newwindow);
+                        driver.switchTo().window(newwindow);
+                        //String handle = driver.getWindowHandle();
+                        LOG.debug("new window handle: " + newwindow + " title:" + driver.getTitle());
                     } catch (Exception e) {
                         LOG.warn("Failed to open new window");
                         System.out.println("page code " + driver.getPageSource());

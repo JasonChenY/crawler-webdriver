@@ -128,11 +128,11 @@ public class Schema {
         }
     }
 
-    public class Expected {
+    public class Expection {
         public String condition;
         public Element element;
         public String value; /* optional */
-        public Expected(Object o) throws Exception {
+        public Expection(Object o) throws Exception {
             if ( o == null ) return;
 
             ContainerFactory containerFactory = new ContainerFactory(){
@@ -164,14 +164,14 @@ public class Schema {
             if ( ele_name != null ) element = new Element(ele_name, ele_how);
         }
         public void print(String ident) {
-            System.out.println(ident+"'expected':{'condition':'" + condition + "',");
+            System.out.println(ident+"'Expection':{'condition':'" + condition + "',");
             if (element != null ) element.print(ident + "            ");
             System.out.println(ident + "            ,'value':" + value + "',");
         }
     }
 
 
-    public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh};
+    public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore};
     public class Command {
         /* 'click':  if not configured ( default value )
            'None':   if unknown cmd configured.
@@ -207,6 +207,9 @@ public class Schema {
                         case "refresh":
                             code = CmdType.Refresh;
                             break;
+                        case "restore":
+                            code = CmdType.Restore;
+                            break;
                         default:
                             code = CmdType.None;
                             break;
@@ -223,7 +226,7 @@ public class Schema {
         public Element element;
         public Command command;
         public String setvalue;
-        public Expected expected = null;
+        public Expection expection = null;
         public boolean debug = false;
 
         public Action(Object o) throws Exception {
@@ -237,8 +240,8 @@ public class Schema {
             command = new Command(obj.get("cmd"));
             setvalue = (String)obj.get("value");
 
-            if ( obj.get("expected") != null) {
-                expected = new Expected(obj.get("expected"));
+            if ( obj.get("expection") != null) {
+                expection = new Expection(obj.get("expection"));
             }
 
             if ( obj.get("debug") != null ) {
@@ -250,8 +253,8 @@ public class Schema {
             element.print(ident+"    ");
             command.print(ident+"    ");
             System.out.println(ident + "    'value':'"+setvalue+"'");
-            if ( expected != null )
-                expected.print(ident+"    ");
+            if ( expection != null )
+                expection.print(ident+"    ");
             else
                 System.out.println(ident + "     no expection");
             System.out.println(ident + "    'debug:'" + debug + "'");
