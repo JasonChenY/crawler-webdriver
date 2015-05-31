@@ -52,12 +52,11 @@ public class SolrIndexWriter {
         for(String key : job.getFields().keySet()) {
             String val = job.getField(key);
 
-            if (key.equals("job_description") || key.equals("job_title")) {
+            if (key.equals(Job.JOB_DESCRIPTION) || key.equals(Job.JOB_TITLE)) {
                 val = StringUtils.stripNonCharCodepoints(val);
             }
 
-            if (key.equals("job_description")) {
-                key = "content";
+            if (key.equals(Job.JOB_DESCRIPTION)) {
                 try {
                     MessageDigest md = MessageDigest.getInstance("MD5");
                     md.update(val.getBytes());
@@ -68,7 +67,7 @@ public class SolrIndexWriter {
                 }
             }
 
-            if (key.equals("url")) {
+            if (key.equals(Job.JOB_URL)) {
                 inputDoc.addField("id", val);
             }
 

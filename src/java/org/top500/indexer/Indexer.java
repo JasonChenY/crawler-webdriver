@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.lang.Thread;
 
 import org.top500.utils.Configuration;
-import org.top500.indexer.solr.SolrConstants;
+import org.top500.indexer.SolrConstants;
 import org.top500.fetcher.FetcherThread;
 import org.top500.fetcher.RunListener;
 import org.top500.fetcher.Job;

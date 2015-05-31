@@ -6,7 +6,7 @@ import java.util.HashMap;
 public class Job {
 
     public static final String JOB_COMPANY = "job_company";
-    public static final String JOB_URL = "url";
+    public static final String JOB_URL = "job_url";
     public static final String JOB_TITLE = "job_title";
     public static final String JOB_LOCATION = "job_location";
     public static final String JOB_DATE = "job_date";
