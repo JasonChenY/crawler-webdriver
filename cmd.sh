@@ -8,6 +8,7 @@ export CLASSPATH
 
 #for i in $(seq 2 2); do cp conf/schema.template conf/schema$i;done
 #java org.top500.schema.Schema schema.template
+#java org.top500.indexer.Indexer
 
-java org.top500.fetcher.Fetcher
+java org.top500.fetcher.Fetcher conf/seed.txt
 

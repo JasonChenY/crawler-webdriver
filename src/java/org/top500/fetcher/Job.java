@@ -5,13 +5,14 @@ import java.util.HashMap;
 
 public class Job {
 
+    public static final String JOB_COMPANY = "job_company";
     public static final String JOB_URL = "url";
     public static final String JOB_TITLE = "job_title";
     public static final String JOB_LOCATION = "job_location";
     public static final String JOB_DATE = "job_date";
     public static final String JOB_DESCRIPTION = "job_description";
 
-    Map<String, String> fields;
+    final Map<String, String> fields;
 
     public Job() {
         fields = new HashMap<String, String>();
@@ -27,5 +28,9 @@ public class Job {
         } else {
             return null;
         }
+    }
+
+    public final Map<String, String> getFields() {
+        return fields;
     }
 }

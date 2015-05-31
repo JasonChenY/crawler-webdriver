@@ -1,6 +1,9 @@
 package org.top500.fetcher;
 
-import org.top500.schema.*;
+import org.top500.schema.Schema;
+import org.top500.utils.DateUtils;
+import org.top500.utils.LocationUtils;
+import org.top500.utils.Configuration;
 
 import java.lang.Override;
 import java.lang.Thread;
@@ -51,17 +54,24 @@ public class FetcherThread extends Thread {
     private final Schema _schema;
     private volatile Throwable _throwable;
     private final Joblist _joblist = new Joblist();
-
     private static int fetch_n_pages = 2;
     private static int fetch_n_jobs_perpage = 2;
     private static int fetch_n_days = 7;
+    private static String driver_download_directory;
 
     private WebDriver driver = null;
     private Wait<WebDriver> wait = null;
+    private int driver_wait;
 
     public FetcherThread(String name, Schema schema) {
         super(name);
         this._schema = schema;
+        Configuration conf = Configuration.getInstance();
+        fetch_n_pages = conf.getInt("fetch.first.n.pages", 2);
+        fetch_n_jobs_perpage = conf.getInt("fetch.first.n.jobs.perpage", 2);
+        fetch_n_days = conf.getInt("fetch.winthin.n.days.pages", 7);
+        driver_wait = conf.getInt("fetch.webdriver.wait.default", 5);
+        driver_download_directory = conf.get("fetch.webdriver.download.dir", "/tmp");
     }
     public Throwable getThrowable() {
         return _throwable;
@@ -75,17 +85,18 @@ public class FetcherThread extends Thread {
         if ( notifier != null ) {
             notifier.fireStarted(this);
         } else {
-            LOG.info(this.getName() + " for " + _schema.name + " start .... (no notifier)");
+            LOG.info(this.getName() + " for " + _schema.getName() + " start .... (no notifier)");
         }
 
         try {
-            String download_directory = "/sdk/tmp/chrome/download";
+
             String subdir = Long.toString(Thread.currentThread().getId());
-            driver = WebDriverService.getWebDriver("http://127.0.0.1:8899", download_directory + "/" + subdir);
-            wait = new WebDriverWait(driver, 5);
+            driver = WebDriverService.getWebDriver("http://127.0.0.1:8899", driver_download_directory + "/" + subdir);
+            wait = new WebDriverWait(driver, driver_wait);
 
             fetch();
 
+            //Thread.sleep(1000);
         } catch (Throwable t) {
             _throwable = t;
             LOG.warn("Exception for thread " + this.getName());
@@ -96,7 +107,7 @@ public class FetcherThread extends Thread {
         if ( notifier != null ) {
             notifier.fireFinished(this);
         } else {
-            LOG.info(this.getName() + " for " + _schema.name + " finish (no notifier)");
+            LOG.info(this.getName() + " for " + _schema.getName() + " finish (no notifier)");
         }
     }
 
@@ -114,7 +125,7 @@ public class FetcherThread extends Thread {
         } catch ( Exception e ) {
             LOG.warn("Exception: ", e);
         }
-        Thread.sleep(5000);
+        //Thread.sleep(5000);
     }
 
     ////////////////////////driver part///////////////////////
@@ -322,6 +333,7 @@ public class FetcherThread extends Thread {
                 int number = (elements.size()>fetch_n_jobs_perpage) ? fetch_n_jobs_perpage : elements.size();
                 for (int i = 0; i < number; i++) {
                     final Job newjob = new Job();
+                    newjob.addField(Job.JOB_COMPANY, _schema.getName());
                     String newprefix = xpath_prefix_loop + "[" + Integer.toString(i+1) + "]/";
                     Extracts(newprefix, procedure.extracts, newjob);
 

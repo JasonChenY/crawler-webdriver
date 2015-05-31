@@ -1,4 +1,4 @@
-package org.top500.fetcher;
+package org.top500.utils;
 
 import java.util.ArrayList;
 import java.util.List;

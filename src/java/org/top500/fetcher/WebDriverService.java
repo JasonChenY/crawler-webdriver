@@ -56,7 +56,7 @@ public class WebDriverService {
 
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 
-        return new RemoteWebDriver(/*service.getUrl()*/new java.net.URL(url), capabilities);
+        return new RemoteWebDriver(service.getUrl()/*new java.net.URL(url)*/, capabilities);
     }
 
     public static File lastFileModified(String dir) {

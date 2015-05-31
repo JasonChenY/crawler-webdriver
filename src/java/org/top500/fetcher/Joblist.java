@@ -26,4 +26,14 @@ public class Joblist {
         else
             return jobs.get(jobs.size()-1);
     }
+    public List<Job> getJobs() {
+        return jobs;
+    }
+    public void addAll(List<Job>b) {
+        jobs.addAll(b);
+    }
+    public void clear() {
+        jobs.clear();
+    }
+
 }

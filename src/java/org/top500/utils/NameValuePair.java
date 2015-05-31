@@ -1,4 +1,4 @@
-package org.top500.fetcher;
+package org.top500.utils;
 
 public class NameValuePair {
     private final String name;

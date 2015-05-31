@@ -25,7 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.Iterator;
 
 public class Schema {
-    public String name;
+    private String name;
     public Actions actions;
     public Procedure procedure;
     private String job_date_format;
@@ -53,6 +53,7 @@ public class Schema {
         job_date_format = (String)obj.get("job_date_format");
         job_location_format_regex = (String)obj.get("job_location_format_regex");
     }
+    public String getName() { return name; }
     public String getJob_date_format() {
         return job_date_format;
     }
