@@ -27,25 +27,27 @@ import java.util.Iterator;
 public class Schema {
     public String name;
     public Actions actions;
-    public Extracts extracts;
     public Procedure procedure;
-    public Restore restore;
 
     public static void main(String[] args) {
         try {
             Schema a = new Schema("schema.template");
+
+            a.print();
         } catch ( Exception e ) {
             e.printStackTrace();
         }
+    }
+    public void print() {
+        actions.print("");
+        procedure.print("");
     }
     private void init(Reader input) throws Exception {
         JSONParser parser = new JSONParser();
         JSONObject obj = (JSONObject) parser.parse(input);
         name = (String) obj.get("name");
         actions = new Actions(obj.get("actions"));
-        extracts = new Extracts(obj.get("extracts"));
         procedure = new Procedure(obj.get("procedure"));
-        restore = new Restore(obj.get("restore"));
     }
     public Schema(Reader input) throws Exception {
         init(input);
@@ -69,7 +71,6 @@ public class Schema {
                 Map.Entry entry = (Map.Entry)iter.next();
                 String name = (String)entry.getKey();
                 String value = (String)entry.getValue();
-                System.out.println("      " + name + " : " + value);
                 if ( name.equals("element") ) element = value;
                 if ( name.equals("how") ) how = value;
             }
@@ -98,72 +99,20 @@ public class Schema {
             Map<String, Object> output = (Map)(new JSONParser()).parse(((JSONObject)obj).toString(), containerFactory);
 
             Iterator iter = output.entrySet().iterator();
-            System.out.println("Extracts: ");
             while(iter.hasNext()){
                 Map.Entry entry = (Map.Entry)iter.next();
-                System.out.println(entry.getKey() + " : ");
                 items.put((String)entry.getKey(), new Element(entry.getValue()));
             }
         }
         public void print(String ident) {
-            System.out.println(ident + "{");
+            System.out.println(ident + "'extracts':{");
             Iterator iter = items.entrySet().iterator();
             while(iter.hasNext()){
                 Map.Entry entry = (Map.Entry)iter.next();
-                System.out.println(ident + "    '" + entry.getKey() + "':");
-                ((Element)entry.getValue()).print(ident + "    ");
+                System.out.print(ident + "    '" + entry.getKey() + "':");
+                ((Element)entry.getValue()).print("");
             }
-        }
-    }
-
-    enum RestoreType {None, CloseWindow, NavigateBack;}
-    public class Restore {
-        public RestoreType code;
-        public Restore(Object o) {
-            if ( o == null ) {
-                code = RestoreType.None;
-            } else {
-                System.out.println((String) o);
-                switch ((String) o) {
-                    case "close":
-                        code = RestoreType.CloseWindow;
-                        break;
-                    case "back":
-                        code = RestoreType.NavigateBack;
-                        break;
-                    default:
-                        code = RestoreType.None;
-                        break;
-                }
-            }
-        }
-    }
-
-    public class Procedure {
-        public String loop_elements;
-        public int index; /* used for indicating which item has been processed */
-        public boolean skipFirst = false;
-        public Extracts extracts;
-        public Command command;
-        public Expected expected;
-        public Procedure procedure;
-        public Restore restore;
-
-        public Procedure(Object o) throws Exception {
-            if ( o == null ) return;
-            JSONObject obj = (JSONObject)o;
-            loop_elements = (String) obj.get("loop_elements");
-            System.out.println(loop_elements);
-            index = 0;
-            if ( obj.get("skipfirst") != null) {
-                skipFirst = (Boolean) obj.get("skipfirst");
-            }
-            System.out.println(skipFirst);
-            extracts = new Extracts(obj.get("extracts"));
-            command = new Command(obj.get("command"));
-            expected = new Expected(obj.get("expected"));
-            procedure = new Procedure(obj.get("procedure"));
-            restore = new Restore(obj.get("restore"));
+            System.out.println(ident + "}");
         }
     }
 
@@ -186,14 +135,12 @@ public class Schema {
             Map<String, Object> output = (Map)(new JSONParser()).parse(((JSONObject)o).toString(), containerFactory);
 
             Iterator iter = output.entrySet().iterator();
-            System.out.println("Expected: ");
             String ele_name = null;
             String ele_how = null;
             while(iter.hasNext()){
                 Map.Entry entry = (Map.Entry)iter.next();
                 String name = (String)entry.getKey();
                 String val = (String)entry.getValue();
-                System.out.println("      " + name + " : " + val);
                 switch ( name ) {
                     case "condition": condition = val; break;
                     case "element": ele_name = val; break;
@@ -202,53 +149,29 @@ public class Schema {
                     default: break;
                 }
             }
-            if ( ele_name != null & ele_how != null ) element = new Element(ele_name, ele_how);
+            if ( ele_name != null ) element = new Element(ele_name, ele_how);
         }
-    }
-    public class Action {
-        public Element element;
-        public Command command;
-        public String setvalue;
-        public Expected expected;
-
-        public Action(Object o) throws Exception {
-            if ( o == null ) return;
-            JSONObject obj = (JSONObject)o;
-
-            String name = (String) obj.get("element");
-            String how = (String) obj.get("how");
-            element = new Element(name, how);
-
-            command = new Command(o);
-            setvalue = (String)obj.get("value");
-            expected = new Expected(obj.get("expected"));
-
-            System.out.println(name + " " + how);
+        public void print(String ident) {
+            System.out.println(ident+"'expected':{'condition':'" + condition + "',");
+            if (element != null ) element.print(ident + "            ");
+            System.out.println(ident + "            ,'value':" + value + "',");
         }
     }
 
-    public class Actions {
-        public List<Action> actions = new ArrayList<Action>();
-        public Actions(Object o) throws Exception {
-            if ( o == null ) return;
-            JSONArray array = (JSONArray)o;
-            for ( int i = 0; i < array.size(); i++ ) {
-                Action action = new Action(array.get(i));
-                actions.add(action);
-            }
-        }
-    }
 
-    enum CmdType {None, Load, Set, Click, Submit};
+    public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh};
     public class Command {
+        /* 'click':  if not configured ( default value )
+           'None':   if unknown cmd configured.
+         */
         public CmdType code;
         public Command(Object o) {
             if ( o == null ) {
-                code = CmdType.None;
+                code = CmdType.Click;
             } else {
-                String cmd = (String)((JSONObject) o).get("command");
+                String cmd = (String)o;
                 if ( cmd == null )
-                    code = CmdType.None;
+                    code = CmdType.Click;
                 else {
                     switch (cmd) {
                         case "load":
@@ -263,12 +186,130 @@ public class Schema {
                         case "submit":
                             code = CmdType.Submit;
                             break;
+                        case "back":
+                            code = CmdType.Back;
+                            break;
+                        case "forward":
+                            code = CmdType.Forward;
+                            break;
+                        case "refresh":
+                            code = CmdType.Refresh;
+                            break;
                         default:
                             code = CmdType.None;
                             break;
                     }
                 }
             }
+        }
+        public void print(String ident) {
+            System.out.println(ident + "'cmd':'" + code + "'");
+        }
+    }
+
+    public class Action {
+        public Element element;
+        public Command command;
+        public String setvalue;
+        public Expected expected = null;
+        public boolean debug = false;
+
+        public Action(Object o) throws Exception {
+            if ( o == null ) return;
+            JSONObject obj = (JSONObject)o;
+
+            String name = (String) obj.get("element");
+            String how = (String) obj.get("how");
+            element = new Element(name, how);
+
+            command = new Command(obj.get("cmd"));
+            setvalue = (String)obj.get("value");
+
+            if ( obj.get("expected") != null) {
+                expected = new Expected(obj.get("expected"));
+            }
+
+            if ( obj.get("debug") != null ) {
+                debug = (Boolean)obj.get("debug");
+            }
+        }
+        public void print(String ident) {
+            System.out.println(ident+"{");
+            element.print(ident+"    ");
+            command.print(ident+"    ");
+            System.out.println(ident + "    'value':'"+setvalue+"'");
+            if ( expected != null )
+                expected.print(ident+"    ");
+            else
+                System.out.println(ident + "     no expection");
+            System.out.println(ident + "    'debug:'" + debug + "'");
+            System.out.println(ident+"},");
+        }
+    }
+
+    public class Actions {
+        public List<Action> actions = new ArrayList<Action>();
+        public Actions(Object o) throws Exception {
+            if ( o == null ) return;
+            JSONArray array = (JSONArray)o;
+            for ( int i = 0; i < array.size(); i++ ) {
+                Action action = new Action(array.get(i));
+                actions.add(action);
+            }
+        }
+        public void print(String ident) {
+            System.out.println(ident+"'actions': [");
+            for ( int i = 0; i < actions.size(); i++ ) {
+                actions.get(i).print(ident+"    ");
+            }
+            System.out.println(ident+"],");
+        }
+    }
+    public enum LOOP_TYPE {NONE, BEGIN, END}
+    public class Procedure {
+        public String xpath_prefix_loop = "";
+        public LOOP_TYPE loop_type = LOOP_TYPE.NONE;
+        public Extracts extracts = null;
+        public Actions actions = null;
+        public Procedure procedure = null;
+
+        public Procedure(Object o) throws Exception {
+            if ( o == null ) return;
+            JSONObject obj = (JSONObject)o;
+
+            if ( obj.get("loop") != null ) {
+                JSONObject loop = (JSONObject)obj.get("loop");
+
+                if (loop.get("xpath_prefix") != null) {
+                    xpath_prefix_loop = (String) loop.get("xpath_prefix");
+                }
+                if (loop.get("loop_type") != null) {
+                    String type = (String) loop.get("loop_type");
+                    if (type.equals("begin")) {
+                        loop_type = LOOP_TYPE.BEGIN;
+                    } else if (type.equals("end")) {
+                        loop_type = LOOP_TYPE.END;
+                    }
+                }
+                actions = new Actions(loop.get("actions"));
+            }
+
+            if ( obj.get("actions") != null ) {
+                actions = new Actions(obj.get("actions"));
+            }
+
+            extracts = new Extracts(obj.get("extracts"));
+            procedure = new Procedure(obj.get("procedure"));
+        }
+        public void print(String ident) {
+            if ( extracts == null && actions == null && procedure == null ) return;
+            System.out.println(ident + "'Procedure':{");
+            System.out.println(ident + "  'xpath_prefix_loop':'" + xpath_prefix_loop + "'");
+            System.out.println(ident + "  'loop_type':'" + loop_type + "'");
+            if ( extracts != null ) extracts.print(ident+"  ");
+            if ( actions != null ) actions.print(ident+"  ");
+            if ( procedure != null ) procedure.print(ident+"  ");
+            System.out.println(ident + "}");
         }
     }
 }

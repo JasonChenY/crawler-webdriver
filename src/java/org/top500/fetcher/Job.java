@@ -17,7 +17,7 @@ public class Job {
         fields = new HashMap<String, String>();
     }
 
-    public void addFied(String key, String value) {
+    public void addField(String key, String value) {
         fields.put(key, value);
     }
 

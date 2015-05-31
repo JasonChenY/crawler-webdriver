@@ -46,7 +46,7 @@ public class WebDriverService {
         ChromeOptions options = new ChromeOptions();
         //if specify this, all threads will share same session, quit will close all the window
         //options.addArguments("user-data-dir=/sdk/tmp/chrome/profile");
-        options.addArguments("start-minimized");
+        options.addArguments("start-maximized");
 
         Map<String, Object> prefs = new HashMap<String, Object>();
         prefs.put("profile.default_content_settings.popups", 0);

@@ -14,7 +14,16 @@ public class Joblist {
     public int count() {
         return jobs.size();
     }
+    public Job get(int index) {
+        if ( index < jobs.size() )
+            return jobs.get(index);
+        else
+            return null;
+    }
     public Job current() {
-        return jobs.get(jobs.size()-1);
+        if ( jobs.size() == 0 )
+            return null;
+        else
+            return jobs.get(jobs.size()-1);
     }
 }

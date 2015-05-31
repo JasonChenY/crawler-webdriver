@@ -1,0 +1,127 @@
+{
+  "name": "Google",
+  "actions" :
+  [
+    {
+      "element": "https://www.google.com/about/careers/search",
+      "how" : "url",
+      "cmd" : "load",
+      "expected" : {
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//DIV[@class='filters gadget']",
+      },
+    },
+    {
+      "element" : "//DIV[@class='primary-filters']/DIV[1]/DIV[1]/DIV[1]/A",
+      "how" : "XPATH",
+      "cmd" : "click",
+      "expected" : {
+        "condition" : "presenceOfElementLocated",
+        "element" : "//DIV[@class='kd-tabs kd-settings-nav']/DIV[@class='kd-buttonbar kd-tabbar-vert']",
+      },
+    },
+    {
+      "element" : "Asia Pacific",
+      "how" : "LINK_TEXT",
+      "cmd" : "click",
+      "expected" : {
+        "condition": "visibilityOfElementLocated",
+        "element": "//DIV[@class='country CN']",
+      }
+    },
+    {
+      "element": "//DIV[@class='country CN']/DIV[@title='China']/DIV",
+      "how" : "XPATH",
+      "cmd" : "click",
+      "expected" : {
+        "condition": "elementToBeClickable",
+        "element" : "//DIV[@class='kd-formbuttons']/A[@class='kd-button kd-button-submit primary']",
+      },
+    },
+    {
+      "element": "//DIV[@class='kd-formbuttons']/A[@class='kd-button kd-button-submit primary']",
+      "cmd" : "click",
+      "expected" : {
+        "comment:condition": "onlywait",
+        "condition": "visibilityOfAllElementsLocatedBy",
+        "element": "//DIV[@class='sr sr-a']",
+      },
+      "debug" : false,
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@class='sr sr-a']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "DIV/DIV[@class='sr-content']/A",
+            "cmd": "click",
+            "expected": {
+              "comment:condition": "onlywait",
+              "condition": "visibilityOfElementLocated",
+              "element": "//DIV[@class='details']/DIV[@class='detail-item'][3]",
+            },
+            "debug" : false,
+          },
+        ],
+      },
+      "comment:extracts": {
+        "job_location": {
+          "element": "without prefix part",
+          "how": "XPATH",
+        },
+        "job_date": {
+          "element": "without prefix part",
+          "how": "XPATH",
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//DIV[@class='details']/DIV[@class='detail-item'][3]",
+            "how": "XPATH",
+          },
+          "job_url": {
+            "how": "url",
+          },
+          "job_title": {
+            "element": "//DIV[@class='details']/DIV[@class='detail-item'][1]/A/SPAN[@itemprop='name title']",
+          }
+          "job_location": {
+            "element": "//DIV[@class='details']/DIV[@class='detail-item'][5]/DIV[@class='detail-content']/DIV[6]/DIV[2]",
+            "how": "XPATH",
+          },
+          "job_date": {
+            "element": "//DIV[@class='details']/DIV[@class='detail-item'][5]/DIV[@class='detail-content']/DIV[5]/DIV[@itemprop='datePosted']",
+            "how": "XPATH",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "back",
+            "expected": {
+              "condition": "onlywait",
+            }
+          }
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//DIV[@class='kd-buttonbar pages']/A[@title='Next']",
+          "cmd": "click",
+          "expected": {
+            "condition": "visibilityOfAllElementsLocatedBy",
+            "element": "//DIV[@class='sr sr-a']",
+          }
+        },
+      ],
+    }
+  }
+}
+

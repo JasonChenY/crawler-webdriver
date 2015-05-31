@@ -90,7 +90,12 @@ public class Fetcher extends RunListener {
 
     public void Finished(Object o) {
         FetcherThread thread = (FetcherThread)o;
-        LOG.debug("RunListener get Finished for " + thread.getName());
+        LOG.debug("RunListener get Finished for " + thread.getName() + ",fetched " + thread.getJoblist().count() + " jobs");
+
+        Joblist joblist = thread.getJoblist();
+        for ( int i = 0; i < joblist.count(); i++ ) {
+            LOG.debug(joblist.get(i).getField(Job.JOB_URL));
+        }
     }
 
     public static void main(String[] args) {
@@ -98,12 +103,9 @@ public class Fetcher extends RunListener {
             WebDriverService.CreateAndStartService(8899);
 
             List<Schema> schemas = new ArrayList<Schema>();
-            schemas.add(new Schema("schema.template"));
-            schemas.add(new Schema("schema2"));
-            schemas.add(new Schema("schema3"));
-            schemas.add(new Schema("schema4"));
-            schemas.add(new Schema("schema5"));
-            schemas.add(new Schema("schema6"));
+            Schema s = new Schema("Google.json");
+            s.print();
+            schemas.add(s);
             Fetcher fetcher = new Fetcher(schemas);
             //fetcher.fetch_all();
 

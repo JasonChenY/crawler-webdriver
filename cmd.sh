@@ -6,7 +6,9 @@ for i in `find build/lib -name *.jar`; do
 done
 export CLASSPATH
 echo $CLASSPATH
-for i in $(seq 2 6); do cp conf/schema.template conf/schema$i;done
-java org.top500.schema.Schema schema.template
+
+#for i in $(seq 2 2); do cp conf/schema.template conf/schema$i;done
+#java org.top500.schema.Schema schema.template
+
 java org.top500.fetcher.Fetcher
 
