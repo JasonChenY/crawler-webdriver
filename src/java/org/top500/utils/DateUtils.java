@@ -309,6 +309,8 @@ public class DateUtils {
                     d = plutil.substitute("s/\\D*(\\d{1,})\\S*\\s\\D*(\\d{1,})\\S*\\s\\D*(\\d{4})/$3-$2-$1/g", d);
                 } else if ( format.equals("yyyy-MM-dd") ) {
                     d = plutil.substitute("s/\\D*(\\d{4})[^-]*-\\D*(\\d{1,})[^-]*-\\D*(\\d{1,})/$1-$2-$3/g", d);
+                } else if ( format.equals("yyyy MM dd") ) {
+                    d = plutil.substitute("s/\\D*(\\d{4})\\S*\\s\\D*(\\d{1,})\\S*\\s\\D*(\\d{1,})/$1-$2-$3/g", d);
                 }
             } catch (MalformedPerl5PatternException me ) {
                 LOG.warn("datestring " + d + " cant be matched with " + format);
