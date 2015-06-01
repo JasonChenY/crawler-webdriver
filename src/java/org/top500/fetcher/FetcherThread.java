@@ -214,70 +214,77 @@ public class FetcherThread extends Thread {
         }
 
         /* Expection handling */
-        if ( action.expection == null ) {
+        if ( action.expections == null ) {
             LOG.debug("no Expection, go on");
         } else {
-            if ( action.expection.element != null )
-                LOG.debug("Expection: " + action.expection.condition + " " + action.expection.element.element);
-            else
-                LOG.debug("Expection: " + action.expection.condition);
+            for ( int iter = 0; iter < action.expections.expections.size(); iter++ ) {
+                Schema.Expection expection = action.expections.expections.get(iter);
+                if ( expection == null || expection.condition == null ) continue;
+                if (expection.element != null)
+                    LOG.debug("Expection: " + expection.condition + " " + expection.element.element);
+                else
+                    LOG.debug("Expection: " + expection.condition);
 
-            By wait_locator = getLocator(null, action.expection.element);
+                By wait_locator = getLocator(null, expection.element);
 
-            switch (action.expection.condition) {
-                case "titleIs":
-                    wait.until(titleIs(action.expection.value));
-                    break;
-                case "presenceOfElementLocated":
-                    wait.until(presenceOfElementLocated(wait_locator));
-                    break;
-                case "visibilityOfElementLocated":
-                    wait.until(presenceOfElementLocated(wait_locator));
-                    break;
-                case "elementToBeClickable":
-                    wait.until(elementToBeClickable(wait_locator));
-                    break;
-                case "newWindowIsOpened":
-                    try {
-                        String newwindow = wait.until(newWindowIsOpened(currentWindowHandles));
-                        windows_stack.push(newwindow);
-                        driver.switchTo().window(newwindow);
-                        //String handle = driver.getWindowHandle();
-                        LOG.debug("new window handle: " + newwindow + " title:" + driver.getTitle());
-                    } catch (Exception e) {
-                        LOG.warn("Failed to open new window");
-                        System.out.println("page code " + driver.getPageSource());
+                switch (expection.condition) {
+                    case "titleIs":
+                        wait.until(titleIs(expection.value));
+                        break;
+                    case "presenceOfElementLocated":
+                        wait.until(presenceOfElementLocated(wait_locator));
+                        break;
+                    case "visibilityOfElementLocated":
+                        wait.until(presenceOfElementLocated(wait_locator));
+                        break;
+                    case "elementToBeClickable":
+                        wait.until(elementToBeClickable(wait_locator));
+                        break;
+                    case "newWindowIsOpened":
+                        try {
+                            String newwindow = wait.until(newWindowIsOpened(currentWindowHandles));
+                            windows_stack.push(newwindow);
+                            driver.switchTo().window(newwindow);
+                            //String handle = driver.getWindowHandle();
+                            LOG.debug("new window handle: " + newwindow + " title:" + driver.getTitle());
+                        } catch (Exception e) {
+                            LOG.warn("Failed to open new window");
+                            System.out.println("page code " + driver.getPageSource());
                     /* try frame */
-                        for (int i = 0; i < 5; i++) {
+                            for (int i = 0; i < 5; i++) {
+                                try {
+                                    driver.switchTo().frame(i);
+                                    System.out.println("frame code " + driver.getPageSource());
+                                } catch (NoSuchFrameException ee) {
+                                    System.out.println("frame " + i + " not exist");
+                                }
+                            }
+                    /* try alert */
                             try {
-                                driver.switchTo().frame(i);
-                                System.out.println("frame code " + driver.getPageSource());
-                            } catch (NoSuchFrameException ee) {
-                                System.out.println("frame " + i + " not exist");
+                                wait.until(alertIsPresent());
+                                LOG.debug("Yes, Alert Dialog appears");
+                            } catch (Exception ee) {
+                                LOG.warn("Failed to see Alert Dialog");
                             }
                         }
-                    /* try alert */
+                        break;
+                    case "frameToBeAvailableAndSwitchToIt":
+                        wait.until(frameToBeAvailableAndSwitchToIt(wait_locator));
+                        System.out.println("frame code " + driver.getPageSource());
+                        //driver.switchTo().frame("garage");
+                        break;
+                    case "onlywait":
                         try {
-                            wait.until(alertIsPresent());
-                            LOG.debug("Yes, Alert Dialog appears");
-                        } catch (Exception ee) {
-                            LOG.warn("Failed to see Alert Dialog");
+                            wait.until(onlywait());
+                        } catch (TimeoutException e) {
                         }
-                    }
-                    break;
-                case "frameToBeAvailableAndSwitchToIt":
-                    wait.until(frameToBeAvailableAndSwitchToIt(wait_locator));
-                    System.out.println("frame code " + driver.getPageSource());
-                    //driver.switchTo().frame("garage");
-                    break;
-                case "onlywait":
-                    try { wait.until(onlywait()); } catch ( TimeoutException e) {}
-                    LOG.debug("onlywait 5 seconds");
-                    break;
-                default:
-                    driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);
-                    LOG.debug("waited 5 seconds");
-                    break;
+                        LOG.debug("onlywait 5 seconds");
+                        break;
+                    default:
+                        driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);
+                        LOG.debug("waited 5 seconds");
+                        break;
+                }
             }
         }
         if ( action.debug ) {

@@ -164,12 +164,31 @@ public class Schema {
             if ( ele_name != null ) element = new Element(ele_name, ele_how);
         }
         public void print(String ident) {
-            System.out.println(ident+"'Expection':{'condition':'" + condition + "',");
-            if (element != null ) element.print(ident + "            ");
-            System.out.println(ident + "            ,'value':" + value + "',");
+            System.out.println(ident+"{'condition':'" + condition + "',");
+            if (element != null ) element.print(ident);
+            System.out.println(ident + ",'value':" + value + "'},");
         }
     }
 
+    public class Expections {
+        public List<Expection> expections = new ArrayList<Expection>();
+        public Expections(Object o) throws Exception {
+            if ( o == null ) return;
+            JSONArray array = (JSONArray)o;
+            for ( int i = 0; i < array.size(); i++ ) {
+                Expection expection = new Expection(array.get(i));
+                expections.add(expection);
+            }
+        }
+        public void print(String ident) {
+            System.out.println(ident+"'expections': [");
+            for ( int i = 0; i < expections.size(); i++ ) {
+                expections.get(i).print(ident+"    ");
+            }
+            System.out.println(ident+"],");
+        }
+
+    }
 
     public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore};
     public class Command {
@@ -226,7 +245,7 @@ public class Schema {
         public Element element;
         public Command command;
         public String setvalue;
-        public Expection expection = null;
+        public Expections expections = null;
         public boolean debug = false;
 
         public Action(Object o) throws Exception {
@@ -240,8 +259,8 @@ public class Schema {
             command = new Command(obj.get("cmd"));
             setvalue = (String)obj.get("value");
 
-            if ( obj.get("expection") != null) {
-                expection = new Expection(obj.get("expection"));
+            if ( obj.get("expections") != null) {
+                expections = new Expections(obj.get("expections"));
             }
 
             if ( obj.get("debug") != null ) {
@@ -253,8 +272,8 @@ public class Schema {
             element.print(ident+"    ");
             command.print(ident+"    ");
             System.out.println(ident + "    'value':'"+setvalue+"'");
-            if ( expection != null )
-                expection.print(ident+"    ");
+            if ( expections != null )
+                expections.print(ident+"    ");
             else
                 System.out.println(ident + "     no expection");
             System.out.println(ident + "    'debug:'" + debug + "'");

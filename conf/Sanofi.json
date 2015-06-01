@@ -1,0 +1,107 @@
+{
+  "name": "Sanofi",
+  "actions" :
+  [
+    {
+      "element": "http://sazhaopin.hirede.com/CareerSite/Index",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "elementToBeSelected",
+        "element":"selPostDateRange",
+        "how": "ID",
+      }],
+    },
+    {
+      "element" : "//SELECT[@id='selPostDateRange']/OPTION[4]",
+      "how" : "XPATH",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "elementToBeClickable",
+        "element" : "btnSearch",
+        "how":"ID",
+      }],
+    },
+    {
+      "element" : "btnSearch",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition": "visibilityOfElementLocated",
+        "element": "tbodyJob",
+        "how":"ID",
+      }],
+      "debug" : false,
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TBODY[@id='tbodyJob']/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD/DIV/A",
+            "cmd": "click",
+            "expections": [
+                 {
+                     "condition": "newWindowIsOpened",
+                 },
+                 {
+                     "condition": "visibilityOfElementLocated",
+                     "element": "//DIV[@id='jobDiscription']",
+                 }
+            ],
+            "debug" : false,
+          },
+        ],
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//DIV[@id='jobDiscription']",
+            "how": "XPATH",
+          },
+          "job_url": {
+            "how": "url",
+          },
+          "job_title": {
+            "element": "//TABLE[@class='job-base']/TBODY/TR[1]/TD[2]",
+          }
+          "job_location": {
+            "element": "//TABLE[@class='job-base']/TBODY/TR[3]/TD[2]",
+            "how": "XPATH",
+          },
+          "job_date": {
+            "element": "//TABLE[@class='job-base']/TBODY/TR[5]/TD[2]",
+            "how": "XPATH",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+            "expections": [{
+              "comment:condition": "onlywait",
+            }]
+          }
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//DIV[@class='jobPage']/UL/LI[@class='pgNext'][1]",
+          "cmd": "click",
+          "expections": [{
+            "condition": "visibilityOfElementLocated",
+            "element": "tbodyJob",
+            "how":"ID",
+          }]
+        },
+      ],
+    }
+  },
+}
+
