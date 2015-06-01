@@ -57,6 +57,12 @@
           },
         ],
       },
+      "extracts": {
+        "job_location": {
+          "element": "TD[2]",
+          "how": "XPATH",
+        },
+      },
       "procedure": {
         "extracts": {
           "job_description": {
@@ -68,10 +74,6 @@
           },
           "job_title": {
             "element": "//TABLE[@class='job-base']/TBODY/TR[1]/TD[2]",
-          }
-          "job_location": {
-            "element": "//TABLE[@class='job-base']/TBODY/TR[3]/TD[2]",
-            "how": "XPATH",
           },
           "job_date": {
             "element": "//TABLE[@class='job-base']/TBODY/TR[5]/TD[2]",
@@ -103,5 +105,10 @@
       ],
     }
   },
+  "job_regex_matcher_for_location" : {
+    "regex" : "/([^-]*)市/",
+    "which" : 1,
+    "group" : 1,
+  }
 }
 

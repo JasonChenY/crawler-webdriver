@@ -15,6 +15,12 @@ import java.util.*;
 import org.apache.oro.text.perl.MalformedPerl5PatternException;
 import org.apache.oro.text.perl.Perl5Util;
 
+import org.apache.oro.text.regex.MatchResult;
+import org.apache.oro.text.regex.PatternMatcherInput;
+import org.apache.oro.text.regex.Perl5Matcher;
+import org.apache.oro.text.perl.MalformedPerl5PatternException;
+import org.apache.oro.text.perl.Perl5Util;
+
 import java.util.StringTokenizer;
 import java.util.Properties;
 
@@ -118,6 +124,39 @@ public class LocationUtils {
         return format(d);
     }
 
+    public static String match(String input, String regex, int which, int grp) {
+        /* grp:   ( 1, 2, 3 )
+        *         Only for extract one specific group id, items separated by ','
+        *  which: indicate which mater to be extracted ( 1, 2,  3 )
+        *         0: all
+        *         -1: last
+        **/
+        StringBuffer result = new StringBuffer();
+        Perl5Util plUtil = new Perl5Util();
+        PatternMatcherInput matcherInput = new PatternMatcherInput(input);
+        boolean firsttime = true;
+        int order = 0;
+        String item="";
+        while (plUtil.match(regex, matcherInput)) {
+            order++;
+            MatchResult matchresult = plUtil.getMatch();
+            item =matchresult.group(grp);
+            if ( (which == 0) || (order == which) ) {
+                if (item != null) {
+                    if (!firsttime) result.append(",");
+                    result.append(item);
+                    firsttime = false;
+                }
+            }
+        }
+        // only interested in last matched part
+        if ( which == -1 ) {
+            if (!firsttime) result.append(",");
+            result.append(item);
+        }
+        return result.toString();
+    }
+
     public static void main(String args[]) {
         String    strs[] = {"hong kong", "上海市/南京市",  "中国 - 江苏 - 南京市 ", 
                   "中国 / 江苏 / 南京市 ",                 "中国 - 江苏 - 南京市  ",};
@@ -160,6 +199,23 @@ public class LocationUtils {
         try {
             for ( int i = 0; i < test3.length; i++ ) {
                 LOG.debug(test3[i] + " : " + format(test3[i], reg));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        /* Sanofi */
+        System.out.println("=======");
+        reg = "/([^-]*)市/";
+        String test4[] = {"上海市-静安区",
+                "德州市-乐陵市",
+                "上海市-静安区",
+                "北京-北京市",
+                "吕梁市-孝义市",
+                "贵州-贵阳市"};
+        try {
+            for ( int i = 0; i < test4.length; i++ ) {
+                LOG.debug(test4[i] + " : " + match(test4[i], reg, 1, 1));
             }
         } catch ( Exception e ) {
             e.printStackTrace();

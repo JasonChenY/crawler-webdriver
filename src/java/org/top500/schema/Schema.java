@@ -30,11 +30,12 @@ public class Schema {
     public Procedure procedure;
     private String job_date_format;
     private String job_location_format_regex;
+    public RegexMatcher job_regex_matcher_for_location;
 
     public static void main(String[] args) {
         try {
-            Schema a = new Schema("schema.template");
-
+            System.out.println("new schema from " + args[0]);
+            Schema a = new Schema(args[0]);
             a.print();
         } catch ( Exception e ) {
             e.printStackTrace();
@@ -43,6 +44,9 @@ public class Schema {
     public void print() {
         actions.print("");
         procedure.print("");
+        if ( job_regex_matcher_for_location!= null ) {
+            job_regex_matcher_for_location.print("");
+        }
     }
     private void init(Reader input) throws Exception {
         JSONParser parser = new JSONParser();
@@ -52,6 +56,11 @@ public class Schema {
         procedure = new Procedure(obj.get("procedure"));
         job_date_format = (String)obj.get("job_date_format");
         job_location_format_regex = (String)obj.get("job_location_format_regex");
+        if ( obj.get("job_regex_matcher_for_location") != null ) {
+            job_regex_matcher_for_location = new RegexMatcher(obj.get("job_regex_matcher_for_location"));
+        } else {
+            job_regex_matcher_for_location = null;
+        }
     }
     public String getName() { return name; }
     public String getJob_date_format() {
@@ -70,6 +79,35 @@ public class Schema {
         InputStream input = Schema.class.getClassLoader().getResourceAsStream(filename);
         BufferedReader bf = new BufferedReader(new InputStreamReader(input));
         init(bf);
+    }
+    public class RegexMatcher {
+        public String regex;
+        public int which;
+        public int group;
+        public RegexMatcher(Object o) throws Exception {
+
+            if ( o == null ) return;
+
+            JSONObject obj = (JSONObject)o;
+
+            if ( obj.get("regex") == null )
+                throw new Exception("regex can't be empty");
+            else
+                regex = (String) obj.get("regex");
+
+            if ( obj.get("which") == null )
+                which = 0;
+            else
+                which = Integer.valueOf(((Long) obj.get("which")).intValue());
+
+            if ( obj.get("group") == null )
+                group = 1;
+            else
+                group = Integer.valueOf(((Long)obj.get("group")).intValue());
+        }
+        public void print(String ident) {
+            System.out.print(ident+"'job_regex_matcher_for_location':{'regex':'"+regex+"','which':"+which+",'group':"+group+"}");
+        }
     }
     public class Element {
         public String element;

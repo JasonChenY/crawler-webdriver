@@ -336,6 +336,12 @@ public class FetcherThread extends Thread {
                     }
 
                     if ( key.equals(Job.JOB_LOCATION) ) {
+                        if ( _schema.job_regex_matcher_for_location != null ) {
+                            value = LocationUtils.match(value,
+                                    _schema.job_regex_matcher_for_location.regex,
+                                    _schema.job_regex_matcher_for_location.which,
+                                    _schema.job_regex_matcher_for_location.group);
+                        }
                         value = LocationUtils.format(value, _schema.getJob_location_format_regex());
                     }
 
