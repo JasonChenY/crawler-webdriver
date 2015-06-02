@@ -169,16 +169,26 @@ public class LocationUtils {
             //d = plutil.substitute("s/\\s+/,/g", d);
         } catch ( Exception e ) {}
 
+        boolean first = true;
         StringTokenizer tokenizer = new StringTokenizer(d, ",");
         while (tokenizer.hasMoreTokens()) {
             String actualToken = tokenizer.nextToken().trim().toLowerCase();
             String out = CITIES_MAP.get(actualToken);
             if (out != null) {
-                result.append(out);
+                if ( first ) {
+                    result.append(out);
+                    first = false;
+                } else {
+                    result.append("," + out);
+                }
             } else if ( prop.getProperty(actualToken) != null ) {
-                result.append(actualToken);
+                if ( first ) {
+                    result.append(actualToken);
+                    first = false;
+                } else {
+                    result.append("," + actualToken);
+                }
             }
-            if ( tokenizer.hasMoreTokens() ) result.append(",");
         }
         return result.toString();
     }
