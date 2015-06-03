@@ -5,6 +5,7 @@ import org.top500.utils.DateUtils;
 import org.top500.utils.LocationUtils;
 import org.top500.utils.Configuration;
 
+import java.lang.Integer;
 import java.lang.Override;
 import java.lang.Thread;
 
@@ -12,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Date;
 import java.util.Stack;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +22,8 @@ import org.slf4j.LoggerFactory;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WebDriver;
-
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.NoSuchFrameException;
 import org.openqa.selenium.WebDriverException;
@@ -43,6 +47,7 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClick
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeSelected;
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementSelectionStateToBe;
 import static org.openqa.selenium.support.ui.ExpectedConditions.alertIsPresent;
+import org.openqa.selenium.support.ui.Select;
 
 import static org.top500.fetcher.WaitingConditions.onlywait;
 import static org.top500.fetcher.WaitingConditions.newWindowIsOpened;
@@ -70,8 +75,8 @@ public class FetcherThread extends Thread {
         super(name);
         this._schema = schema;
         Configuration conf = Configuration.getInstance();
-        fetch_n_pages = conf.getInt("fetch.first.n.pages", 2);
-        fetch_n_jobs_perpage = conf.getInt("fetch.first.n.jobs.perpage", 2);
+        fetch_n_pages = conf.getInt("fetch.first.n.pages", Integer.MAX_VALUE);
+        fetch_n_jobs_perpage = conf.getInt("fetch.first.n.jobs.perpage", Integer.MAX_VALUE);
         fetch_n_days = conf.getInt("fetch.winthin.n.days.pages", 7);
         driver_wait = conf.getInt("fetch.webdriver.wait.default", 5);
         driver_download_directory = conf.get("fetch.webdriver.download.dir", "/tmp");
@@ -136,6 +141,22 @@ public class FetcherThread extends Thread {
     }
 
     ////////////////////////driver part///////////////////////
+    public static void save_page_content(String content) {
+        try {
+            String date = DateUtils.getThreadLocalDateFormat().format(new Date());
+            String suffix = ".html";
+            String fname = "/tmp/" + date + suffix;
+            FileWriter fw = new FileWriter(fname, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(content);
+            bw.flush();
+            bw.close();
+            fw.close();
+            LOG.debug("Content saved to " + fname);
+        } catch (Exception ee) {
+            LOG.warn("Failed to save content to file " + ee.getMessage());
+        };
+    }
     private By getLocator(String xpath_prefix, Schema.Element element) {
         if ( element == null ) {
             return null;
@@ -158,9 +179,28 @@ public class FetcherThread extends Thread {
                 default: return null;
             }
         }
+        LOG.debug("Locating element via " + val);
         return locator;
     }
 
+    private boolean scrolIntoView(String xpath_prefix, Schema.Element element) {
+        if ( element == null ) return true;
+        if ( xpath_prefix == null ) xpath_prefix="";
+        String statement = "";
+        if ( element.how == null || element.how.equals("XPATH") ) {
+            statement = String.format("var element = document.evaluate(\"%s\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; element.scrollIntoView();", xpath_prefix+element.element);
+        } else if ( element.how.equals("CLASS_NAME") ) {
+            statement = String.format("var element = document.getElementsByClassName(\"%s\")[0]; element.scrollIntoView();", element.element);
+        } else if ( element.how.equals("ID") ) {
+            statement = String.format("document.getElementById(\"%s\").scrollIntoView();", element.element);
+        } else {
+            LOG.warn("Dont support this manner to locate element in JS " + element.how);
+            return false;
+        }
+        LOG.debug("execute JS: " + statement);
+        ((JavascriptExecutor)driver).executeScript(statement);
+        return true;
+    }
     private boolean Action(String xpath_prefix, Schema.Action action) {
         LOG.debug("Action on " + (xpath_prefix==null?"":xpath_prefix) + action.element.element);
 
@@ -183,16 +223,33 @@ public class FetcherThread extends Thread {
             LOG.debug("Action refresh");
             driver.navigate().refresh();
         } else if ( action.command.code == Schema.CmdType.Restore ) {
-            String topWindowHandle = (String)windows_stack.peek();
-            if ( !driver.getWindowHandle().equals(topWindowHandle) ) {
+            String topWindowHandle = (String) windows_stack.peek();
+            if (!driver.getWindowHandle().equals(topWindowHandle)) {
                 LOG.warn("Something wrong to restore, current window not equal topwindow");
                 return false;
             } else {
                 windows_stack.pop();
-                String previousWindowHandle = (String)windows_stack.peek();
+                String previousWindowHandle = (String) windows_stack.peek();
                 LOG.debug("Restore saved window" + previousWindowHandle);
                 driver.close();
                 driver.switchTo().window(previousWindowHandle);
+            }
+        } else if ( action.command.code == Schema.CmdType.ScrollIntoView ) {
+            boolean ret = scrolIntoView(xpath_prefix, action.element);
+            if (!ret) return false;
+        } else if ( action.command.code == Schema.CmdType.zoom ) {
+            /* not working yet */
+            try {
+                int val = Integer.parseInt(action.setvalue);
+                int number = Math.abs(val);
+                Keys key = (val > 0) ? Keys.ADD : Keys.SUBTRACT;
+                WebElement html = driver.findElement(By.tagName("html"));
+                html.f
+                for ( int i = 0; i < number; i ++ ) {
+                    html.sendKeys(Keys.chord(Keys.CONTROL, key));
+                }
+            } catch ( Exception e ) {
+                LOG.warn("failed to zoom window", e);
             }
         } else {
             By locator = getLocator(xpath_prefix, action.element);
@@ -200,6 +257,27 @@ public class FetcherThread extends Thread {
             switch (action.command.code) {
                 case Click:
                     try {
+                        //String statement = String.format("window.scrollTo(%d, %d);", element.getLocation().getX(), element.getLocation().getY());
+                        //((JavascriptExecutor)driver).executeScript(statement);
+
+                        //((org.openqa.selenium.internal.Locatable) element).getCoordinates().inViewPort();
+
+                        //new org.openqa.selenium.interactions.Actions(driver).moveToElement(element).perform();
+                        //element.click();
+
+                        //org.openqa.selenium.interactions.Actions actions = new org.openqa.selenium.interactions.Actions(driver);
+                        //actions.moveToElement(element).click().perform();
+
+                        //((JavascriptExecutor) driver).executeScript("window.focus();");
+
+                        //WebElement abc = driver.switchTo().activeElement();
+                        //LOG.debug(abc.getAttribute("id") + "   " + abc.getAttribute("name") + "   " + abc.getAttribute("class"));
+
+                        //((org.openqa.selenium.internal.Locatable) element).getCoordinates().onScreen();
+                        //long yOffset = (Long)((JavascriptExecutor)driver).executeScript("return arguments[0].scrollTop;", element);
+
+                        //scrolIntoView(xpath_prefix, action.element);
+
                         element.click();
                     } catch ( WebDriverException e ) {
                         LOG.debug(action.element + " failed to click, reach last page?");
@@ -208,6 +286,14 @@ public class FetcherThread extends Thread {
                     break;
                 case Submit:
                     element.submit();
+                    break;
+                case selectByVisibleText:
+                case selectByValue:
+                    Select dropdown = new Select(element);
+                    if ( action.command.code == Schema.CmdType.selectByVisibleText )
+                        dropdown.selectByVisibleText(action.setvalue);
+                    else
+                        dropdown.selectByValue(action.setvalue);
                     break;
                 default: break;
             }
@@ -234,8 +320,14 @@ public class FetcherThread extends Thread {
                     case "presenceOfElementLocated":
                         wait.until(presenceOfElementLocated(wait_locator));
                         break;
+                    case "presenceOfAllElementsLocatedBy":
+                        wait.until(presenceOfAllElementsLocatedBy(wait_locator));
+                        break;
                     case "visibilityOfElementLocated":
                         wait.until(presenceOfElementLocated(wait_locator));
+                        break;
+                    case "visibilityOfAllElementsLocatedBy":
+                        wait.until(visibilityOfAllElementsLocatedBy(wait_locator));
                         break;
                     case "elementToBeClickable":
                         wait.until(elementToBeClickable(wait_locator));
@@ -288,7 +380,7 @@ public class FetcherThread extends Thread {
             }
         }
         if ( action.debug ) {
-            LOG.debug("source:" + driver.getPageSource());
+            save_page_content(driver.getPageSource());
         }
         return true;
     }
@@ -324,12 +416,25 @@ public class FetcherThread extends Thread {
                     LOG.debug("job_url" + ":" + driver.getCurrentUrl());
                 } else {
                     By locator = getLocator(xpath_prefix, ele);
-                    WebElement element = locator.findElement(driver);
-                    String value;
-                    if ( key.equals(Job.JOB_DESCRIPTION) )
-                        value = element.getAttribute("innerHTML");
-                    else
-                        value = element.getText();
+
+                    String value = "";
+                    if ( ele.isMultiple ) {
+                        List<WebElement> elements = locator.findElements(driver);
+                        for ( int i = 0; i < elements.size(); i++ ) {
+                            if (key.equals(Job.JOB_DESCRIPTION))
+                                value += elements.get(i).getAttribute("innerHTML") + "<BR/>";
+                            else
+                                value += elements.get(i).getText();
+                        }
+                    } else {
+                        WebElement element =locator.findElement(driver);
+                        if ( key.equals(Job.JOB_DESCRIPTION) )
+                            value = element.getAttribute("innerHTML");
+                        else
+                            value = element.getText();
+                    }
+
+                    LOG.debug(key + ":" + value);
 
                     if ( key.equals(Job.JOB_DATE) ) {
                         value = DateUtils.formatDate(value, _schema.getJob_date_format());
@@ -346,7 +451,6 @@ public class FetcherThread extends Thread {
                     }
 
                     job.addField(key, value);
-                    LOG.debug(key + ":" + value);
                 }
             }
 

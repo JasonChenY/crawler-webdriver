@@ -106,11 +106,12 @@ public class Schema {
                 group = Integer.valueOf(((Long)obj.get("group")).intValue());
         }
         public void print(String ident) {
-            System.out.print(ident+"'job_regex_matcher_for_location':{'regex':'"+regex+"','which':"+which+",'group':"+group+"}");
+            System.out.println(ident+"'job_regex_matcher_for_location':{'regex':'"+regex+"','which':"+which+",'group':"+group+"}");
         }
     }
     public class Element {
         public String element;
+        public boolean isMultiple = false;
         public String how;
         public Element(Object o) throws Exception {
             if ( o == null ) return;
@@ -122,6 +123,7 @@ public class Schema {
                 String name = (String)entry.getKey();
                 String value = (String)entry.getValue();
                 if ( name.equals("element") ) element = value;
+                if ( name.equals("elements") ) {element = value; isMultiple = true;}
                 if ( name.equals("how") ) how = value;
             }
         }
@@ -228,7 +230,7 @@ public class Schema {
 
     }
 
-    public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore};
+    public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore, ScrollIntoView, selectByVisibleText, selectByValue, zoom};
     public class Command {
         /* 'click':  if not configured ( default value )
            'None':   if unknown cmd configured.
@@ -266,6 +268,18 @@ public class Schema {
                             break;
                         case "restore":
                             code = CmdType.Restore;
+                            break;
+                        case "ScrollIntoView":
+                            code = CmdType.ScrollIntoView;
+                            break;
+                        case "selectByVisibleText":
+                            code = CmdType.selectByVisibleText;
+                            break;
+                        case "selectByValue":
+                            code = CmdType.selectByValue;
+                            break;
+                        case "zoom":
+                            code = CmdType.zoom;
                             break;
                         default:
                             code = CmdType.None;

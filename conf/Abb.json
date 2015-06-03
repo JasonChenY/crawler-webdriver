@@ -1,0 +1,129 @@
+{
+  "name": "Abb",
+  "actions" :
+  [
+    {
+      "element": "http://new.abb.com/cn/careers/job-search",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementLocated",
+        "element":"CookieConsentBtn",
+        "how":"ID",
+      }],
+      "debug":true
+    },
+    {
+      "cmd" : "zoom",
+      "value": "-3",
+    },
+    {
+      "element": "CookieConsentBtn",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//SELECT[@data-placeholder='Country']",
+      }],
+    },
+    {
+      "element" : "//SELECT[@data-placeholder='Country']",
+      "cmd" : "selectByValue",
+      "value" : "CN",
+      "expections" : [
+        {
+          "condition" : "elementToBeSelected",
+          "element" : "//SELECT[@data-placeholder='Country']/OPTION[@value='CN']",
+        },
+        {
+          "condition": "presenceOfAllElementsLocatedBy",
+          "element": "//TABLE[@id='jobOffers']/TBODY/TR",
+        },
+      ],
+      "debug":true
+    },
+    {
+      "element" : "jobOffers",
+      "how":"ID",
+      "cmd":"ScrollIntoView",
+    }
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@id='jobOffers']/TBODY/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "click",
+            "expections": [
+                 {
+                     "condition": "newWindowIsOpened",
+                 },
+                 {
+                     "condition": "presenceOfAllElementsLocatedBy",
+                     "element": "//DIV[@class='joSectionHeader' or @class='joSection']",
+                 }
+            ],
+            "debug" : true,
+          },
+        ],
+      },
+      "extracts": {
+        "job_location": {
+          "element": "TD[2]/SPAN[1]",
+        },
+        "job_title": {
+          "element": "TD[3]",
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "elements": "//DIV[@class='joSectionHeader' or @class='joSection']",
+            "how": "XPATH",
+          },
+          "job_url": {
+            "how": "url",
+          },
+          "job_date": {
+            "element": "//DIV[@class='offerDetails']/DL/DD[3]",
+            "how": "XPATH",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          }
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "comment:element" : "//DIV[@class='jobOfferTable']/DIV[@class='abbPagContainer']/DIV[@class='abbPagLinks']/A[@class='abbPagNext']",
+          "element" : "abbPagContainer",
+          "how":"CLASS_NAME",
+          "cmd":"ScrollIntoView",
+          "expections" : [{
+             "condition" : "elementToBeClickable",
+             "element" : "//DIV[@class='abbPagLinks']/A[@class='abbPagNext']",
+          }]
+        },
+        {
+          "element": "//DIV[@class='abbPagLinks']/A[@class='abbPagNext']",
+          "cmd": "click",
+          "expections": [{
+            "condition": "presenceOfElementLocated",
+            "element": "jobOffers",
+            "how":"ID",
+          }]
+        },
+      ],
+    }
+  },
+}
+
