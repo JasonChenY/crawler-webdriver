@@ -16,7 +16,7 @@
 厦门=Xiamen
 福建=Fujian
 沈阳=Shenyang
-天津=Tianjing
+天津=Tianjin
 珠海=Zhuhai
 台北=ZHO_Taipei
 全国=Any

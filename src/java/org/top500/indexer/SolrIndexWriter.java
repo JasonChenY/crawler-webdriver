@@ -68,7 +68,7 @@ public class SolrIndexWriter {
             }
 
             if (key.equals(Job.JOB_URL)) {
-                inputDoc.addField("id", val);
+                inputDoc.addField("id", val+ String.valueOf(System.currentTimeMillis()));
             }
 
             inputDoc.addField(solrMapping.mapKey(key), val);
@@ -76,6 +76,10 @@ public class SolrIndexWriter {
             if (sCopy != key) {
                 inputDoc.addField(sCopy, val);
             }
+        }
+        if ( !job.getFields().containsKey(Job.JOB_DATE) ) {
+            LOG.info("No Job_date field extracted, use current time");
+            inputDoc.addField(Job.JOB_DATE, DateUtils.getCurrentDate());
         }
 
         // Some internal field

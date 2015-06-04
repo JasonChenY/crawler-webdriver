@@ -1,0 +1,39 @@
+{
+  "name" : "Airbus",
+  "actions" :
+  [
+    {
+      "element": "http://www.airbusgroup.com/int/en/people-careers/jobs-and-applications/vacancies-in-china.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfAllElementsLocated",
+        "element": "content",
+        "how" : "CLASS_NAME"
+      }],
+      "debug":false
+    },
+  ],
+  "procedure": {
+    "loop": {
+      "xpath_prefix": "//DIV[@class='b-article-accordion has-open-first-tab']/H3[@class='acc-title']",
+      "loop_type": "begin",
+    },
+    "extracts": {
+      "job_url": {
+        "how": "url",
+      },
+      "job_title": {
+        "element": "//DIV[@class='b-article-accordion has-open-first-tab']/H3[@class='acc-title'][%d]",
+      },
+      "job_location": {
+        "element": "//DIV[@class='b-article-accordion has-open-first-tab']/DIV[@class='acc-content'][%d]/P[1]",
+      },
+      "job_description" : {
+        "element" : "//DIV[@class='b-article-accordion has-open-first-tab']/DIV[@class='acc-content'][%d]",
+      }
+    },
+  }
+  "job_location_format_regex" : "s/.*/Beijing, Tianjin/g",
+}
+

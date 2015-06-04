@@ -132,7 +132,7 @@ public class FetcherThread extends Thread {
             LOG.debug("Inital window handle: " + window);
             windows_stack.push(window);
 
-            Actions(null, _schema.actions);
+            Actions(null, 0, _schema.actions);
             Procedure(_schema.procedure, null);
         } catch ( Exception e ) {
             LOG.warn("Exception: ", e);
@@ -157,15 +157,31 @@ public class FetcherThread extends Thread {
             LOG.warn("Failed to save content to file " + ee.getMessage());
         };
     }
-    private By getLocator(String xpath_prefix, Schema.Element element) {
+    private String formatXpath(String prefix, int index, String tgt) {
+        String xpath;
+        if ( tgt.startsWith("//") && index != 0 ) {
+            // Array of sibling elements, but need access children of them
+            // Absolute xpath expression with a %d in the schema
+            xpath = String.format(tgt, index);
+        } else if ( prefix != null ) {
+            // Normal case, array of elements, and share same parent
+            xpath = prefix + tgt;
+        } else {
+            // single absolute xpath
+            xpath = tgt;
+        }
+        return xpath;
+    }
+    private By getLocator(String xpath_prefix, int index, Schema.Element element) {
         if ( element == null ) {
             return null;
         }
-        if ( xpath_prefix == null ) xpath_prefix="";
         By locator = null;
         String val = element.element;
-        if ( element.how == null ) {
-            locator = By.xpath(xpath_prefix+val); /* default using xpath */
+        if ( element.how == null || element.how.equals("XPATH") ) {
+            String xpath = formatXpath(xpath_prefix, index, val);
+            locator = By.xpath(xpath);
+            LOG.debug("Locating element via " + xpath);
         } else {
             switch (element.how) {
                 case "CLASS_NAME": locator = By.className(val); break;
@@ -175,20 +191,19 @@ public class FetcherThread extends Thread {
                 case "NAME":locator = By.name(val); break;
                 case "PARTIAL_LINK_TEXT":locator = By.partialLinkText(val); break;
                 case "TAG_NAME":locator = By.tagName(val); break;
-                case "XPATH":locator = By.xpath(xpath_prefix+val); break;
                 default: return null;
             }
+            LOG.debug("Locating element via " + val);
         }
-        LOG.debug("Locating element via " + val);
         return locator;
     }
 
-    private boolean scrolIntoView(String xpath_prefix, Schema.Element element) {
+    private boolean scrolIntoView(String xpath_prefix, int index, Schema.Element element) {
         if ( element == null ) return true;
-        if ( xpath_prefix == null ) xpath_prefix="";
         String statement = "";
         if ( element.how == null || element.how.equals("XPATH") ) {
-            statement = String.format("var element = document.evaluate(\"%s\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; element.scrollIntoView();", xpath_prefix+element.element);
+            String xpath = formatXpath(xpath_prefix, index, element.element);
+            statement = String.format("var element = document.evaluate(\"%s\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; element.scrollIntoView();", xpath);
         } else if ( element.how.equals("CLASS_NAME") ) {
             statement = String.format("var element = document.getElementsByClassName(\"%s\")[0]; element.scrollIntoView();", element.element);
         } else if ( element.how.equals("ID") ) {
@@ -201,8 +216,8 @@ public class FetcherThread extends Thread {
         ((JavascriptExecutor)driver).executeScript(statement);
         return true;
     }
-    private boolean Action(String xpath_prefix, Schema.Action action) {
-        LOG.debug("Action on " + (xpath_prefix==null?"":xpath_prefix) + action.element.element);
+    private boolean Action(String xpath_prefix, int index, Schema.Action action) {
+        LOG.debug("Action on " + formatXpath(xpath_prefix, index, action.element.element));
 
         String currentWindowHandle = driver.getWindowHandle();
         Set<String> currentWindowHandles = driver.getWindowHandles();
@@ -235,7 +250,7 @@ public class FetcherThread extends Thread {
                 driver.switchTo().window(previousWindowHandle);
             }
         } else if ( action.command.code == Schema.CmdType.ScrollIntoView ) {
-            boolean ret = scrolIntoView(xpath_prefix, action.element);
+            boolean ret = scrolIntoView(xpath_prefix, index, action.element);
             if (!ret) return false;
         } else if ( action.command.code == Schema.CmdType.zoom ) {
             /* not working yet */
@@ -252,7 +267,7 @@ public class FetcherThread extends Thread {
                 LOG.warn("failed to zoom window", e);
             }
         } else {
-            By locator = getLocator(xpath_prefix, action.element);
+            By locator = getLocator(xpath_prefix, index, action.element);
             WebElement element = locator.findElement(driver);
             switch (action.command.code) {
                 case Click:
@@ -311,7 +326,7 @@ public class FetcherThread extends Thread {
                 else
                     LOG.debug("Expection: " + expection.condition);
 
-                By wait_locator = getLocator(null, expection.element);
+                By wait_locator = getLocator(null, 0, expection.element);
 
                 switch (expection.condition) {
                     case "titleIs":
@@ -385,13 +400,13 @@ public class FetcherThread extends Thread {
         return true;
     }
 
-    private boolean Actions(String xpath_prefix, Schema.Actions actions) {
+    private boolean Actions(String xpath_prefix, int index, Schema.Actions actions) {
         if ( actions == null || actions.actions == null ) {
             LOG.debug("No Actions, return");
             return true;
         }
         for ( int i = 0; i < actions.actions.size(); i++ ) {
-            boolean ret = Action(xpath_prefix, actions.actions.get(i));
+            boolean ret = Action(xpath_prefix, index, actions.actions.get(i));
             if ( !ret ) {
                 return ret;
             }
@@ -399,7 +414,7 @@ public class FetcherThread extends Thread {
         return true;
     }
 
-    private boolean Extracts(String xpath_prefix, Schema.Extracts extracts, Job job){
+    private boolean Extracts(String xpath_prefix, int index, Schema.Extracts extracts, Job job){
         if ( extracts == null ) {
             LOG.debug("Nothing to be extracted, return");
             return false;
@@ -415,7 +430,7 @@ public class FetcherThread extends Thread {
                     job.addField(Job.JOB_URL, driver.getCurrentUrl());
                     LOG.debug("job_url" + ":" + driver.getCurrentUrl());
                 } else {
-                    By locator = getLocator(xpath_prefix, ele);
+                    By locator = getLocator(xpath_prefix, index, ele);
 
                     String value = "";
                     if ( ele.isMultiple ) {
@@ -475,13 +490,13 @@ public class FetcherThread extends Thread {
                     final Job newjob = new Job();
                     newjob.addField(Job.JOB_COMPANY, _schema.getName());
                     String newprefix = xpath_prefix_loop + "[" + Integer.toString(i+1) + "]/";
-                    if ( !Extracts(newprefix, procedure.extracts, newjob) ) continue;
+                    if ( !Extracts(newprefix, i+1, procedure.extracts, newjob) ) continue;
 
-                    if ( DateUtils.nDaysAgo(newjob.getField(Job.JOB_DATE), fetch_n_days) ) {
+                    if (DateUtils.nDaysAgo(newjob.getField(Job.JOB_DATE), fetch_n_days) ) {
                         LOG.debug("Job older than configured date, ignore");
                         continue;
                     }
-                    Actions(newprefix, procedure.actions);
+                    Actions(newprefix, 0, procedure.actions);
                     Procedure(procedure.procedure, newjob);
                     _joblist.addJob(newjob);
                 }
@@ -494,11 +509,11 @@ public class FetcherThread extends Thread {
             do {
                 Procedure(procedure.procedure, null);
                 pages++;
-            } while (Actions(null, procedure.actions) && (pages<fetch_n_pages));
+            } while (Actions(null, 0, procedure.actions) && (pages<fetch_n_pages));
         } else {
-            LOG.debug("Procedure: no loop for job");
-            Extracts(null, procedure.extracts, job);
-            Actions(null, procedure.actions);
+            LOG.debug("Procedure for single job");
+            Extracts(null, 0, procedure.extracts, job);
+            Actions(null, 0, procedure.actions);
         }
     }
 }
