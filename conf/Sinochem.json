@@ -1,0 +1,96 @@
+{
+  "name": "Sinochem",
+  "actions" :
+  [
+    {
+      "element": "http://www.hotjob.cn/wt/Sinochem/web/index?brandCode=Sinochem",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "elementToBeClickable",
+        "element":"//SPAN[@class='morespace']/A[@class='more']",
+      }],
+      "debug":false
+    },
+    {
+      "element": "//SPAN[@class='morespace']/A[@class='more']",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "presenceOfElementLocated",
+        "element":"search_result",
+        "how":"CLASS_NAME",
+      }],
+    }
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@class='search_result']/TBODY/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "click",
+            "expections": [
+                 {
+                     "condition": "presenceOfElementLocatedBy",
+                     "element": "position_content",
+                     "how": "CLASS_NAME",
+                 }
+            ],
+            "debug" : true,
+          },
+        ],
+      },
+      "extracts": {
+        "job_location": {
+          "element": "TD[5]/FONT",
+        },
+        "job_title": {
+          "element": "TD[1]/A/FONT",
+        },
+        "job_date": {
+          "element": "TD[6]",
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "elements": "//DIV[@class='position_content']/P",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "back",
+            "expections" : [{
+              "condition" : "presenceOfElementLocated",
+              "element":"search_result",
+              "how":"CLASS_NAME",
+            }],
+            "debug":true,
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "comment:element" : "//DIV[@class='page_div']/TABLE/TBODY/TR/TD/A[normalize-space(text())='Next']",
+          "element" : "//DIV[@class='page_div']/TABLE/TBODY/TR/TD/A[3]",
+          "cmd":"click",
+          "expections" : [{
+            "condition" : "presenceOfElementLocated",
+            "element":"search_result",
+            "how":"CLASS_NAME",
+          }],
+        },
+      ],
+    }
+  },
+}
+

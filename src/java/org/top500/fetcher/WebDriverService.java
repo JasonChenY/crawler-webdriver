@@ -42,6 +42,7 @@ public class WebDriverService {
 
     public static WebDriver getWebDriver(String url, String dir) throws Exception {
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+        capabilities.setCapability("chrome.switches", "disable-images");// to disable image showing
 
         ChromeOptions options = new ChromeOptions();
         //if specify this, all threads will share same session, quit will close all the window

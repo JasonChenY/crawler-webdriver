@@ -244,7 +244,7 @@ public class FetcherThread extends Thread {
                 int number = Math.abs(val);
                 Keys key = (val > 0) ? Keys.ADD : Keys.SUBTRACT;
                 WebElement html = driver.findElement(By.tagName("html"));
-                html.f
+
                 for ( int i = 0; i < number; i ++ ) {
                     html.sendKeys(Keys.chord(Keys.CONTROL, key));
                 }
@@ -399,14 +399,14 @@ public class FetcherThread extends Thread {
         return true;
     }
 
-    private void Extracts(String xpath_prefix, Schema.Extracts extracts, Job job){
+    private boolean Extracts(String xpath_prefix, Schema.Extracts extracts, Job job){
         if ( extracts == null ) {
             LOG.debug("Nothing to be extracted, return");
-            return;
+            return false;
         }
         if ( job == null) {
             LOG.warn("Nont know where to save extracts, return");
-            return;
+            return false;
         }
         try {
             for (String key : extracts.items.keySet()) {
@@ -456,7 +456,9 @@ public class FetcherThread extends Thread {
 
         } catch ( Exception e ) {
             LOG.warn("Extracts failed", e);
+            return false;
         }
+        return true;
     }
 
     private void Procedure(Schema.Procedure procedure, Job job) {
@@ -473,7 +475,7 @@ public class FetcherThread extends Thread {
                     final Job newjob = new Job();
                     newjob.addField(Job.JOB_COMPANY, _schema.getName());
                     String newprefix = xpath_prefix_loop + "[" + Integer.toString(i+1) + "]/";
-                    Extracts(newprefix, procedure.extracts, newjob);
+                    if ( !Extracts(newprefix, procedure.extracts, newjob) ) continue;
 
                     if ( DateUtils.nDaysAgo(newjob.getField(Job.JOB_DATE), fetch_n_days) ) {
                         LOG.debug("Job older than configured date, ignore");
