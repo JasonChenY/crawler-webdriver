@@ -1,0 +1,141 @@
+{
+  "name": "Exxonmobil",
+  "actions" :
+  [
+    {
+      "element": "https://sjobs.brassring.com/TGWebHost/home.aspx?partnerid=6961&siteid=5105",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "elementToBeClickable",
+        "element" : "srchOpenLink",
+        "how" : "ID",
+      }],
+    },
+    {
+      "element" : "srchOpenLink",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "presenceOfElementLocated",
+        "element" : "Question19849__FORMTEXT4",
+        "how" : "ID",
+      }],
+    },
+    {
+      "element" : "Question19849__FORMTEXT4",
+      "how" : "ID",
+      "cmd" : "selectByVisibleText",
+      "value" : "China",
+    },
+    {
+      "element" : "ctl00_MainContent_LastDateUpdated",
+      "how" : "ID",
+      "cmd" : "click",
+    },
+    {
+      "element" : "day",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "value" : "1",
+    },
+    {
+      "element" : "month",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "value" : "1",
+    },
+    {
+      "element" : "year",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "value" : "2015",
+    },
+    {
+      "element": "ctl00_MainContent_submit1",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition": "visibilityOfElementLocated",
+        "element" : "idSearchresults",
+        "how" : "ID",
+      }],
+      "debug" : false,
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TBODY[@class='yui-dt-data']/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[2]/DIV/A",
+            "cmd": "click",
+            "expections": [{
+              "comment:condition": "onlywait",
+              "condition": "visibilityOfElementLocated",
+              "element": "Job Description",
+              "how" :"ID",
+            }],
+            "debug" : false,
+          },
+        ],
+      },
+      "extracts": {
+        "job_location": {
+          "element": "TD[4]/DIV",
+        },
+        "job_date": {
+          "element": "TD[6]/DIV",
+        },
+        "job_title": {
+          "element": "TD[2]/DIV/A"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "Job Description",
+            "how": "ID",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "back",
+          },
+          {
+            "cmd": "refresh",
+            "expections": [{
+              "condition": "visibilityOfElementLocated",
+              "element" : "idSearchresults",
+              "how" : "ID",
+            }],
+            "debug" : false,
+          }
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//A[@id='yui-pg0-1-next-span']",
+          "how" : "XPATH",
+          "cmd": "click",
+          "expections": [{
+              "condition": "visibilityOfElementLocated",
+              "element": "idSearchresults",
+              "how": "ID",
+            }]
+        },
+      ],
+    }
+  },
+  "job_location_format_regex" : "s/(?:[^-]*-)*\\s*(.*)\\s*/$1/g",
+}
+

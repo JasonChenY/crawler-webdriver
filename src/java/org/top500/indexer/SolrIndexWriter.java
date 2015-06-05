@@ -48,7 +48,8 @@ public class SolrIndexWriter {
 
     public void write(Job job) throws IOException {
         final SolrInputDocument inputDoc = new SolrInputDocument();
-
+        String url = "";
+        String title = "";
         for(String key : job.getFields().keySet()) {
             String val = job.getField(key);
 
@@ -68,7 +69,10 @@ public class SolrIndexWriter {
             }
 
             if (key.equals(Job.JOB_URL)) {
-                inputDoc.addField("id", val+ String.valueOf(System.currentTimeMillis()));
+                url = val;
+            }
+            if (key.equals(Job.JOB_TITLE)) {
+                title = val;
             }
 
             inputDoc.addField(solrMapping.mapKey(key), val);
@@ -77,6 +81,10 @@ public class SolrIndexWriter {
                 inputDoc.addField(sCopy, val);
             }
         }
+
+        // to support static page with multipe jobs, but still make sure no duplicate items.
+        inputDoc.addField("id", url + title);
+
         if ( !job.getFields().containsKey(Job.JOB_DATE) ) {
             LOG.info("No Job_date field extracted, use current time");
             inputDoc.addField(Job.JOB_DATE, DateUtils.getCurrentDate());

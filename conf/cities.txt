@@ -9,7 +9,7 @@
 无锡=Wuxi
 扬州=Yangzhou
 大连=Dalian
-香港=Hongkong, Hong Kong, ZHO_Hong Kong
+香港=Hongkong, Hong Kong, ZHO_Hong Kong, Tsing Yi Terminal
 重庆=Chongqing
 广州=Guangzhou
 苏州=Suzhou

@@ -26,6 +26,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.NoSuchFrameException;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -217,8 +218,6 @@ public class FetcherThread extends Thread {
         return true;
     }
     private boolean Action(String xpath_prefix, int index, Schema.Action action) {
-        LOG.debug("Action on " + formatXpath(xpath_prefix, index, action.element.element));
-
         String currentWindowHandle = driver.getWindowHandle();
         Set<String> currentWindowHandles = driver.getWindowHandles();
         for(String handle : currentWindowHandles) {
@@ -240,7 +239,7 @@ public class FetcherThread extends Thread {
         } else if ( action.command.code == Schema.CmdType.Restore ) {
             String topWindowHandle = (String) windows_stack.peek();
             if (!driver.getWindowHandle().equals(topWindowHandle)) {
-                LOG.warn("Something wrong to restore, current window not equal topwindow");
+                LOG.warn("Action restore, but something wrong, current window not equal topwindow");
                 return false;
             } else {
                 windows_stack.pop();
@@ -250,10 +249,12 @@ public class FetcherThread extends Thread {
                 driver.switchTo().window(previousWindowHandle);
             }
         } else if ( action.command.code == Schema.CmdType.ScrollIntoView ) {
+            LOG.debug("Action ScrollIntoView");
             boolean ret = scrolIntoView(xpath_prefix, index, action.element);
             if (!ret) return false;
         } else if ( action.command.code == Schema.CmdType.zoom ) {
             /* not working yet */
+            LOG.debug("Action zoom window");
             try {
                 int val = Integer.parseInt(action.setvalue);
                 int number = Math.abs(val);
@@ -267,10 +268,19 @@ public class FetcherThread extends Thread {
                 LOG.warn("failed to zoom window", e);
             }
         } else {
+            String dbgstr = formatXpath(xpath_prefix, index, action.element.element);
+
             By locator = getLocator(xpath_prefix, index, action.element);
-            WebElement element = locator.findElement(driver);
+            WebElement element;
+            try {
+                element = locator.findElement(driver);
+            } catch ( NoSuchElementException e ) {
+                LOG.warn("Element with " + dbgstr + " not found, return " , e);
+                return false;
+            }
             switch (action.command.code) {
                 case Click:
+                    LOG.debug("Click " + dbgstr);
                     try {
                         //String statement = String.format("window.scrollTo(%d, %d);", element.getLocation().getX(), element.getLocation().getY());
                         //((JavascriptExecutor)driver).executeScript(statement);
@@ -292,18 +302,19 @@ public class FetcherThread extends Thread {
                         //long yOffset = (Long)((JavascriptExecutor)driver).executeScript("return arguments[0].scrollTop;", element);
 
                         //scrolIntoView(xpath_prefix, action.element);
-
                         element.click();
                     } catch ( WebDriverException e ) {
-                        LOG.debug(action.element + " failed to click, reach last page?");
+                        LOG.debug("Failed to click " + dbgstr + " reach last page?");
                         return false;
                     }
                     break;
                 case Submit:
+                    LOG.debug("submit " + dbgstr);
                     element.submit();
                     break;
                 case selectByVisibleText:
                 case selectByValue:
+                    LOG.debug("select " + dbgstr);
                     Select dropdown = new Select(element);
                     if ( action.command.code == Schema.CmdType.selectByVisibleText )
                         dropdown.selectByVisibleText(action.setvalue);
