@@ -359,6 +359,8 @@ public class Schema {
         public String xpath_prefix_loop = "";
         public LOOP_TYPE loop_type = LOOP_TYPE.NONE;
         public int begin_from = 0;
+        public int end_to = 0;
+        public boolean loop_for_pages = false;
         public Extracts extracts = null;
         public Actions actions = null;
         public Procedure procedure = null;
@@ -380,6 +382,12 @@ public class Schema {
                         if ( loop.get("begin_from") != null ) {
                             begin_from = Integer.valueOf(((Long) loop.get("begin_from")).intValue());
                         }
+                        if ( loop.get("end_to") != null ) {
+                            end_to = Integer.valueOf(((Long) loop.get("end_to")).intValue());
+                        }
+                        if ( loop.get("loop_for_pages") != null ) {
+                            loop_for_pages = (Boolean)loop.get("loop_for_pages");
+                        }
                     } else if (type.equals("end")) {
                         loop_type = LOOP_TYPE.END;
                     }
@@ -399,6 +407,9 @@ public class Schema {
             System.out.println(ident + "'Procedure':{");
             System.out.println(ident + "  'xpath_prefix_loop':'" + xpath_prefix_loop + "'");
             System.out.println(ident + "  'loop_type':'" + loop_type + "'");
+            System.out.println(ident + "  'begin_from':'" + begin_from + "'");
+            System.out.println(ident + "  'end_to':'" + end_to + "'");
+            System.out.println(ident + "  'loop_for_pages':'" + loop_for_pages + "'");
             if ( extracts != null ) extracts.print(ident+"  ");
             if ( actions != null ) actions.print(ident+"  ");
             if ( procedure != null ) procedure.print(ident+"  ");

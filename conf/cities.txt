@@ -18,7 +18,7 @@
 沈阳=Shenyang
 天津=Tianjin
 珠海=Zhuhai
-台北=ZHO_Taipei
+台北=ZHO_Taipei,Taipei
 全国=Any
 成都=Chengdu
 新加坡=singapore
@@ -30,7 +30,11 @@
 郑州=Zhengzhou
 中山=Zhongshan
 青岛=Qingdao
-台北=Taipei
+海南=Hainan, Hainan Island
+太仓=Taicang
+长沙=Changsha
+攀枝花=Panzhihua
+乌鲁木齐=Wulumuqi
 长春=Changchun
 佛山=Foshan
 

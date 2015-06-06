@@ -524,33 +524,47 @@ public class FetcherThread extends Thread {
     private void Procedure(Schema.Procedure procedure, Job job) {
         if ( procedure == null ) return;
         if ( procedure.loop_type == Schema.LOOP_TYPE.BEGIN ) {
-            LOG.debug("Procedure: loop of BEGIN type for job list");
+            LOG.debug("Procedure: loop of BEGIN type for page|job list");
             String xpath_prefix_loop = procedure.xpath_prefix_loop;
             if (xpath_prefix_loop != null && !xpath_prefix_loop.isEmpty()) {
                 By locator = By.xpath(xpath_prefix_loop);
                 List<WebElement> elements = locator.findElements(driver);
                 LOG.debug("Procedure: loop of BEGIN type, find " + elements.size() + " with " + xpath_prefix_loop);
                 int number = 0;
-                for (int i = procedure.begin_from; i < elements.size(); i++) {
-                    final Job newjob = new Job();
-                    newjob.addField(Job.JOB_COMPANY, _schema.getName());
-                    String newprefix = xpath_prefix_loop + "[" + Integer.toString(i+1) + "]/";
-                    if ( !Extracts(newprefix, i+1, procedure.extracts, newjob) ) {
-                        LOG.debug("Failed to extract info for this job, ignore");
-                        continue;
-                    }
+                for (int i = procedure.begin_from; i < elements.size() + procedure.end_to; i++) {
+                    if ( procedure.loop_for_pages ) {
+                        // some site wont have the next page button, should use the for loop as well for page navigation
+                        // but we should not click the page Anchor in the first round, go to Procedure directly.
+                        if (i != procedure.begin_from ) {
+                            String newprefix = xpath_prefix_loop + "[" + Integer.toString(i + 1) + "]/";
+                            Actions(newprefix, 0, procedure.actions);
+                        }
+                        Procedure(procedure.procedure, null);
+                        if ( ++number >= fetch_n_pages) {
+                            LOG.debug("Fetched " + fetch_n_pages + " pages, return");
+                            break;
+                        }
+                    } else {
+                        final Job newjob = new Job();
+                        newjob.addField(Job.JOB_COMPANY, _schema.getName());
+                        String newprefix = xpath_prefix_loop + "[" + Integer.toString(i + 1) + "]/";
+                        if (!Extracts(newprefix, i + 1, procedure.extracts, newjob)) {
+                            LOG.debug("Failed to extract info for this job, ignore");
+                            continue;
+                        }
 
-                    if (DateUtils.nDaysAgo(newjob.getField(Job.JOB_DATE), fetch_n_days) ) {
-                        LOG.debug("Job older than configured date, ignore");
-                        continue;
-                    }
-                    Actions(newprefix, 0, procedure.actions);
-                    Procedure(procedure.procedure, newjob);
-                    _joblist.addJob(newjob);
+                        if (DateUtils.nDaysAgo(newjob.getField(Job.JOB_DATE), fetch_n_days)) {
+                            LOG.debug("Job older than configured date, ignore");
+                            continue;
+                        }
+                        Actions(newprefix, 0, procedure.actions);
+                        Procedure(procedure.procedure, newjob);
+                        _joblist.addJob(newjob);
 
-                    if ( ++number >= fetch_n_jobs_perpage ) {
-                        LOG.debug("Fetched " + fetch_n_jobs_perpage + " jobs for this page, return");
-                        break;
+                        if (++number >= fetch_n_jobs_perpage) {
+                            LOG.debug("Fetched " + fetch_n_jobs_perpage + " jobs for this page, return");
+                            break;
+                        }
                     }
                 }
             } else {

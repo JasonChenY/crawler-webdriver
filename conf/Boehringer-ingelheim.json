@@ -1,0 +1,134 @@
+{
+  "name": "Boehringer-ingelheim",
+  "actions" :
+  [
+    {
+      "element": "http://www.boehringer-ingelheim.cn/careers/jobs0.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "//DIV[@class='par parsys']/DIV[@class='mds-cmp-teaser-list item']/DIV[@class='mds-cmp-ll']/UL/LI/A",
+        },
+      ],
+      "debug":false,
+    },
+    {
+      "element" : "//DIV[@class='par parsys']/DIV[@class='mds-cmp-teaser-list item']/DIV[@class='mds-cmp-ll']/UL/LI/A",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition": "newWindowIsOpened",
+        },
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "pDateL",
+          "how" : "ID",
+        },
+      ],
+      "debug":false,
+    },
+    {
+      "element" : "pDateL",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "comment:value" : "7",
+      "comment:value" : "14",
+      "value" : "31",
+    },
+    {
+      "element" : "srcsubmit",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "Lst-Tabel",
+          "how" : "CLASS_NAME",
+        }
+      ]
+    }
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@class='Lst-Tabel']/TBODY/TR",
+        "loop_type": "begin",
+        "begin_from" : 1,
+        "end_to" : -1,
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "JD-AllFields",
+                "how" :"ID",
+              }],
+            "debug" : false,
+          },
+        ],
+      },
+      "extracts": {
+        "job_location": {
+          "element": "TD[2]",
+        },
+        "job_title": {
+          "element": "TD[1]/A"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "JD-AllFields",
+            "how": "ID",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+            "expections" : [
+              {
+                "condition" : "presenceOfElementLocated",
+                "element" : "Lst-Tabel",
+                "how" : "CLASS_NAME",
+              },],
+          },
+        ]
+      },
+    }
+    "loop": {
+      "xpath_prefix": "//SPAN[@class='Lst-NavPage']",
+      "loop_type": "begin",
+      "loop_for_pages" : true,
+      "actions": [
+        {
+          "element": "A",
+          "cmd": "click",
+          "expections" : [
+            {
+              "condition" : "elementTextChanged",
+              "element" : "//SPAN[@class='Lst-NavPage'][count(*)=0]",
+            },
+            {
+              "condition" : "presenceOfElementLocated",
+              "element" : "Lst-Tabel",
+              "how" : "CLASS_NAME",
+            },
+          ],
+        },
+      ],
+    }
+  },
+  "job_location_format_regex" : "s/([^\\s]*)\\s+(.*)/$2/g",
+}
+
