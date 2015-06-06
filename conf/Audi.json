@@ -1,0 +1,108 @@
+{
+  "name": "Audi",
+  "actions" :
+  [
+    {
+      "element": "http://www.audi.cn/cn/brand/en/about/Careers/Audi_China/opening.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [
+        {
+          "condition" : "frameToBeAvailableAndSwitchToIt",
+          "element" : "//DIV[@class='htmlsnippet']/iframe",
+        },
+        {
+          "condition" : "presenceOfAllElementLocated",
+          "element" : "//DIV[@id='ongoingProjectList']/TABLE/TBODY/TR",
+          "how" : "XPATH",
+        },
+      ],
+      "debug":false,
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@id='ongoingProjectList']/TABLE/TBODY/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "position-description",
+                "how" :"CLASS_NAME",
+              }],
+            "debug" : false,
+          },
+        ],
+      },
+      "extracts": {
+        "job_location": {
+          "element": "TD[2]",
+        },
+        "job_title": {
+          "element": "TD[1]/A"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "position-description",
+            "how": "CLASS_NAME",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+            "expections" : [
+              {
+                "condition" : "frameToBeAvailableAndSwitchToIt",
+                "element" : "//DIV[@class='htmlsnippet']/iframe",
+              },
+              {
+                "condition" : "presenceOfElementLocated",
+                "element" : "ongoingProjectList",
+                "how" : "ID",
+              },],
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "pageNaviNext",
+          "how" : "ID",
+          "cmd": "click",
+          "expections" : [
+            {
+              "comment:condition" : "frameToBeAvailableAndSwitchToIt",
+              "element" : "//DIV[@class='htmlsnippet']/iframe",
+            },
+            {
+              "condition" : "elementTextChanged",
+              "element" : "//UL[@id='pageNavigation']/LI[@class='pager-item pager-current']",
+            },
+            {
+              "condition" : "presenceOfAllElementLocated",
+              "element" : "//DIV[@id='ongoingProjectList']/TABLE/TBODY/TR",
+              "how" : "XPATH",
+            },
+          ],
+        },
+      ],
+    }
+  },
+}
+

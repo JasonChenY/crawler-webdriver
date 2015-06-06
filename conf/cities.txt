@@ -31,6 +31,7 @@
 中山=Zhongshan
 青岛=Qingdao
 台北=Taipei
-
+长春=Changchun
+佛山=Foshan
 
 

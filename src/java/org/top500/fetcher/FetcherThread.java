@@ -234,7 +234,7 @@ public class FetcherThread extends Thread {
         if ( action.expections != null ) {
             for (int iter = 0; iter < action.expections.expections.size(); iter++) {
                 Schema.Expection expection = action.expections.expections.get(iter);
-                if (expection == null) continue;
+                if (expection == null || expection.condition == null) continue;
                 if ( expection.condition.equals("elementTextChanged") /*|| other */) {
                     By expect_locator = getLocator(null, 0, expection.element);
                     try {
@@ -417,7 +417,6 @@ public class FetcherThread extends Thread {
                         break;
                     case "frameToBeAvailableAndSwitchToIt":
                         wait.until(frameToBeAvailableAndSwitchToIt(wait_locator));
-                        System.out.println("frame code " + driver.getPageSource());
                         //driver.switchTo().frame("garage");
                         break;
                     case "onlywait":
