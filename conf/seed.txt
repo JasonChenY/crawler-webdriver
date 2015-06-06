@@ -4,3 +4,5 @@ Abb
 Sinochem
 Airbus
 Exxonmobil
+StandardChartered
+Nike

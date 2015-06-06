@@ -230,7 +230,7 @@ public class Schema {
 
     }
 
-    public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore, ScrollIntoView, selectByVisibleText, selectByValue, zoom};
+    public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore, ScrollIntoView, selectByVisibleText, selectByValue, zoom, openInNewTab};
     public class Command {
         /* 'click':  if not configured ( default value )
            'None':   if unknown cmd configured.
@@ -280,6 +280,9 @@ public class Schema {
                             break;
                         case "zoom":
                             code = CmdType.zoom;
+                            break;
+                        case "openInNewTab":
+                            code = CmdType.openInNewTab;
                             break;
                         default:
                             code = CmdType.None;
@@ -355,6 +358,7 @@ public class Schema {
     public class Procedure {
         public String xpath_prefix_loop = "";
         public LOOP_TYPE loop_type = LOOP_TYPE.NONE;
+        public int begin_from = 0;
         public Extracts extracts = null;
         public Actions actions = null;
         public Procedure procedure = null;
@@ -373,6 +377,9 @@ public class Schema {
                     String type = (String) loop.get("loop_type");
                     if (type.equals("begin")) {
                         loop_type = LOOP_TYPE.BEGIN;
+                        if ( loop.get("begin_from") != null ) {
+                            begin_from = Integer.valueOf(((Long) loop.get("begin_from")).intValue());
+                        }
                     } else if (type.equals("end")) {
                         loop_type = LOOP_TYPE.END;
                     }

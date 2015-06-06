@@ -1,0 +1,123 @@
+{
+  "name": "Nike",
+  "actions" :
+  [
+    {
+      "element": "http://jobs.nike.com/article/corporate",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "elementToBeClickable",
+        "element" : "//section[@class='searchWrapper']/SPAN[@class='searchToggle blue']",
+      }],
+      "debug":true,
+    },
+    {
+      "element" : "//section[@class='searchWrapper']/SPAN[@class='searchToggle blue']",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "ddlASCountry",
+        "how" : "ID",
+      }],
+    },
+    {
+      "element" : "ddlASCountry",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "value" : "China",
+    },
+    {
+      "element" : "btnASGo",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "tableSearchResults",
+        "how" : "CLASS_NAME",
+      }],
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@class='tableSearchResults']/TBODY/TR",
+        "loop_type": "begin",
+        "begin_from":2,
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "jobDesc",
+                "how" :"ID",
+              }],
+            "debug" : false,
+          },
+        ],
+      },
+      "extracts": {
+        "job_location": {
+          "element": "TD[2]",
+        },
+        "job_title": {
+          "element": "TD[1]/A"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "jobDesc",
+            "how": "ID",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+            "expections" : [{
+              "condition" : "visibilityOfElementLocated",
+              "element" : "tableSearchResults",
+              "how" : "CLASS_NAME",
+            }],
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "search_result_next_page_link",
+          "how" : "ID",
+          "cmd": "click",
+          "expections" : [
+            {
+              "condition": "onlywait",
+            },
+            {
+              "condition" : "elementTextChanged",
+              "element" : "numberedCurrent",
+              "how" : "CLASS_NAME",
+            },
+            {
+              "condition" : "visibilityOfElementLocated",
+              "element" : "tableSearchResults",
+              "how" : "CLASS_NAME",
+            },
+          ],
+        },
+      ],
+    }
+  },
+  "job_location_format_regex" : "s/([^,]*).*/$1/g",
+}
+

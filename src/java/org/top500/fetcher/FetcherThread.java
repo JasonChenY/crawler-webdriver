@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Date;
 import java.util.Stack;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 
@@ -28,6 +30,7 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.NoSuchFrameException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -52,6 +55,7 @@ import org.openqa.selenium.support.ui.Select;
 
 import static org.top500.fetcher.WaitingConditions.onlywait;
 import static org.top500.fetcher.WaitingConditions.newWindowIsOpened;
+import static org.top500.fetcher.WaitingConditions.elementTextChanged;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -76,9 +80,9 @@ public class FetcherThread extends Thread {
         super(name);
         this._schema = schema;
         Configuration conf = Configuration.getInstance();
-        fetch_n_pages = conf.getInt("fetch.first.n.pages", Integer.MAX_VALUE);
-        fetch_n_jobs_perpage = conf.getInt("fetch.first.n.jobs.perpage", Integer.MAX_VALUE);
-        fetch_n_days = conf.getInt("fetch.winthin.n.days.pages", 7);
+        fetch_n_pages = conf.getInt("fetch.first.n.pages", 1000);
+        fetch_n_jobs_perpage = conf.getInt("fetch.first.n.jobs.perpage", 1000);
+        fetch_n_days = conf.getInt("fetch.winthin.n.days.pages", 180);
         driver_wait = conf.getInt("fetch.webdriver.wait.default", 5);
         driver_download_directory = conf.get("fetch.webdriver.download.dir", "/tmp");
     }
@@ -218,10 +222,30 @@ public class FetcherThread extends Thread {
         return true;
     }
     private boolean Action(String xpath_prefix, int index, Schema.Action action) {
+        // save some necessary inforamtion before action
         String currentWindowHandle = driver.getWindowHandle();
         Set<String> currentWindowHandles = driver.getWindowHandles();
         for(String handle : currentWindowHandles) {
             LOG.debug("existing window handle: " + handle);
+        }
+
+        // current text value or value for expected elements
+        Queue<String> currentTexts =new LinkedList<String>();
+        if ( action.expections != null ) {
+            for (int iter = 0; iter < action.expections.expections.size(); iter++) {
+                Schema.Expection expection = action.expections.expections.get(iter);
+                if (expection == null) continue;
+                if ( expection.condition.equals("elementTextChanged") /*|| other */) {
+                    By expect_locator = getLocator(null, 0, expection.element);
+                    try {
+                        WebElement currentElement = expect_locator.findElement(driver);
+                        currentTexts.add(currentElement.getText());
+                    } catch ( NoSuchElementException e ) {
+                        LOG.warn("Expected element with " + expection.element.element + " not found, return " , e);
+                        return false;
+                    }
+                }
+            }
         }
 
         if  ( action.command.code == Schema.CmdType.Load ) {
@@ -278,6 +302,7 @@ public class FetcherThread extends Thread {
                 LOG.warn("Element with " + dbgstr + " not found, return " , e);
                 return false;
             }
+
             switch (action.command.code) {
                 case Click:
                     LOG.debug("Click " + dbgstr);
@@ -320,6 +345,10 @@ public class FetcherThread extends Thread {
                         dropdown.selectByVisibleText(action.setvalue);
                     else
                         dropdown.selectByValue(action.setvalue);
+                    break;
+                case openInNewTab:
+                    LOG.debug("Action openInNewTab");
+                    new Actions(driver).keyDown(Keys.CONTROL).click(element).keyUp(Keys.CONTROL).build().perform();
                     break;
                 default: break;
             }
@@ -395,8 +424,14 @@ public class FetcherThread extends Thread {
                         try {
                             wait.until(onlywait());
                         } catch (TimeoutException e) {
+                            LOG.debug("onlywait 5 seconds");
                         }
-                        LOG.debug("onlywait 5 seconds");
+                        break;
+                    case "elementTextChanged":
+                        String currentText = currentTexts.poll();
+                        LOG.debug("Current text: " + currentText);
+                        String newtext = wait.until(elementTextChanged(wait_locator, currentText));
+                        LOG.debug("Element text changed to " + newtext);
                         break;
                     default:
                         driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);
@@ -460,7 +495,7 @@ public class FetcherThread extends Thread {
                             value = element.getText();
                     }
 
-                    LOG.debug(key + ":" + value);
+                    LOG.debug(key + ":" + (value.length()>100?value.substring(0,100):value));
 
                     if ( key.equals(Job.JOB_DATE) ) {
                         value = DateUtils.formatDate(value, _schema.getJob_date_format());
@@ -496,12 +531,15 @@ public class FetcherThread extends Thread {
                 By locator = By.xpath(xpath_prefix_loop);
                 List<WebElement> elements = locator.findElements(driver);
                 LOG.debug("Procedure: loop of BEGIN type, find " + elements.size() + " with " + xpath_prefix_loop);
-                int number = (elements.size()>fetch_n_jobs_perpage) ? fetch_n_jobs_perpage : elements.size();
-                for (int i = 0; i < number; i++) {
+                int number = 0;
+                for (int i = procedure.begin_from; i < elements.size(); i++) {
                     final Job newjob = new Job();
                     newjob.addField(Job.JOB_COMPANY, _schema.getName());
                     String newprefix = xpath_prefix_loop + "[" + Integer.toString(i+1) + "]/";
-                    if ( !Extracts(newprefix, i+1, procedure.extracts, newjob) ) continue;
+                    if ( !Extracts(newprefix, i+1, procedure.extracts, newjob) ) {
+                        LOG.debug("Failed to extract info for this job, ignore");
+                        continue;
+                    }
 
                     if (DateUtils.nDaysAgo(newjob.getField(Job.JOB_DATE), fetch_n_days) ) {
                         LOG.debug("Job older than configured date, ignore");
@@ -510,6 +548,11 @@ public class FetcherThread extends Thread {
                     Actions(newprefix, 0, procedure.actions);
                     Procedure(procedure.procedure, newjob);
                     _joblist.addJob(newjob);
+
+                    if ( ++number >= fetch_n_jobs_perpage ) {
+                        LOG.debug("Fetched " + fetch_n_jobs_perpage + " jobs for this page, return");
+                        break;
+                    }
                 }
             } else {
                 LOG.warn("Procedure: loop of BEGIN type, dont have xpath_prefix");

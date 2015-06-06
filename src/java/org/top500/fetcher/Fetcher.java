@@ -131,7 +131,7 @@ public class Fetcher extends RunListener {
                     s.print();
                     schemas.add(s);
                 } catch ( Exception e ) {
-                    LOG.warn("Failed to decode schema for " + company);
+                    LOG.warn("Failed to decode schema for " + company, e);
                 }
             }
         } catch(Exception e){

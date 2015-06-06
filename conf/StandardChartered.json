@@ -1,0 +1,117 @@
+{
+  "name": "StandardChartered",
+  "actions" :
+  [
+    {
+      "element": "https://cgportal.global.standardchartered.com/hrms/signon.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "elementToBeClickable",
+        "element" : "HRS_SCH_WRK_HRS_CE_LOCATIONS",
+        "how" : "ID",
+      }],
+      "debug" : true,
+    },
+    {
+      "element" : "HRS_SCH_WRK_HRS_CE_LOCATIONS",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "elementToBeClickable",
+        "element" : "HRS_SCH_WRK_HRS_SELECT$15",
+        "how" : "ID",
+      }],
+      "debug" : true,
+    },
+    {
+      "element" : "HRS_SCH_WRK_HRS_SELECT$15",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "onlywait",
+      }],
+    },
+    {
+      "element" : "PSFT_CLOSE_MODAL",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//TABLE[@class='PSLEVEL1GRID']",
+      }],
+      "debug" : true,
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@class='PSLEVEL1GRID']/TBODY/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[2]/DIV/SPAN/A",
+            "cmd": "click",
+            "expections": [{
+              "condition": "visibilityOfElementLocated",
+              "element": "ACE_HRS_SCH_PSTDSC$0",
+              "how" :"ID",
+            }],
+            "debug" : true,
+          },
+        ],
+      },
+      "extracts": {
+        "job_date": {
+          "element": "TD[6]/DIV/SPAN",
+        },
+        "job_title": {
+          "element": "TD[2]/DIV/SPAN/A"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "PABACKGROUNDINVISIBLE",
+            "how": "CLASS_NAME",
+          },
+          "job_url": {
+            "how": "url",
+          },
+          "job_location": {
+            "element": "HRS_SCH_WRK_CITY",
+            "how": "ID",
+          },
+        },
+        "actions": [
+          {
+            "element" : "//DIV[@id='RETURNTO']/A"
+            "cmd": "click",
+            "expections" : [{
+              "condition" : "visibilityOfElementLocated",
+              "element" : "//TABLE[@class='PSLEVEL1GRID']",
+            }],
+            "debug":true,
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "HRS_CE_JO_EXT_I$hdown$0",
+          "how" : "ID",
+          "cmd": "click",
+          "expections": [{
+              "condition": "visibilityOfElementLocated",
+              "element": "//TABLE[@class='PSLEVEL1GRID']",
+            }]
+        },
+      ],
+    }
+  },
+  "job_date_format" : "dd MM yyyy",
+}
+
