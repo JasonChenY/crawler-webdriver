@@ -35,5 +35,8 @@
     },
   }
   "job_location_format_regex" : "s/.*/Beijing, Tianjin/g",
+  "job_unique_id_calc" : {
+    "how" : "url_plus_title",
+  },
 }
 

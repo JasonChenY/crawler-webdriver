@@ -4,6 +4,7 @@ import org.top500.schema.Schema;
 import org.top500.utils.DateUtils;
 import org.top500.utils.LocationUtils;
 import org.top500.utils.Configuration;
+import org.top500.schema.Schema.JobUniqueIdCalc;
 
 import java.lang.Integer;
 import java.lang.Override;
@@ -59,6 +60,9 @@ import static org.top500.fetcher.WaitingConditions.elementTextChanged;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import org.apache.oro.text.perl.MalformedPerl5PatternException;
+import org.apache.oro.text.perl.Perl5Util;
 
 public class FetcherThread extends Thread {
     public static final Logger LOG = LoggerFactory.getLogger(FetcherThread.class);
@@ -533,7 +537,29 @@ public class FetcherThread extends Thread {
         }
         return true;
     }
-
+    private void Generate_job_unique_id(final Job newjob, final Schema _schema) {
+        JobUniqueIdCalc calc = _schema.job_unique_id_calc;
+        if (calc != null && calc.how != null) {
+            if (calc.how.equals("url_plus_title")) {
+                newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL) + newjob.getField(Job.JOB_TITLE));
+                return;
+            } else if (calc.how.equals("regex_on_url")) {
+                if ( calc.value != null && !calc.value.isEmpty() ) {
+                    try {
+                        Perl5Util plutil = new Perl5Util();
+                        String newurl = plutil.substitute(calc.value, newjob.getField(Job.JOB_URL));
+                        newjob.addField(Job.JOB_UNIQUE_ID, newurl);
+                        return;
+                    } catch (MalformedPerl5PatternException me) {
+                        LOG.warn("Failed to generate unique id for job via regex " + calc.value);
+                    }
+                } else {
+                    LOG.warn("No regex to generate unique id for job");
+                }
+            }
+        }
+        newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
+    }
     private void Procedure(Schema.Procedure procedure, Job job) {
         if ( procedure == null ) return;
         if ( procedure.loop_type == Schema.LOOP_TYPE.BEGIN ) {
@@ -572,6 +598,9 @@ public class FetcherThread extends Thread {
                         }
                         Actions(newprefix, 0, procedure.actions);
                         Procedure(procedure.procedure, newjob);
+
+                        Generate_job_unique_id(newjob, _schema);
+
                         _joblist.addJob(newjob);
 
                         if (++number >= fetch_n_jobs_perpage) {

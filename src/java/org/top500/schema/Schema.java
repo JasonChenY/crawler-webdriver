@@ -31,6 +31,7 @@ public class Schema {
     private String job_date_format;
     private String job_location_format_regex;
     public RegexMatcher job_regex_matcher_for_location;
+    public JobUniqueIdCalc job_unique_id_calc;
 
     public static void main(String[] args) {
         try {
@@ -47,6 +48,9 @@ public class Schema {
         if ( job_regex_matcher_for_location!= null ) {
             job_regex_matcher_for_location.print("");
         }
+        if ( job_unique_id_calc!= null ) {
+            job_unique_id_calc.print("");
+        }
     }
     private void init(Reader input) throws Exception {
         JSONParser parser = new JSONParser();
@@ -60,6 +64,11 @@ public class Schema {
             job_regex_matcher_for_location = new RegexMatcher(obj.get("job_regex_matcher_for_location"));
         } else {
             job_regex_matcher_for_location = null;
+        }
+        if ( obj.get("job_unique_id_calc") != null ) {
+            job_unique_id_calc = new JobUniqueIdCalc(obj.get("job_unique_id_calc"));
+        } else {
+            job_unique_id_calc = null;
         }
     }
     public String getName() { return name; }
@@ -107,6 +116,20 @@ public class Schema {
         }
         public void print(String ident) {
             System.out.println(ident+"'job_regex_matcher_for_location':{'regex':'"+regex+"','which':"+which+",'group':"+group+"}");
+        }
+    }
+
+    public class JobUniqueIdCalc {
+        public String how = null;
+        public String value = null;
+        public JobUniqueIdCalc(Object o) throws Exception {
+            if ( o == null ) return;
+            JSONObject obj = (JSONObject)o;
+            how = (String) obj.get("how");
+            value = (String) obj.get("value");
+        }
+        public void print(String ident) {
+            System.out.println(ident + "'job_unique_id_calc':{'how':'" + how + "','value':'" + value + "'}");
         }
     }
     public class Element {

@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class Job {
-
+    public static final String JOB_UNIQUE_ID = "id";
     public static final String JOB_COMPANY = "job_company";
     public static final String JOB_URL = "job_url";
     public static final String JOB_TITLE = "job_title";

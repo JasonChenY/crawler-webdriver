@@ -83,7 +83,8 @@ public class SolrIndexWriter {
         }
 
         // to support static page with multipe jobs, but still make sure no duplicate items.
-        inputDoc.addField("id", url + title);
+        // unique id already added into Job during fetching
+        // inputDoc.addField("id", url + title);
 
         if ( !job.getFields().containsKey(Job.JOB_DATE) ) {
             LOG.info("No Job_date field extracted, use current time");

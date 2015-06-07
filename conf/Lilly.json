@@ -97,5 +97,9 @@
     }
   },
   "job_location_format_regex" : "s#([^/]*).*#$1#g",
+  "job_unique_id_calc" : {
+    "how" : "regex_on_url",
+    "value" : "s/(.*)SID=[^&]*&(.*)/$1$2/g",
+  },
 }
 
