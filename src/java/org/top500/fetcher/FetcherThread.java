@@ -242,13 +242,15 @@ public class FetcherThread extends Thread {
                         currentTexts.add(currentElement.getText());
                     } catch ( NoSuchElementException e ) {
                         LOG.warn("Expected element with " + expection.element.element + " not found, return " , e);
-                        return false;
+                        return (action.isFatal ? false : true);
                     }
                 }
             }
         }
 
-        if  ( action.command.code == Schema.CmdType.Load ) {
+        if ( action.command.code == Schema.CmdType.None ) {
+            return true;
+        } else if ( action.command.code == Schema.CmdType.Load ) {
             LOG.debug("Action load " + action.element.element);
             driver.get(action.element.element);
         } else if ( action.command.code == Schema.CmdType.Back ) {
@@ -264,7 +266,7 @@ public class FetcherThread extends Thread {
             String topWindowHandle = (String) windows_stack.peek();
             if (!driver.getWindowHandle().equals(topWindowHandle)) {
                 LOG.warn("Action restore, but something wrong, current window not equal topwindow");
-                return false;
+                return (action.isFatal ? false : true);
             } else {
                 windows_stack.pop();
                 String previousWindowHandle = (String) windows_stack.peek();
@@ -275,7 +277,7 @@ public class FetcherThread extends Thread {
         } else if ( action.command.code == Schema.CmdType.ScrollIntoView ) {
             LOG.debug("Action ScrollIntoView");
             boolean ret = scrolIntoView(xpath_prefix, index, action.element);
-            if (!ret) return false;
+            if (!ret) return (action.isFatal ? false : true);
         } else if ( action.command.code == Schema.CmdType.zoom ) {
             /* not working yet */
             LOG.debug("Action zoom window");
@@ -291,6 +293,10 @@ public class FetcherThread extends Thread {
             } catch ( Exception e ) {
                 LOG.warn("failed to zoom window", e);
             }
+        } else if ( action.command.code == Schema.CmdType.switchToMainFrame ) {
+            LOG.debug("switchToMainFrame");
+            driver.switchTo().defaultContent();
+            //driver.switchTo().frame(0);
         } else {
             String dbgstr = formatXpath(xpath_prefix, index, action.element.element);
 
@@ -300,7 +306,7 @@ public class FetcherThread extends Thread {
                 element = locator.findElement(driver);
             } catch ( NoSuchElementException e ) {
                 LOG.warn("Element with " + dbgstr + " not found, return " , e);
-                return false;
+                return (action.isFatal ? false : true);
             }
 
             switch (action.command.code) {
@@ -330,7 +336,7 @@ public class FetcherThread extends Thread {
                         element.click();
                     } catch ( WebDriverException e ) {
                         LOG.debug("Failed to click " + dbgstr + " reach last page?");
-                        return false;
+                        return (action.isFatal ? false : true);
                     }
                     break;
                 case Submit:
@@ -339,7 +345,7 @@ public class FetcherThread extends Thread {
                     break;
                 case selectByVisibleText:
                 case selectByValue:
-                    LOG.debug("select " + dbgstr);
+                    LOG.debug("select " + action.setvalue + " for " + dbgstr);
                     Select dropdown = new Select(element);
                     if ( action.command.code == Schema.CmdType.selectByVisibleText )
                         dropdown.selectByVisibleText(action.setvalue);
@@ -347,8 +353,12 @@ public class FetcherThread extends Thread {
                         dropdown.selectByValue(action.setvalue);
                     break;
                 case openInNewTab:
-                    LOG.debug("Action openInNewTab");
+                    LOG.debug("openInNewTab " + dbgstr);
                     new Actions(driver).keyDown(Keys.CONTROL).click(element).keyUp(Keys.CONTROL).build().perform();
+                    break;
+                case sendKeys:
+                    LOG.debug("sendKeys " + action.setvalue + " to " + dbgstr);
+                    element.sendKeys(action.setvalue);
                     break;
                 default: break;
             }
@@ -431,6 +441,9 @@ public class FetcherThread extends Thread {
                         LOG.debug("Current text: " + currentText);
                         String newtext = wait.until(elementTextChanged(wait_locator, currentText));
                         LOG.debug("Element text changed to " + newtext);
+                        break;
+                    case "elementToBeSelected":
+                        wait.until(elementToBeSelected(wait_locator));
                         break;
                     default:
                         driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);

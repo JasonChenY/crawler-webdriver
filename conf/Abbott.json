@@ -1,0 +1,161 @@
+{
+  "name": "Abbott",
+  "actions" :
+  [
+    {
+      "element": "https://abbott.taleo.net/careersection/2/jobsearch.ftl?lang=en",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "closeHelp",
+          "how" : "ID",
+        },
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "POSTING_DATE-select",
+          "how" : "ID",
+        },
+      ],
+      "debug":false,
+    },
+    {
+      "element" : "closeHelp",
+      "how" : "ID",
+      "cmd" : "click",
+      "isFatal" : false,
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "POSTING_DATE-select",
+          "how" : "ID",
+        },
+      ],
+    },
+    {
+      "element" : "POSTING_DATE-select",
+      "how" : "ID",
+      "cmd" : "selectByVisibleText",
+      "value" : "Last 28 Days",
+    },
+    {
+      "element" : "LOCATION-seeallolf",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//DIV[@id='dataTable_filter']/LABEL/SPAN/INPUT",
+        }
+      ]
+    },
+    {
+      "element" : "//DIV[@id='dataTable_filter']/LABEL/SPAN/INPUT",
+      "cmd" : "sendKeys",
+      "value" : "China"
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']",
+        }
+      ]
+    },
+    {
+      "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']/following-sibling::*",
+      "cmd" : "click",
+      "expections" : [
+        {
+           "condition" : "elementToBeSelected",
+           "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']",
+        }
+      ]
+    },
+    {
+      "element" : "addAction",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "elementTextChanged",
+          "element" : "currentPageInfo",
+          "how" : "ID",
+        },
+      ],
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//UL[@id='jobList']/LI",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "comment:cmd" : "switchToMainFrame",
+          },
+          {
+            "element": "DIV[@class='multiline-data-container']/DIV/DIV/A",
+            "cmd": "openInNewTab",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "comment:condition": "frameToBeAvailableAndSwitchToIt",
+                "element" : "ftlhiddenframe",
+                "how" : "ID",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "editablesection",
+                "how" :"CLASS_NAME",
+              }],
+            "debug" : false,
+          },
+        ],
+      },
+      "extracts": {
+        "job_location": {
+          "element": "DIV[@class='multiline-data-container']/DIV[2]/SPAN",
+        },
+        "job_title": {
+          "element": "DIV[@class='multiline-data-container']/DIV/DIV/A"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "editablesection",
+            "how": "CLASS_NAME",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//SPAN[@class='pagersectionpanel']/SPAN[@class='pagerlink']/A[@id='next']",
+          "cmd": "click",
+          "expections" : [
+            {
+              "condition" : "elementTextChanged",
+              "element" : "//SPAN[@class='pagersectionpanel']/UL[@class='pager']/LI[@class='navigation-link-disabled']",
+            },
+          ],
+        },
+      ],
+    }
+  },
+  "job_location_format_regex" : "s/([^-]*-)*(.*)/$2/g",
+}
+

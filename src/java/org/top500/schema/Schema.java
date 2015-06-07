@@ -230,19 +230,21 @@ public class Schema {
 
     }
 
-    public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore, ScrollIntoView, selectByVisibleText, selectByValue, zoom, openInNewTab};
+    public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore,
+                         ScrollIntoView, selectByVisibleText, selectByValue, zoom,
+                         openInNewTab, sendKeys, switchToMainFrame};
     public class Command {
-        /* 'click':  if not configured ( default value )
+        /* 'click':  if not configured ( default value ) ----> changed to None if not configured
            'None':   if unknown cmd configured.
          */
         public CmdType code;
         public Command(Object o) {
             if ( o == null ) {
-                code = CmdType.Click;
+                code = CmdType.None;
             } else {
                 String cmd = (String)o;
                 if ( cmd == null )
-                    code = CmdType.Click;
+                    code = CmdType.None;
                 else {
                     switch (cmd) {
                         case "load":
@@ -284,6 +286,12 @@ public class Schema {
                         case "openInNewTab":
                             code = CmdType.openInNewTab;
                             break;
+                        case "sendKeys":
+                            code = CmdType.sendKeys;
+                            break;
+                        case "switchToMainFrame":
+                            code = CmdType.switchToMainFrame;
+                            break;
                         default:
                             code = CmdType.None;
                             break;
@@ -301,6 +309,7 @@ public class Schema {
         public Command command;
         public String setvalue;
         public Expections expections = null;
+        public boolean isFatal = true;
         public boolean debug = false;
 
         public Action(Object o) throws Exception {
@@ -320,6 +329,10 @@ public class Schema {
 
             if ( obj.get("debug") != null ) {
                 debug = (Boolean)obj.get("debug");
+            }
+
+            if ( obj.get("isFatal") != null ) {
+                isFatal = (Boolean)obj.get("isFatal");
             }
         }
         public void print(String ident) {
