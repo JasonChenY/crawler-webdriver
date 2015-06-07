@@ -10,6 +10,7 @@ public class Job {
     public static final String JOB_TITLE = "job_title";
     public static final String JOB_LOCATION = "job_location";
     public static final String JOB_DATE = "job_date";
+    public static final String JOB_EXPIRE = "job_expire";
     public static final String JOB_DESCRIPTION = "job_description";
 
     final Map<String, String> fields;

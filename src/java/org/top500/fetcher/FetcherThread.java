@@ -270,7 +270,7 @@ public class FetcherThread extends Thread {
             } else {
                 windows_stack.pop();
                 String previousWindowHandle = (String) windows_stack.peek();
-                LOG.debug("Restore saved window" + previousWindowHandle);
+                LOG.debug("Restore saved window: " + previousWindowHandle);
                 driver.close();
                 driver.switchTo().window(previousWindowHandle);
             }
@@ -305,7 +305,7 @@ public class FetcherThread extends Thread {
             try {
                 element = locator.findElement(driver);
             } catch ( NoSuchElementException e ) {
-                LOG.warn("Element with " + dbgstr + " not found, return " , e);
+                LOG.warn("Element with " + dbgstr + " not found, return, >>> Exception: " , e);
                 return (action.isFatal ? false : true);
             }
 
@@ -403,7 +403,7 @@ public class FetcherThread extends Thread {
                             windows_stack.push(newwindow);
                             driver.switchTo().window(newwindow);
                             //String handle = driver.getWindowHandle();
-                            LOG.debug("new window handle: " + newwindow + " title:" + driver.getTitle());
+                            LOG.debug("newWindowIsOpened: " + newwindow + " title:" + driver.getTitle());
                         } catch (Exception e) {
                             LOG.warn("Failed to open new window");
                             System.out.println("page code " + driver.getPageSource());
@@ -509,7 +509,7 @@ public class FetcherThread extends Thread {
 
                     LOG.debug(key + ":" + (value.length()>100?value.substring(0,100):value));
 
-                    if ( key.equals(Job.JOB_DATE) ) {
+                    if ( key.equals(Job.JOB_DATE) ||  key.equals(Job.JOB_EXPIRE) ) {
                         value = DateUtils.formatDate(value, _schema.getJob_date_format());
                     }
 

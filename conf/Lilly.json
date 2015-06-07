@@ -1,0 +1,101 @@
+{
+  "name": "Lilly",
+  "actions" :
+  [
+    {
+      "element": "http://www.lillychina.com/careers/Pages/careers-search.cfm",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition": "frameToBeAvailableAndSwitchToIt",
+          "element" : "icontent",
+          "how": "ID",
+        },
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "ctl00_MainContent_GridFormatter_datatable",
+          "how" : "ID",
+        }
+      ],
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@id='ctl00_MainContent_GridFormatter_datatable']/TABLE/TBODY[@class='yui-dt-data']/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[2]/DIV/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//TABLE[@role='presentation']",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_location": {
+          "element": "TD[6]/DIV",
+        },
+        "job_date": {
+          "element": "TD[7]/DIV",
+        },
+        "job_title": {
+          "element": "TD[3]/DIV"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "comment:elements": "//DIV[@ID='ctl00_ProgressBar']/TABLE/TBODY/TR[2]/TD/TABLE[4]/TBODY",
+            "elements" : "//SPAN[@id='职责' or @id='基本资格要求']",
+          },
+          "job_url": {
+            "how": "url",
+          },
+          "job_expire" : {
+            "element" : "删除日期",
+            "how" : "ID",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+            "expections" :[
+              {
+                "condition": "frameToBeAvailableAndSwitchToIt",
+                "element" : "icontent",
+                "how": "ID",
+              },
+            ]
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "yui-pg0-1-next-link",
+          "how" : "ID",
+          "cmd": "click",
+          "expections": [{
+              "condition": "elementTextChanged",
+              "element": "//SPAN[@id='yui-pg0-1-pages']/SPAN[@class='yui-pg-current-page yui-pg-page']",
+          }]
+        },
+      ],
+    }
+  },
+  "job_location_format_regex" : "s#([^/]*).*#$1#g",
+}
+
