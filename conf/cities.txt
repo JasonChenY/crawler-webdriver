@@ -416,7 +416,7 @@
 兴化=XINGHUA
 香港=Hongkong, Hong Kong, ZHO_Hong Kong, Tsing Yi Terminal, Hong Kong Island
 台北=ZHO_Taipei, Taipei
-全国=Any, Virtual
+全国=Any, Virtual, China
 新加坡=singapore
 海南=Hainan, Hainan Island
 

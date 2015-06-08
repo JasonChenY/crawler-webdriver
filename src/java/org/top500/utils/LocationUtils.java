@@ -112,6 +112,7 @@ public class LocationUtils {
 
     public static String format(String d, String regex) {
         d = d.trim();
+        if ( d.isEmpty() ) return "全国";
         //d = SolrUtils.stripNonCharCodepoints(d);
         if ( regex != null && !regex.isEmpty() ){
             try {

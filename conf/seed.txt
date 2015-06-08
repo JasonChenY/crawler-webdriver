@@ -11,3 +11,4 @@ Boehringer-ingelheim
 Abbott
 Lilly
 Shimaogroup
+Henkel

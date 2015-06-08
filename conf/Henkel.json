@@ -1,0 +1,83 @@
+{
+  "name": "Henkel",
+  "actions" :
+  [
+    {
+      "element": "http://www.henkel.cn/jobs-3745.htm",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition": "presenceOfElementLocated",
+          "element" : "joblist",
+          "how": "ID",
+        },
+      ],
+    },
+    {
+      "cmd" : "switchToMainFrame",
+      "expections": [
+        {
+          "condition": "presenceOfAllElementsLocated",
+          "element" : "//TABLE[@id='jobOfferList']/TBODY[@id='joblist']/TR",
+        },
+      ],
+    }
+  ],
+
+  "procedure": {
+    "loop": {
+      "xpath_prefix" : "//TABLE[@id='jobOfferList']/TBODY[@id='joblist']/TR",
+      "loop_type" : "begin",
+      "actions": [
+        {
+          "element": ".",
+          "cmd": "click",
+          "expections" : [
+            {
+              "condition": "newWindowIsOpened",
+            },
+            {
+              "condition": "visibilityOfElementLocated",
+              "element": "mainContent",
+              "how" : "ID",
+            }
+          ]
+        },
+      ],
+    },
+    "extracts": {
+      "job_location": {
+        "element": "TD[3]/DIV",
+      },
+      "job_date": {
+        "element": "TD[1]/DIV",
+      },
+      "job_title": {
+        "element": "TD[2]/DIV"
+      }
+    },
+    "procedure": {
+      "extracts": {
+        "job_description": {
+          "elements" : "//DIV[@class='detail']/FONT",
+        },
+        "job_url": {
+          "how": "url",
+        },
+      },
+      "actions": [
+        {
+          "cmd": "restore",
+        },
+      ]
+    },
+  }
+  "job_date_format" : "dd MM yyyy",
+  "job_location_format_regex" : "s/([^-]*).*/$1/g",
+  "job_unique_id_calc" : {
+    "how" : "regex_on_url",
+    "value" : "s/([^#]*).*/$1/g",
+  },
+}
+
