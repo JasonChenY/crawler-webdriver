@@ -1,0 +1,89 @@
+{
+  "name": "Hnagroup",
+  "actions" :
+  [
+    {
+      "element": "http://hr.hnagroup.com/Society.aspx",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition": "presenceOfElementLocated",
+          "element" : "gv_Browse",
+          "how": "ID",
+        },
+      ],
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix" : "//TABLE[@id='gv_Browse']/TBODY/TR",
+        "loop_type" : "begin",
+        "begin_from" : 1,
+        "end_to" : -1,
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "click",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "abouttext",
+                "how" : "CLASS_NAME",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "TD[1]/A",
+        }
+        "job_expire": {
+          "element": "gv_Browse_ctl02_lbl_EndTime",
+          "how": "ID",
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "elements" : "//DIV[@class='abouttext']/TABLE/TBODY/TR[6]/TD[*] | //DIV[@class='abouttext']/TABLE/TBODY/TR[7]/TD[*]",
+          },
+          "job_location": {
+            "element": "lbl_Place",
+            "how" : "ID",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "//TABLE[@id='gv_Browse']/TBODY/TR[last()]/TD/DIV/A[last()-1]"
+          "cmd": "click",
+          "expections": [{
+              "condition": "elementValueChanged",
+              "element": "txtgo",
+              "how" : "ID",
+          }]
+        },
+      ],
+    }
+  },
+  "job_location_format_regex" : "s#/#,#g",
+}
+

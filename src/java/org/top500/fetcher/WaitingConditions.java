@@ -236,4 +236,23 @@ public class WaitingConditions {
             }
         };
     }
+
+    public static ExpectedCondition<String> elementValueChanged(final By locator, final String value) {
+        return new ExpectedCondition<String>() {
+
+            @Override
+            public String apply(WebDriver driver) {
+                String newvalue = driver.findElement(locator).getAttribute("value");
+                if (!value.equals(newvalue)) {
+                    return newvalue;
+                }
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "element value changed from: " + value;
+            }
+        };
+    }
 }

@@ -10,9 +10,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.top500.fetcher.Job;
-import org.top500.utils.StringUtils;
 import org.top500.utils.DateUtils;
-import org.top500.utils.LocationUtils;
+import org.top500.utils.StringUtils;
 import org.top500.utils.Configuration;
 
 import org.slf4j.Logger;
@@ -53,10 +52,6 @@ public class SolrIndexWriter {
         for(String key : job.getFields().keySet()) {
             String val = job.getField(key);
 
-            if (key.equals(Job.JOB_DESCRIPTION) || key.equals(Job.JOB_TITLE)) {
-                val = StringUtils.stripNonCharCodepoints(val);
-            }
-
             if (key.equals(Job.JOB_DESCRIPTION)) {
                 try {
                     MessageDigest md = MessageDigest.getInstance("MD5");
@@ -68,27 +63,11 @@ public class SolrIndexWriter {
                 }
             }
 
-            if (key.equals(Job.JOB_URL)) {
-                url = val;
-            }
-            if (key.equals(Job.JOB_TITLE)) {
-                title = val;
-            }
-
             inputDoc.addField(solrMapping.mapKey(key), val);
             String sCopy = solrMapping.mapCopyKey(key);
             if (sCopy != key) {
                 inputDoc.addField(sCopy, val);
             }
-        }
-
-        // to support static page with multipe jobs, but still make sure no duplicate items.
-        // unique id already added into Job during fetching
-        // inputDoc.addField("id", url + title);
-
-        if ( !job.getFields().containsKey(Job.JOB_DATE) ) {
-            LOG.info("No Job_date field extracted, use current time");
-            inputDoc.addField(Job.JOB_DATE, DateUtils.getCurrentDate());
         }
 
         // Some internal field

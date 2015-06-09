@@ -3,6 +3,7 @@ package org.top500.fetcher;
 import org.top500.schema.Schema;
 import org.top500.utils.DateUtils;
 import org.top500.utils.LocationUtils;
+import org.top500.utils.StringUtils;
 import org.top500.utils.Configuration;
 import org.top500.schema.Schema.JobUniqueIdCalc;
 
@@ -57,6 +58,7 @@ import org.openqa.selenium.support.ui.Select;
 import static org.top500.fetcher.WaitingConditions.onlywait;
 import static org.top500.fetcher.WaitingConditions.newWindowIsOpened;
 import static org.top500.fetcher.WaitingConditions.elementTextChanged;
+import static org.top500.fetcher.WaitingConditions.elementValueChanged;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -239,11 +241,15 @@ public class FetcherThread extends Thread {
             for (int iter = 0; iter < action.expections.expections.size(); iter++) {
                 Schema.Expection expection = action.expections.expections.get(iter);
                 if (expection == null || expection.condition == null) continue;
-                if ( expection.condition.equals("elementTextChanged") /*|| other */) {
+                if (expection.condition.equals("elementTextChanged") ||
+                    expection.condition.equals("elementValueChanged") ) {
                     By expect_locator = getLocator(null, 0, expection.element);
                     try {
                         WebElement currentElement = expect_locator.findElement(driver);
-                        currentTexts.add(currentElement.getText());
+                        if ( expection.condition.equals("elementTextChanged" ) )
+                            currentTexts.add(currentElement.getText());
+                        else if ( expection.condition.equals("elementValueChanged" ) )
+                            currentTexts.add(currentElement.getAttribute("value"));
                     } catch ( NoSuchElementException e ) {
                         LOG.warn("Expected element with " + expection.element.element + " not found, return " , e);
                         return (action.isFatal ? false : true);
@@ -446,6 +452,12 @@ public class FetcherThread extends Thread {
                         String newtext = wait.until(elementTextChanged(wait_locator, currentText));
                         LOG.debug("Element text changed to " + newtext);
                         break;
+                    case "elementValueChanged":
+                        String currentValue = currentTexts.poll();
+                        LOG.debug("Current value: " + currentValue);
+                        String newvalue = wait.until(elementValueChanged(wait_locator, currentValue));
+                        LOG.debug("Element value changed to " + newvalue);
+                        break;
                     case "elementToBeSelected":
                         wait.until(elementToBeSelected(wait_locator));
                         break;
@@ -511,6 +523,10 @@ public class FetcherThread extends Thread {
                             value = element.getText();
                     }
 
+                    if (key.equals(Job.JOB_DESCRIPTION) || key.equals(Job.JOB_TITLE)) {
+                        value = StringUtils.stripNonCharCodepoints(value);
+                    }
+
                     LOG.debug(key + ":" + (value.length()>100?value.substring(0,100):value));
 
                     if ( key.equals(Job.JOB_DATE) ||  key.equals(Job.JOB_EXPIRE) ) {
@@ -537,7 +553,8 @@ public class FetcherThread extends Thread {
         }
         return true;
     }
-    private void Generate_job_unique_id(final Job newjob, final Schema _schema) {
+    private void PostProcessJob(final Job newjob, final Schema _schema) {
+        // Generate unique job id
         JobUniqueIdCalc calc = _schema.job_unique_id_calc;
         if (calc != null && calc.how != null) {
             if (calc.how.equals("url_plus_title")) {
@@ -559,6 +576,11 @@ public class FetcherThread extends Thread {
             }
         }
         newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
+
+        if (!newjob.getFields().containsKey(Job.JOB_DATE) ) {
+            LOG.info("No Job_date field extracted, use current time");
+            newjob.addField(Job.JOB_DATE, DateUtils.getCurrentDate());
+        }
     }
     private void Procedure(Schema.Procedure procedure, Job job) {
         if ( procedure == null ) return;
@@ -599,7 +621,7 @@ public class FetcherThread extends Thread {
                         Actions(newprefix, 0, procedure.actions);
                         Procedure(procedure.procedure, newjob);
 
-                        Generate_job_unique_id(newjob, _schema);
+                        PostProcessJob(newjob, _schema);
 
                         _joblist.addJob(newjob);
 
