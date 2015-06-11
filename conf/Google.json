@@ -58,12 +58,16 @@
         "actions": [
           {
             "element": "DIV/DIV[@class='sr-content']/A",
-            "cmd": "click",
-            "expections": [{
-              "comment:condition": "onlywait",
-              "condition": "visibilityOfElementLocated",
-              "element": "//DIV[@class='details']/DIV[@class='detail-item'][3]",
-            }],
+            "cmd": "openInNewTab",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "//DIV[@class='details']/DIV[@class='detail-item'][3]",
+              }
+            ],
             "debug" : false,
           },
         ],
@@ -113,8 +117,8 @@
         },
         "actions": [
           {
-            "cmd": "back",
-            "expections": [{
+            "cmd": "restore",
+            "comment:expections": [{
               "condition": "onlywait",
             }]
           }
