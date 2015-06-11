@@ -49,9 +49,21 @@
     "extracts": {
       "job_location": {
         "element": "TD[3]/DIV",
+        "transforms" : [
+          {
+            "how" : "location_regex",
+            "value" : "s/([^-]*).*/$1/g",
+          }
+        ]
       },
       "job_date": {
         "element": "TD[1]/DIV",
+        "transforms" : [
+          {
+            "how" : "dateFormat",
+            "value" : "dd MM yyyy",
+          }
+        ]
       },
       "job_title": {
         "element": "TD[2]/DIV"
@@ -60,7 +72,7 @@
     "procedure": {
       "extracts": {
         "job_description": {
-          "elements" : "//DIV[@class='detail']/FONT",
+          "element" : "//DIV[@class='detail']/FONT",
         },
         "job_url": {
           "how": "url",
@@ -73,8 +85,6 @@
       ]
     },
   }
-  "job_date_format" : "dd MM yyyy",
-  "job_location_format_regex" : "s/([^-]*).*/$1/g",
   "job_unique_id_calc" : {
     "how" : "regex_on_url",
     "value" : "s/([^#]*).*/$1/g",

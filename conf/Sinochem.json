@@ -57,7 +57,7 @@
       "procedure": {
         "extracts": {
           "job_description": {
-            "elements": "//DIV[@class='position_content']/P",
+            "element": "//DIV[@class='position_content']/P",
           },
           "job_url": {
             "how": "url",

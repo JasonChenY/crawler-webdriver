@@ -118,6 +118,12 @@
       "extracts": {
         "job_location": {
           "element": "DIV[@class='multiline-data-container']/DIV[2]/SPAN",
+          "transforms" : [
+            {
+              "how" : "location_regex",
+              "value" : "s/([^-]*-)*(.*)/$2/g",
+            }
+          ]
         },
         "job_title": {
           "element": "DIV[@class='multiline-data-container']/DIV/DIV/A"
@@ -156,6 +162,5 @@
       ],
     }
   },
-  "job_location_format_regex" : "s/([^-]*-)*(.*)/$2/g",
 }
 

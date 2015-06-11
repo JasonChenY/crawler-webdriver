@@ -52,11 +52,17 @@
       "procedure": {
         "extracts": {
           "job_description": {
-            "elements" : "//DIV[@class='abouttext']/TABLE/TBODY/TR[6]/TD[*] | //DIV[@class='abouttext']/TABLE/TBODY/TR[7]/TD[*]",
+            "element" : "//DIV[@class='abouttext']/TABLE/TBODY/TR[6]/TD[*] | //DIV[@class='abouttext']/TABLE/TBODY/TR[7]/TD[*]",
           },
           "job_location": {
             "element": "lbl_Place",
             "how" : "ID",
+            "transforms" : [
+              {
+                "how" : "location_regex",
+                "value" : "s#/#,#g",
+              }
+            ]
           },
           "job_url": {
             "how": "url",
@@ -84,6 +90,5 @@
       ],
     }
   },
-  "job_location_format_regex" : "s#/#,#g",
 }
 

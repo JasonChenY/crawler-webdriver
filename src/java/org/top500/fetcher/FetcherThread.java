@@ -9,16 +9,19 @@ import org.top500.schema.Schema.JobUniqueIdCalc;
 
 import java.lang.Integer;
 import java.lang.Override;
+import java.lang.String;
 import java.lang.Thread;
 
-import java.util.List;
-import java.util.Set;
-import java.util.Date;
-import java.util.Stack;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -505,22 +508,91 @@ public class FetcherThread extends Thread {
                     LOG.debug("job_url" + ":" + driver.getCurrentUrl());
                 } else {
                     By locator = getLocator(xpath_prefix, index, ele);
-
                     String value = "";
-                    if ( ele.isMultiple ) {
-                        List<WebElement> elements = locator.findElements(driver);
-                        for ( int i = 0; i < elements.size(); i++ ) {
+                    Boolean formatted = false;
+                    List<String> values = new ArrayList<String>();
+                    List<WebElement> elements = locator.findElements(driver);
+
+                    for ( int i = 0; i < elements.size(); i++ ) {
+                        if ( ele.method != null ) {
+                            switch ( ele.method ) {
+                                case "getValue":
+                                    value = elements.get(i).getAttribute("value");
+                                    break;
+                                case "innerHTML":
+                                    value = elements.get(i).getAttribute("innerHTML");
+                                    break;
+                                case "getText":
+                                default:
+                                    value = elements.get(i).getText();
+                            }
+                        } else {
                             if (key.equals(Job.JOB_DESCRIPTION))
-                                value += elements.get(i).getAttribute("innerHTML") + "<BR/>";
+                                value = elements.get(i).getAttribute("innerHTML");
                             else
-                                value += elements.get(i).getText();
+                                value = elements.get(i).getText();
                         }
-                    } else {
-                        WebElement element =locator.findElement(driver);
-                        if ( key.equals(Job.JOB_DESCRIPTION) )
-                            value = element.getAttribute("innerHTML");
-                        else
-                            value = element.getText();
+
+                        if ( ele.transforms != null ) {
+                            // Firstly handle transform against single item.
+                            for ( int j = 0; j < ele.transforms.size(); j++ ) {
+                                Schema.Transform transform = ele.transforms.get(i);
+                                if ( transform == null || transform.value == null || transform.value.isEmpty() ) continue;
+                                switch ( transform.how ) {
+                                    case "insertBefore":
+                                        value = transform.value + value;
+                                        break;
+                                    case "appendAfter":
+                                        value = value + transform.value;
+                                        break;
+                                    case "regex":
+                                        try {
+                                            Perl5Util plutil = new Perl5Util();
+                                            value = plutil.substitute(transform.value, value);
+                                        } catch (MalformedPerl5PatternException me) {
+                                            LOG.warn("regex faield" , me);
+                                        }
+                                        break;
+                                    case "dateFormat":
+                                        value = DateUtils.formatDate(value, transform.value);
+                                        formatted = true;
+                                        break;
+                                    case "location_regex":
+                                        value = LocationUtils.format(value, transform.value);
+                                        formatted = true;
+                                        break;
+                                    default: break;
+                                }
+                            }
+                        }
+                        values.add(value);
+                    }
+                    // handle Transform again all the elements, for exampe to concatenate them (default), or regex to form a new string
+                    boolean joined = false;
+                    if ( ele.transforms != null ) {
+                        for (int j = 0; j < ele.transforms.size(); j++) {
+                            Schema.Transform transform = ele.transforms.get(j);
+                            if (transform == null) continue;
+                            switch (transform.how) {
+                                case "regex_on_all":
+                                    // TODO
+                                    joined = true;
+                                    break;
+                                case "join":
+                                    if (transform.value == null || transform.value.isEmpty())
+                                        value = org.apache.commons.lang3.StringUtils.join(values.toArray(), ",");
+                                    else
+                                        value = org.apache.commons.lang3.StringUtils.join(values.toArray(), transform.value);
+                                    joined = true;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    if ( !joined ) {
+                        // default cases for job description.
+                        value = org.apache.commons.lang3.StringUtils.join(values.toArray(),"<BR/>");
                     }
 
                     if (key.equals(Job.JOB_DESCRIPTION) || key.equals(Job.JOB_TITLE)) {
@@ -529,20 +601,22 @@ public class FetcherThread extends Thread {
 
                     LOG.debug(key + ":" + (value.length()>100?value.substring(0,100):value));
 
-                    if ( key.equals(Job.JOB_DATE) ||  key.equals(Job.JOB_EXPIRE) ) {
-                        value = DateUtils.formatDate(value, _schema.getJob_date_format());
-                    }
-
-                    if ( key.equals(Job.JOB_LOCATION) ) {
-                        if ( _schema.job_regex_matcher_for_location != null ) {
-                            value = LocationUtils.match(value,
-                                    _schema.job_regex_matcher_for_location.regex,
-                                    _schema.job_regex_matcher_for_location.which,
-                                    _schema.job_regex_matcher_for_location.group);
+                    if ( !formatted ) {
+                        // some default handling to avoid config item in schema
+                        if (key.equals(Job.JOB_DATE) || key.equals(Job.JOB_EXPIRE)) {
+                            value = DateUtils.formatDate(value);
                         }
-                        value = LocationUtils.format(value, _schema.getJob_location_format_regex());
-                    }
 
+                        if (key.equals(Job.JOB_LOCATION)) {
+                            if (_schema.job_regex_matcher_for_location != null) {
+                                value = LocationUtils.match(value,
+                                        _schema.job_regex_matcher_for_location.regex,
+                                        _schema.job_regex_matcher_for_location.which,
+                                        _schema.job_regex_matcher_for_location.group);
+                            }
+                            value = LocationUtils.format(value);
+                        }
+                    }
                     job.addField(key, value);
                 }
             }
@@ -559,23 +633,24 @@ public class FetcherThread extends Thread {
         if (calc != null && calc.how != null) {
             if (calc.how.equals("url_plus_title")) {
                 newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL) + newjob.getField(Job.JOB_TITLE));
-                return;
             } else if (calc.how.equals("regex_on_url")) {
                 if ( calc.value != null && !calc.value.isEmpty() ) {
                     try {
                         Perl5Util plutil = new Perl5Util();
                         String newurl = plutil.substitute(calc.value, newjob.getField(Job.JOB_URL));
                         newjob.addField(Job.JOB_UNIQUE_ID, newurl);
-                        return;
                     } catch (MalformedPerl5PatternException me) {
                         LOG.warn("Failed to generate unique id for job via regex " + calc.value);
+                        newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
                     }
                 } else {
                     LOG.warn("No regex to generate unique id for job");
+                    newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
                 }
             }
+        } else {
+            newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
         }
-        newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
 
         if (!newjob.getFields().containsKey(Job.JOB_DATE) ) {
             LOG.info("No Job_date field extracted, use current time");

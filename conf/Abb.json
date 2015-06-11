@@ -82,7 +82,7 @@
       "procedure": {
         "extracts": {
           "job_description": {
-            "elements": "//DIV[@class='joSectionHeader' or @class='joSection']",
+            "element": "//DIV[@class='joSectionHeader' or @class='joSection']",
             "how": "XPATH",
           },
           "job_url": {

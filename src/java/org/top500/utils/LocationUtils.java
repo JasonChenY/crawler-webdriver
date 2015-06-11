@@ -88,7 +88,7 @@ public class LocationUtils {
         //    return CITIES_MAP;
     }
 
-    private static String format(String str) {
+    public static String format(String str) {
         /* Microsoft use some chinese word */
         for ( int i = 0; i < replaces.size(); i++ ) {
             str = str.replaceAll(replaces.get(i).getName(), replaces.get(i).getValue());

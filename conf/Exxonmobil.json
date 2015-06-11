@@ -86,9 +86,23 @@
       "extracts": {
         "job_location": {
           "element": "TD[4]/DIV",
+          "method" : "getText",
+          "transforms" : [
+            {
+              "how" : "location_regex",
+              "value" : "s/(?:[^-]*-)*\\s*(.*)\\s*/$1/g",
+            }
+          ]
         },
         "job_date": {
           "element": "TD[6]/DIV",
+          "method" : "getText",
+          "transforms" : [
+            {
+              "how" : "dateFormat",
+              "value" : "dd MM yyyy",
+            }
+          ]
         },
         "job_title": {
           "element": "TD[2]/DIV/A"
@@ -97,11 +111,18 @@
       "procedure": {
         "extracts": {
           "job_description": {
-            "element": "Job Description",
-            "how": "ID",
+            "element": "//SPAN[@id='Job Description']",
           },
           "job_url": {
-            "how": "url",
+            "element": "jobid",
+            "how" : "ID",
+            "method" : "getValue",
+            "transforms" : [
+              {
+               "how" : "insertBefore",
+               "value" : "https://sjobs.brassring.com/TGWebHost/JobDetails.aspx?partnerid=6961&siteid=5105&jobId="
+              },
+            ],
           },
         },
         "actions": [
@@ -136,6 +157,5 @@
       ],
     }
   },
-  "job_location_format_regex" : "s/(?:[^-]*-)*\\s*(.*)\\s*/$1/g",
 }
 

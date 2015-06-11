@@ -93,10 +93,22 @@
           "job_location": {
             "element": "//DIV[@class='details']/DIV[@class='detail-item'][5]/DIV[@class='detail-content']/DIV[6]/DIV[2]",
             "how": "XPATH",
+            "transforms" : [
+              {
+                "how" : "location_regex",
+                "value" : "s/\\s*([^,]*)[^;]*;?/$1,/g",
+              }
+            ]
           },
           "job_date": {
             "element": "//DIV[@class='details']/DIV[@class='detail-item'][5]/DIV[@class='detail-content']/DIV[5]/DIV[@itemprop='datePosted']",
             "how": "XPATH",
+            "transforms" : [
+              {
+                "how" : "dateFormat",
+                "value" : "MMM dd yyyy",
+              }
+            ]
           }
         },
         "actions": [
@@ -123,7 +135,5 @@
       ],
     }
   },
-  "job_date_format" : "MMM dd yyyy",
-  "job_location_format_regex" : "s/\\s*([^,]*)[^;]*;?/$1,/g",
 }
 

@@ -65,6 +65,12 @@
       "extracts": {
         "job_date": {
           "element": "TD[6]/DIV/SPAN",
+          "transforms" : [
+            {
+              "how" : "dateFormat",
+              "value" : "dd MM yyyy",
+            }
+          ]
         },
         "job_title": {
           "element": "TD[2]/DIV/SPAN/A"
@@ -112,6 +118,5 @@
       ],
     }
   },
-  "job_date_format" : "dd MM yyyy",
 }
 

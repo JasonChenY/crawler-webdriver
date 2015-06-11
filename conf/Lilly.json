@@ -45,6 +45,12 @@
       "extracts": {
         "job_location": {
           "element": "TD[6]/DIV",
+          "transforms" : [
+            {
+              "how" : "location_regex",
+              "value" : "s#([^/]*).*#$1#g",
+            }
+          ]
         },
         "job_date": {
           "element": "TD[7]/DIV",
@@ -57,10 +63,18 @@
         "extracts": {
           "job_description": {
             "comment:elements": "//DIV[@ID='ctl00_ProgressBar']/TABLE/TBODY/TR[2]/TD/TABLE[4]/TBODY",
-            "elements" : "//SPAN[@id='职责' or @id='基本资格要求']",
+            "element" : "//SPAN[@id='职责' or @id='基本资格要求']",
           },
           "job_url": {
-            "how": "url",
+            "element": "jobid",
+            "how" : "ID",
+            "method" : "getValue",
+            "transforms" : [
+              {
+                "how" : "insertBefore",
+                "value" : "https://sjobs.brassring.com/TGWebHost/JobDetails.aspx?partnerid=25428&siteid=5651&jobId="
+              },
+            ],
           },
           "job_expire" : {
             "element" : "删除日期",
@@ -96,8 +110,7 @@
       ],
     }
   },
-  "job_location_format_regex" : "s#([^/]*).*#$1#g",
-  "job_unique_id_calc" : {
+  "comment:job_unique_id_calc" : {
     "how" : "regex_on_url",
     "value" : "s/(.*)SID=[^&]*&(.*)/$1$2/g",
   },

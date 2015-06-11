@@ -53,7 +53,7 @@
       "procedure": {
         "extracts": {
           "job_description": {
-            "elements" : "position_content",
+            "element" : "position_content",
             "how" : "CLASS_NAME",
           },
           "job_url": {

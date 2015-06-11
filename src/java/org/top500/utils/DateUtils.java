@@ -271,7 +271,7 @@ public class DateUtils {
         return months;
     }
 
-    private static String formatDate(String str) {
+    public static String formatDate(String str) {
         str = str.trim();
         /* Microsoft use some chinese word */
         for ( int i = 0; i < months.size(); i++ ) {

@@ -28,8 +28,6 @@ public class Schema {
     private String name;
     public Actions actions;
     public Procedure procedure;
-    private String job_date_format;
-    private String job_location_format_regex;
     public RegexMatcher job_regex_matcher_for_location;
     public JobUniqueIdCalc job_unique_id_calc;
 
@@ -58,8 +56,6 @@ public class Schema {
         name = (String) obj.get("name");
         actions = new Actions(obj.get("actions"));
         procedure = new Procedure(obj.get("procedure"));
-        job_date_format = (String)obj.get("job_date_format");
-        job_location_format_regex = (String)obj.get("job_location_format_regex");
         if ( obj.get("job_regex_matcher_for_location") != null ) {
             job_regex_matcher_for_location = new RegexMatcher(obj.get("job_regex_matcher_for_location"));
         } else {
@@ -72,12 +68,6 @@ public class Schema {
         }
     }
     public String getName() { return name; }
-    public String getJob_date_format() {
-        return job_date_format;
-    }
-    public String getJob_location_format_regex() {
-        return job_location_format_regex;
-    }
 
     public Schema(Reader input) throws Exception {
         init(input);
@@ -132,22 +122,49 @@ public class Schema {
             System.out.println(ident + "'job_unique_id_calc':{'how':'" + how + "','value':'" + value + "'}");
         }
     }
+
+    public class Transform {
+        public String how;
+        public String value;
+        public Transform(Object o) {
+            if ( o == null ) return;
+            //JSONObject obj = (JSONObject)o;
+            Map<String, String> obj = (Map<String,String>)o;
+            how = (String) obj.get("how");
+            value = (String) obj.get("value");
+        }
+        public void print(String ident) {
+            System.out.println(ident + "{'how':" + how + "','value':'" + value + "'}");
+        }
+    }
     public class Element {
         public String element;
-        public boolean isMultiple = false;
         public String how;
+        public String method;
+        public List<Transform> transforms;
         public Element(Object o) throws Exception {
             if ( o == null ) return;
-            Map<String, String> map = (Map<String,String>)o;
+            Map<String, Object> map = (Map<String,Object>)o;
 
             Iterator iter = map.entrySet().iterator();
             while(iter.hasNext()){
                 Map.Entry entry = (Map.Entry)iter.next();
                 String name = (String)entry.getKey();
-                String value = (String)entry.getValue();
-                if ( name.equals("element") ) element = value;
-                if ( name.equals("elements") ) {element = value; isMultiple = true;}
-                if ( name.equals("how") ) how = value;
+                if ( name.equals("transforms")) {
+                    transforms = new ArrayList<Transform>();
+                    //JSONArray array = (JSONArray)entry.getValue();
+                    List<Object> array = (List<Object>)entry.getValue();
+
+                    for ( int i = 0; i < array.size(); i++ ) {
+                        Transform transform = new Transform(array.get(i));
+                        transforms.add(transform);
+                    }
+                } else {
+                    String value = (String) entry.getValue();
+                    if (name.equals("element")) element = value;
+                    if (name.equals("how")) how = value;
+                    if (name.equals("method")) method = value;
+                }
             }
         }
         public Element(String name, String h) {
@@ -155,7 +172,13 @@ public class Schema {
             how = h;
         }
         public void print(String ident) {
-            System.out.println(ident + "{" + "element:'" + element + "',how:'" + how + "'}");
+            System.out.println(ident + "{" + "element:'" + element + "',how:'" + how + "',");
+            if ( transforms != null ) {
+                System.out.println(ident + "'transforms' : [");
+                for ( int i = 0; i < transforms.size(); i++ ) transforms.get(i).print(ident + "   ");
+                System.out.println(ident + "],");
+            }
+            System.out.println(ident + "}");
         }
     }
     public class Extracts  {
@@ -184,8 +207,8 @@ public class Schema {
             Iterator iter = items.entrySet().iterator();
             while(iter.hasNext()){
                 Map.Entry entry = (Map.Entry)iter.next();
-                System.out.print(ident + "    '" + entry.getKey() + "':");
-                ((Element)entry.getValue()).print("");
+                System.out.println(ident + "    '" + entry.getKey() + "':");
+                ((Element)entry.getValue()).print(ident + "        ");
             }
             System.out.println(ident + "}");
         }

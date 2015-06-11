@@ -28,13 +28,18 @@
       },
       "job_location": {
         "element": "//DIV[@class='b-article-accordion has-open-first-tab']/DIV[@class='acc-content'][%d]/P[1]",
+        "transforms" : [
+          {
+            "how" : "location_regex",
+            "value" : "s/.*/Beijing, Tianjin/g",
+          }
+        ]
       },
       "job_description" : {
         "element" : "//DIV[@class='b-article-accordion has-open-first-tab']/DIV[@class='acc-content'][%d]",
       }
     },
   }
-  "job_location_format_regex" : "s/.*/Beijing, Tianjin/g",
   "job_unique_id_calc" : {
     "how" : "url_plus_title",
   },

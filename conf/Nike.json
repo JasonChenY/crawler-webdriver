@@ -65,6 +65,12 @@
       "extracts": {
         "job_location": {
           "element": "TD[2]",
+          "transforms" : [
+            {
+              "how" : "location_regex",
+              "value" : "s/([^,]*).*/$1/g",
+            }
+          ]
         },
         "job_title": {
           "element": "TD[1]/A"
@@ -118,6 +124,5 @@
       ],
     }
   },
-  "job_location_format_regex" : "s/([^,]*).*/$1/g",
 }
 
