@@ -109,7 +109,7 @@
       "loop_type": "end",
       "actions": [
         {
-          "element": "//TABLE[@id='ctl00_content_SearchGridView']/TBODY/TR[last()]/TD/TABLE/TBODY/TR/TD[3]/A[last()]",
+          "element": "//TABLE[@id='ctl00_content_SearchGridView']/TBODY/TR[last()]/TD/TABLE/TBODY/TR/TD[3]/A[@class='next']",
           "cmd": "click",
           "expections": [{
               "condition": "elementTextChanged",
