@@ -419,8 +419,8 @@ public class FetcherThread extends Thread {
                             LOG.debug("newWindowIsOpened: " + newwindow + " title:" + driver.getTitle());
                         } catch (Exception e) {
                             LOG.warn("Failed to open new window");
-                            System.out.println("page code " + driver.getPageSource());
-                    /* try frame */
+                            return (action.isFatal ? false : true);
+                            /*
                             for (int i = 0; i < 5; i++) {
                                 try {
                                     driver.switchTo().frame(i);
@@ -429,13 +429,13 @@ public class FetcherThread extends Thread {
                                     System.out.println("frame " + i + " not exist");
                                 }
                             }
-                    /* try alert */
                             try {
                                 wait.until(alertIsPresent());
                                 LOG.debug("Yes, Alert Dialog appears");
                             } catch (Exception ee) {
                                 LOG.warn("Failed to see Alert Dialog");
                             }
+                            */
                         }
                         break;
                     case "frameToBeAvailableAndSwitchToIt":
@@ -512,7 +512,7 @@ public class FetcherThread extends Thread {
                     Boolean formatted = false;
                     List<String> values = new ArrayList<String>();
                     List<WebElement> elements = locator.findElements(driver);
-
+                    LOG.debug("Located " + elements.size() + " elements for extracing " + key);
                     for ( int i = 0; i < elements.size(); i++ ) {
                         if ( ele.method != null ) {
                             switch ( ele.method ) {
@@ -536,7 +536,7 @@ public class FetcherThread extends Thread {
                         if ( ele.transforms != null ) {
                             // Firstly handle transform against single item.
                             for ( int j = 0; j < ele.transforms.size(); j++ ) {
-                                Schema.Transform transform = ele.transforms.get(i);
+                                Schema.Transform transform = ele.transforms.get(j);
                                 if ( transform == null || transform.value == null || transform.value.isEmpty() ) continue;
                                 switch ( transform.how ) {
                                     case "insertBefore":
@@ -715,7 +715,7 @@ public class FetcherThread extends Thread {
             do {
                 Procedure(procedure.procedure, null);
                 pages++;
-            } while (Actions(null, 0, procedure.actions) && (pages<fetch_n_pages));
+            } while ( (pages<fetch_n_pages) && Actions(null, 0, procedure.actions) );
         } else {
             LOG.debug("Procedure for single job");
             Extracts(null, 0, procedure.extracts, job);

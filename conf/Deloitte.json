@@ -1,0 +1,123 @@
+{
+  "name": "Deloitte",
+  "actions" :
+  [
+    {
+      "element": "https://careers.deloitte.com/jobs/eng-CN",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "cookieaccept",
+          "how" : "ID",
+        },
+        {
+          "condition": "presenceOfElementLocated",
+          "element" : "ctl00_content_PageResults",
+          "how": "ID",
+        },
+      ],
+    },
+    {
+      "element" : "cookieaccept",
+      "how" : "ID",
+      "cmd" : "click",
+    },
+    {
+      "element": "ctl00_content_PageResults",
+      "how": "ID",
+      "cmd": "selectByValue",
+      "value" : "10",
+    },
+    {
+      "element": "ctl00_content_SubmitBtn",
+      "how": "ID",
+      "cmd": "click",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "ctl00_content_SearchGridView",
+          "how" : "ID",
+        }
+      ]
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@id='ctl00_content_SearchGridView']/TBODY/TR",
+        "loop_type": "begin",
+        "begin_from" : 2,
+        "end_to" : -1,
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "job-post",
+                "how" : "ID",
+              }
+            ],
+            "debug" : true,
+          },
+        ],
+      },
+      "procedure": {
+        "extracts": {
+          "job_title" : {
+            "element": "ctl00_content_DetailsTitle",
+            "how" : "ID",
+          },
+          "job_description": {
+            "element" : "job-post",
+            "how" : "ID",
+          },
+          "job_url": {
+            "how" : "url",
+          },
+          "job_location" : {
+            "element" : "//UL[@itemprop='jobLocation']/*|//SPAN[@itemprop='jobLocation']", ,
+            "how" : "XPATH",
+            "method" : "getText",
+            "transforms" : [
+              {
+                "how" : "location_regex",
+                "value" : "s/([^,]*).*/$1/g",
+              },
+              {
+                "how" : "join",
+                "value" : ",",
+              }
+            ]
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//TABLE[@id='ctl00_content_SearchGridView']/TBODY/TR[last()]/TD/TABLE/TBODY/TR/TD[3]/A[last()]",
+          "cmd": "click",
+          "expections": [{
+              "condition": "elementTextChanged",
+              "element": "//TABLE[@id='ctl00_content_SearchGridView']/TBODY/TR[last()]/TD/TABLE/TBODY/TR/TD",
+          }]
+        },
+      ],
+    }
+  },
+}
+

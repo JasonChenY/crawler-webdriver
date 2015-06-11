@@ -414,7 +414,8 @@
 公主岭=GONGZHULING
 歙县=SHEXIAN
 兴化=XINGHUA
-香港=Hongkong, Hong Kong, ZHO_Hong Kong, Tsing Yi Terminal, Hong Kong Island
+香港=Hongkong, Hong Kong, ZHO_Hong Kong, Tsing Yi Terminal, Hong Kong Island, 香港特别行政区
+澳门=澳门特别行政区
 台北=ZHO_Taipei, Taipei
 全国=Any, Virtual, China
 新加坡=singapore
