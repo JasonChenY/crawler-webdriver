@@ -1,0 +1,120 @@
+{
+  "name": "Thermofisher",
+  "actions" :
+  [
+    {
+      "element": "http://jobs.thermofisher.com/",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "toggleswitch",
+          "how" : "CLASS_NAME",
+        },
+      ],
+    },
+    {
+      "element" : "toggleswitch",
+      "how" : "CLASS_NAME",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "ddlASCountry",
+          "how" : "ID",
+        }
+      ]
+    },
+    {
+      "element": "ddlASCountry",
+      "how": "ID",
+      "cmd": "selectByValue",
+      "value" : "China",
+    },
+    {
+      "element": "btnASGo",
+      "how": "ID",
+      "cmd": "click",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "conteinerForSearchResults",
+          "how" : "ID",
+        }
+      ]
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@class='tableSearchResults']/TBODY/TR",
+        "loop_type": "begin",
+        "begin_from" : 2,
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "tms_job_row_jobdescription",
+                "how" : "ID",
+              }
+            ],
+          },
+        ],
+      },
+      "extracts" : {
+        "job_title" : {
+          "element": "TD[1]/A",
+        },
+        "job_location" : {
+          "element" : "TD[2]",
+          "transforms" : [
+            {
+              "how" : "location_regex",
+              "value" : "s/([^,]*).*/$1/g",
+            }
+          ]
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "tms_job_row_jobdescription",
+            "how" : "ID",
+          },
+          "job_url": {
+            "how" : "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "search_result_next_page_link",
+          "how" : "ID",
+          "cmd": "click",
+          "expections": [{
+              "condition": "elementTextChanged",
+              "element": "numberedCurrent",
+              "how" : "CLASS_NAME",
+          }]
+        },
+      ],
+    }
+  },
+}
+

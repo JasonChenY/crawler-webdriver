@@ -15,3 +15,4 @@ Henkel
 Hnagroup
 Deloitte
 Novozymes
+Thermofisher
