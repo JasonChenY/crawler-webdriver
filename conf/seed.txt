@@ -16,3 +16,4 @@ Hnagroup
 Deloitte
 Novozymes
 Thermofisher
+Merckgroup

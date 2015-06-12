@@ -1,0 +1,136 @@
+{
+  "name": "Merckgroup",
+  "actions" :
+  [
+    {
+      "element": "https://career012.successfactors.eu/career?company=merckgroup",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "38:_selectButton",
+          "how" : "ID",
+        },
+      ],
+    },
+    {
+      "element" : "38:_selectButton",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "ckrbList",
+          "how" : "CLASS_NAME",
+        }
+      ]
+    },
+    {
+      "element": "//UL[@class='ckrbList']/LI/LABEL[text()='China']/preceding-sibling::*",
+      "cmd": "click",
+    },
+    {
+      "element" : "//INPUT[@name='postedindays']",
+      "cmd" : "sendKeys",
+      "value" : "30",
+    },
+    {
+      "element" : "dlgButton_61:",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "//DIV[@id='27:']/TABLE/TBODY/TR",
+        }
+      ],
+      "debug" : true,
+    }
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@id='27:']/TABLE/TBODY/TR[count(TD)=2]",
+        "loop_type": "begin",
+        "begin_from" : 1,
+        "end_to" : -1,
+        "actions": [
+          {
+            "element": "TD[1]/DIV[1]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "joqReqDescription",
+                "how" : "CLASS_NAME",
+              }
+            ],
+          },
+        ],
+      },
+      "extracts" : {
+        "job_title" : {
+          "element": "TD[1]/DIV[1]/A",
+        },
+        "job_date" : {
+          "element" : "TD[1]/DIV[2]/SPAN[2]",
+          "transforms" : [
+            {
+              "how" : "dateFormat",
+              "value" : "dd MM yyyy",
+            }
+          ]
+        }
+        "job_location" : {
+          "element" : "TD[1]/DIV[2]/SPAN[5]",
+          "transforms" : [
+            {
+              "how" : "location_regex",
+              "value" : "s/([^-]*).*/$1/g",
+            }
+          ]
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "joqReqDescription",
+            "how" : "CLASS_NAME",
+          },
+          "job_url": {
+            "how" : "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//DIV[@id='36:']/UL/LI[@class='next']/A",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementValueChanged",
+            "element": "36:index",
+            "how" : "ID",
+          }]
+        },
+      ],
+    }
+  },
+  "job_unique_id_calc" : {
+    "how" : "regex_on_url",
+    "value" : "s/(.*)&_s.crb=.*/$1/g",
+  },
+}
+
