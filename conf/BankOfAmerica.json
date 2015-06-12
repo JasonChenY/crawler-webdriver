@@ -1,0 +1,121 @@
+{
+  "name": "BankOfAmerica",
+  "actions" :
+  [
+    {
+      "element": "http://careers.bankofamerica.com/us/search-jobs",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "search-filter",
+          "how" : "ID",
+        },
+      ],
+    },
+    {
+      "element" : "//H3[@aria-controls='search-location']/A",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "PlhContentWrapper_ddlCountry",
+          "how" : "ID",
+        }
+      ]
+    },
+    {
+      "element": "PlhContentWrapper_ddlCountry",
+      "how" : "ID",
+      "cmd": "selectByVisibleText",
+      "value" : "China",
+    },
+    {
+      "element" : "//INPUT[@value='Apply filter >']",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "PlhContentWrapper_dglistview",
+          "how" : "ID",
+        }
+      ],
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@id='PlhContentWrapper_dglistview']/TBODY/TR",
+        "loop_type": "begin",
+        "begin_from" : 1,
+        "end_to" : -1,
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "job-detail",
+                "how" : "ID",
+              }
+            ],
+          },
+        ],
+      },
+      "extracts" : {
+        "job_title" : {
+          "element": "TD[1]/A",
+        },
+        "job_date" : {
+          "element" : "TD[3]/SPAN",
+          "transforms" : [
+            {
+              "how" : "dateFormat",
+              "value" : "dd MMM yyyy",
+            }
+          ]
+        }
+        "job_location" : {
+          "element" : "TD[2]",
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "job-detail",
+            "how" : "ID",
+          },
+          "job_url": {
+            "how" : "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//A[contains(text(),'Next >')]",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "footer-record-count",
+            "how" : "ID",
+          }]
+        },
+      ],
+    }
+  },
+}
+
