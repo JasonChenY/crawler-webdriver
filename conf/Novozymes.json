@@ -39,6 +39,12 @@
       },
       "job_location": {
         "element": "DIV[4]",
+        "transforms" : [
+            {
+                "how" : "location_regex",
+                "value" : "s/City: ([^(]*).*/$1/g", 
+            }
+        ]
       },
     },
     "procedure": {
