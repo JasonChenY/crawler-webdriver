@@ -1,0 +1,135 @@
+{
+  "name" : "Cmbchina",
+  "actions" :
+  [
+    {
+      "element": "http://career.cmbchina.com",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element": "publishDate",
+        "how" : "ID",
+      }],
+    },
+    {
+      "element": "publishDate",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "value" : "4",
+    },
+    {
+      "element": "channel",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "value" : "social",
+    },
+    {
+      "element": "//DIV[@class='search']/A[@class='btn']",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element": "poslist",
+        "how": "CLASS_NAME",
+      }],
+    },
+  ],
+  "procedure" : {
+  "procedure": {
+    "loop": {
+      "xpath_prefix": "//DIV[@class='poslist']/TABLE/TBODY/TR",
+      "loop_type": "begin",
+      "begin_from" : 1,
+      "actions": [
+        {
+          "element": "TD[1]/A",
+          "cmd": "openInNewTab",
+          "expections" : [
+            {
+              "condition": "newWindowIsOpened",
+            },
+            {
+              "condition": "visibilityOfElementLocated",
+              "element" : "c_article",
+              "how" : "CLASS_NAME",
+            }
+          ]
+        },
+      ],
+    },
+    "extracts": {
+      "job_title": {
+        "element": "TD[1]/A",
+      },
+      "job_company_subname" : {
+        "element": "TD[2]",
+        "transforms" : [
+            {
+                "how" : "insertBefore",
+                "value" : "招商银行-",
+            }
+        ]
+      },
+      "job_location": {
+        "element": "TD[3]",
+        "transforms" : [
+            {
+                "how" : "regex",
+                "value" : "s/、/,/g", 
+            },
+            {
+                "how" : "regex",
+                "value" : "s/([^（]*).*/$1/g",
+            },
+            {
+                "how" : "regex",
+                "value" : "s/各镇区网点//g",
+            },
+            {
+                "how" : "regex",
+                "value" : "s/市区//g",
+            }
+        ]
+      },
+      "job_date" : {
+        "element": "TD[4]",
+      },
+      "job_expire" : {
+        "element": "TD[5]",
+      },
+    },
+    "procedure": {
+      "extracts": {
+        "job_description": {
+          "element" : "c_article",
+          "how" : "CLASS_NAME",
+        },
+        "job_url": {
+          "how": "url",
+        },
+      },
+      "actions": [
+        {
+          "cmd": "restore",
+        },
+      ]
+    },
+  }
+  "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "nextpage",
+          "how" : "ID",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "curpage",
+            "how" : "ID",
+          }]
+        },
+      ],
+  }
+  }
+}
+

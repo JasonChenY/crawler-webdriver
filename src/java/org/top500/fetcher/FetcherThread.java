@@ -656,6 +656,18 @@ public class FetcherThread extends Thread {
             LOG.info("No Job_date field extracted, use current time");
             newjob.addField(Job.JOB_DATE, DateUtils.getCurrentDate());
         }
+
+        if ( newjob.getFields().containsKey(Job.JOB_COMPANY_SUBNAME) ) {
+            String subname = newjob.getField(Job.JOB_COMPANY_SUBNAME);
+	    if ( subname != null && !subname.isEmpty() ) {
+		newjob.addField(Job.JOB_COMPANY, subname);
+	    }
+	    // This might be changed later,
+	    // Now Fetcher will combine company name and subname together via Transforms,
+	    // Finally we might need both fields to make client easier.
+	    // which means to disable the combination in schema and comment this section of code
+	    newjob.removeField(Job.JOB_COMPANY_SUBNAME);
+	}
     }
     private void Procedure(Schema.Procedure procedure, Job job) {
         if ( procedure == null ) return;
