@@ -18,3 +18,4 @@ Novozymes
 Thermofisher
 Merckgroup
 BankOfAmerica
+Adidas

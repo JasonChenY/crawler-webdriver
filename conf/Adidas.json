@@ -1,0 +1,105 @@
+{
+  "name": "Adidas",
+  "actions" :
+  [
+    {
+      "element": "http://careers.adidas-group.com/search-jobs-frame.aspx",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition" : "frameToBeAvailableAndSwitchToIt",
+          "element" : "advanced-search",
+          "how" : "ID",
+        },
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "ctl00_content_sel_Country",
+          "how" : "ID",
+        }
+      ],
+    },
+    {
+      "element" : "ctl00_content_sel_Country",
+      "how" : "ID",
+      "cmd" : "selectByVisibleText",
+      "value": "China (Peoples Republic of)",
+    },
+    {
+      "element": "ctl00_content_btnSubmitAdvanced",
+      "how" : "ID",
+      "cmd": "click",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "//TABLE[@class='search-results-listing']/TBODY/TR",
+        }
+      ],
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@class='search-results-listing']/TBODY/TR",
+        "loop_type": "begin",
+        "begin_from" : 1,
+        "actions": [
+          {
+            "element": "TD[2]/A",
+            "cmd": "click",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition" : "presenceOfElementLocated",
+                "element": "//SPAN[@itemprop='description']",
+              }
+            ],
+          },
+        ],
+      },
+      "extracts" : {
+        "job_title" : {
+          "element": "TD[2]/A",
+        },
+        "job_date" : {
+          "element" : "TD[1]",
+        }
+        "job_location" : {
+          "element" : "TD[4]",
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//SPAN[@itemprop='description']",
+          },
+          "job_url": {
+            "how" : "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//SPAN[@id='ctl00_content_lvPagerBottom']/A[@class='next']",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//SPAN[@id='ctl00_content_lvPagerBottom']/SPAN[@class='pagerCurrentPage']",
+          }]
+        },
+      ],
+    }
+  },
+}
+
