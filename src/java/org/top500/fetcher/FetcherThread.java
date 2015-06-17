@@ -706,18 +706,23 @@ public class FetcherThread extends Thread {
                     // some site wont have the next page button, should use the for loop as well for page navigation
                     // but we should not click the page Anchor in the first round, go to Procedure directly.
                     if (i != procedure.begin_from ) {
+                        boolean result = true;
                         if ( procedure.loop_totalpages != null ) {
                             // via normal loop with index, in general get the toal pages firstly, then set "input" with index
-                            Actions(null, i+1, procedure.actions);
+                            result = Actions(null, i+1, procedure.actions);
                         } else {
                             // via the xpath prefix
                             String newprefix = procedure.xpath_prefix_loop + "[" + Integer.toString(i + 1) + "]/";
-                            Actions(newprefix, 0, procedure.actions);
+                            result = Actions(newprefix, 0, procedure.actions);
+                        }
+                        if ( ! result ) {
+                            LOG.info("Actions for going to next page failed, break");
+                            break;
                         }
                     }
                     Procedure(procedure.procedure, null);
                     if ( ++number >= fetch_n_pages) {
-                        LOG.debug("Fetched " + fetch_n_pages + " pages, return");
+                        LOG.debug("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
                         break;
                     }
                 }
@@ -750,7 +755,7 @@ public class FetcherThread extends Thread {
                         _joblist.addJob(newjob);
 
                         if (++number >= fetch_n_jobs_perpage) {
-                            LOG.debug("Fetched " + fetch_n_jobs_perpage + " jobs for this page, return");
+                            LOG.debug("Fetched " + fetch_n_jobs_perpage + " jobs, reach configured limit, return");
                             break;
                         }
                     }
@@ -761,10 +766,16 @@ public class FetcherThread extends Thread {
         } else if ( procedure.loop_type == Schema.LOOP_TYPE.END ) {
             LOG.debug("Procedure: loop of END type for page list");
             int pages = 0;
+            boolean result = true;
             do {
                 Procedure(procedure.procedure, null);
                 pages++;
-            } while ( (pages<fetch_n_pages) && Actions(null, 0, procedure.actions) );
+            } while ( (pages<fetch_n_pages) && (result=Actions(null, 0, procedure.actions)) );
+            if ( !result ) {
+                LOG.info("Actions for going to next page failed, break");
+            } else {
+                LOG.debug("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
+            }
         } else {
             LOG.debug("Procedure for single job");
             Extracts(null, 0, procedure.extracts, job);

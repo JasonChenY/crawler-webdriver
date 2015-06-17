@@ -355,7 +355,7 @@ public class Schema {
     }
 
     public class Action {
-        public Element element;
+        public Element element = null;
         public Command command;
         public String setvalue;
         public Expections expections = null;
@@ -368,7 +368,7 @@ public class Schema {
 
             String name = (String) obj.get("element");
             String how = (String) obj.get("how");
-            element = new Element(name, how);
+            if ( name != null ) element = new Element(name, how);
 
             command = new Command(obj.get("cmd"));
             setvalue = (String)obj.get("value");
@@ -387,7 +387,7 @@ public class Schema {
         }
         public void print(String ident) {
             System.out.println(ident+"{");
-            element.print(ident+"    ");
+            if ( element != null ) element.print(ident+"    ");
             command.print(ident+"    ");
             System.out.println(ident + "    'value':'"+setvalue+"'");
             if ( expections != null )
@@ -451,21 +451,28 @@ public class Schema {
                         }
                         if ( loop.get("loop_for_pages") != null ) {
                             loop_for_pages = (Boolean)loop.get("loop_for_pages");
-                            loop_totalpages = new Element(loop.get("loop_totalpages"));
+                            if ( loop.get("loop_totalpages") != null ) {
+                                loop_totalpages = new Element(loop.get("loop_totalpages"));
+                            }
                         }
                     } else if (type.equals("end")) {
                         loop_type = LOOP_TYPE.END;
                     }
                 }
-                actions = new Actions(loop.get("actions"));
+                if ( loop.get("actions") != null ) {
+                    actions = new Actions(loop.get("actions"));
+                }
             }
 
             if ( obj.get("actions") != null ) {
                 actions = new Actions(obj.get("actions"));
             }
-
-            extracts = new Extracts(obj.get("extracts"));
-            procedure = new Procedure(obj.get("procedure"));
+            if ( obj.get("extracts") != null ) {
+                extracts = new Extracts(obj.get("extracts"));
+            }
+            if ( obj.get("procedure") != null ) {
+                procedure = new Procedure(obj.get("procedure"));
+            }
         }
         public void print(String ident) {
             if ( extracts == null && actions == null && procedure == null ) return;
@@ -475,6 +482,10 @@ public class Schema {
             System.out.println(ident + "  'begin_from':'" + begin_from + "'");
             System.out.println(ident + "  'end_to':'" + end_to + "'");
             System.out.println(ident + "  'loop_for_pages':'" + loop_for_pages + "'");
+            if ( loop_totalpages != null ) {
+                System.out.print(ident + "  'loop_totalpages':");
+                loop_totalpages.print(ident + "  ");
+            }
             if ( extracts != null ) extracts.print(ident+"  ");
             if ( actions != null ) actions.print(ident+"  ");
             if ( procedure != null ) procedure.print(ident+"  ");
