@@ -1,0 +1,111 @@
+{
+  "name" : "Pingan",
+  "actions" :
+  [
+    {
+      "element": "http://job.pingan.com/advancedSearch.do",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "//SELECT[@name='jobChannel']",
+      }]
+    },
+    {
+      "element" : "//SELECT[@name='jobChannel']",
+      "cmd" : "selectByValue",
+      "value": "-50",
+    },
+    {
+      "element" : "//SELECT[@name='publishTime']",
+      "cmd" : "selectByValue",
+      "value": "30",
+    },
+    {
+      "element" : "//DIV[@class='c_d_b_a2 c']/A[1]",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element": "//TABLE[@class='t_a']",
+      }]
+    },
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@class='t_a']/TBODY/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "//TABLE[@class='c_t_a m_a']",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "TD[1]/A",
+        },
+        "job_company_subname" : {
+          "element": "TD[3]",
+          "transforms" : [
+            {
+              "how" : "insertBefore",
+              "value" : "中国平安-",
+            }
+          ]
+        },
+        "job_location": {
+          "element": "TD[2]",
+          "transforms" : [
+            {
+              "how" : "location_regex",
+              "value" : "s/(.*省)?(.*)/$2/g",
+            },
+          ]
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "//TABLE[@class='c_t_a m_a']/TBODY/TR[@class='c_t_a_a'][3]/following-sibling::*",
+          },
+          "job_url": {
+            "how": "url",
+          },
+          "job_date": {
+            "element" : "//TABLE[@class='c_t_a m_a']/TBODY/TR[@class='c_t_a_a'][2]/TD[2]/B",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "//LI[@class='page']/UL/LI[3]/A",
+          "cmd" : "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//DIV[@class='sample_page m_a']/UL[@class='c']/LI[@class='info']",
+          }]
+        },
+      ],
+    }
+  }
+}
+

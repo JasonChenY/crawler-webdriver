@@ -21,3 +21,4 @@ BankOfAmerica
 Adidas
 Cmbchina
 Cmbc
+Pingan
