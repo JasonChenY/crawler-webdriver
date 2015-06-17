@@ -20,3 +20,4 @@ Merckgroup
 BankOfAmerica
 Adidas
 Cmbchina
+Cmbc

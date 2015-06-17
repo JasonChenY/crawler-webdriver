@@ -373,6 +373,11 @@ public class FetcherThread extends Thread {
                     LOG.debug("sendKeys " + action.setvalue + " to " + dbgstr);
                     element.sendKeys(action.setvalue);
                     break;
+                case setPage:
+                    LOG.debug("setPage (sendKeys) " + index + " to " + dbgstr);
+                    //element.clear(); element.sendKeys(String.valueOf(index));
+                    new Actions(driver).clickAndHold(element).sendKeys(Keys.chord(Keys.CONTROL, "a"), String.valueOf(index)).build().perform();
+                    break;
                 default: break;
             }
         }
@@ -672,27 +677,59 @@ public class FetcherThread extends Thread {
     private void Procedure(Schema.Procedure procedure, Job job) {
         if ( procedure == null ) return;
         if ( procedure.loop_type == Schema.LOOP_TYPE.BEGIN ) {
-            LOG.debug("Procedure: loop of BEGIN type for page|job list");
-            String xpath_prefix_loop = procedure.xpath_prefix_loop;
-            if (xpath_prefix_loop != null && !xpath_prefix_loop.isEmpty()) {
-                By locator = By.xpath(xpath_prefix_loop);
-                List<WebElement> elements = locator.findElements(driver);
-                LOG.debug("Procedure: loop of BEGIN type, find " + elements.size() + " with " + xpath_prefix_loop);
+            if ( procedure.loop_for_pages ) {
+                LOG.debug("Procedure: loop of BEGIN type for page list");
+                int loop_totalpages = 0;
+                String xpath_prefix_loop = procedure.xpath_prefix_loop;
+                if (xpath_prefix_loop != null && !xpath_prefix_loop.isEmpty()) {
+                    By locator = By.xpath(xpath_prefix_loop);
+                    List<WebElement> elements = locator.findElements(driver);
+                    loop_totalpages = elements.size();
+                    LOG.debug("Procedure: loop of BEGIN type, find " + loop_totalpages + " pages with " + xpath_prefix_loop);
+                } else if ( procedure.loop_totalpages != null ) {
+                    By locator = getLocator(null, 0, procedure.loop_totalpages);
+                    try {
+                        WebElement element = locator.findElement(driver);
+                        loop_totalpages = Integer.parseInt(element.getText());
+                        LOG.debug("Procedure: loop of BEGIN type, find " + loop_totalpages + " with loop_totalpages");
+                    } catch ( NoSuchElementException e ) {
+                        LOG.warn("Procedure: loop of BEGIN type, loop_totalpages defined, but failed to parse valid number from this element");
+                        return;
+                    }
+                } else {
+                    LOG.warn("Procedure: loop of BEGIN type, but neither xpath_prefix nor loop_totalpages, cant continue");
+                    return;
+                }
+
                 int number = 0;
-                for (int i = procedure.begin_from; i < elements.size() + procedure.end_to; i++) {
-                    if ( procedure.loop_for_pages ) {
-                        // some site wont have the next page button, should use the for loop as well for page navigation
-                        // but we should not click the page Anchor in the first round, go to Procedure directly.
-                        if (i != procedure.begin_from ) {
-                            String newprefix = xpath_prefix_loop + "[" + Integer.toString(i + 1) + "]/";
+                for (int i = procedure.begin_from; i < loop_totalpages + procedure.end_to; i++) {
+                    // some site wont have the next page button, should use the for loop as well for page navigation
+                    // but we should not click the page Anchor in the first round, go to Procedure directly.
+                    if (i != procedure.begin_from ) {
+                        if ( procedure.loop_totalpages != null ) {
+                            // via normal loop with index, in general get the toal pages firstly, then set "input" with index
+                            Actions(null, i+1, procedure.actions);
+                        } else {
+                            // via the xpath prefix
+                            String newprefix = procedure.xpath_prefix_loop + "[" + Integer.toString(i + 1) + "]/";
                             Actions(newprefix, 0, procedure.actions);
                         }
-                        Procedure(procedure.procedure, null);
-                        if ( ++number >= fetch_n_pages) {
-                            LOG.debug("Fetched " + fetch_n_pages + " pages, return");
-                            break;
-                        }
-                    } else {
+                    }
+                    Procedure(procedure.procedure, null);
+                    if ( ++number >= fetch_n_pages) {
+                        LOG.debug("Fetched " + fetch_n_pages + " pages, return");
+                        break;
+                    }
+                }
+            } else {
+                LOG.debug("Procedure: loop of BEGIN type for job list");
+                String xpath_prefix_loop = procedure.xpath_prefix_loop;
+                if (xpath_prefix_loop != null && !xpath_prefix_loop.isEmpty()) {
+                    By locator = By.xpath(xpath_prefix_loop);
+                    List<WebElement> elements = locator.findElements(driver);
+                    LOG.debug("Procedure: loop of BEGIN type, find " + elements.size() + " jobs with " + xpath_prefix_loop);
+                    int number = 0;
+                    for (int i = procedure.begin_from; i < elements.size() + procedure.end_to; i++) {
                         final Job newjob = new Job();
                         newjob.addField(Job.JOB_COMPANY, _schema.getName());
                         String newprefix = xpath_prefix_loop + "[" + Integer.toString(i + 1) + "]/";
@@ -717,9 +754,9 @@ public class FetcherThread extends Thread {
                             break;
                         }
                     }
+                } else {
+                    LOG.warn("Procedure: loop of BEGIN type, dont have xpath_prefix");
                 }
-            } else {
-                LOG.warn("Procedure: loop of BEGIN type, dont have xpath_prefix");
             }
         } else if ( procedure.loop_type == Schema.LOOP_TYPE.END ) {
             LOG.debug("Procedure: loop of END type for page list");

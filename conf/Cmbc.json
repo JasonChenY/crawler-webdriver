@@ -1,0 +1,130 @@
+{
+  "name" : "Cmbc",
+  "actions" :
+  [
+    {
+      "element": "http://career.cmbc.com.cn:8080/portal/career/searchInquireCareer.action?forward=social",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "searchPublishTimeType",
+        "how" : "ID",
+      }]
+    },
+    {
+      "element" : "searchPublishTimeType",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "value": "30",
+    },
+    {
+      "element" : "unpress",
+      "how" : "CLASS_NAME",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element": "//DIV[@class='joinList']/TABLE[@class='table']",
+      }]
+    },
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@class='joinList']/TABLE[@class='table']/TBODY/TR",
+        "loop_type": "begin",
+        "end_to" : -1,
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "jobTxt",
+                "how" : "CLASS_NAME",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "TD[1]/A",
+        },
+        "job_company_subname" : {
+          "element": "TD[2]",
+          "transforms" : [
+            {
+              "how" : "insertBefore",
+              "value" : "民生银行-",
+            }
+          ]
+        },
+        "job_location": {
+          "element": "TD[3]",
+        },
+        "job_expire" : {
+          "element": "TD[4]",
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "jobTxt",
+            "how" : "CLASS_NAME",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "begin",
+      "loop_for_pages":  true,
+      "loop_totalpages": {
+        "element" : "//DIV[@id='pagebar']/SPAN[1]/B",
+      },
+      "actions": [
+        {
+          "element": "PageBar2_input",
+          "how": "ID",
+          "cmd": "setPage",
+        },
+        {
+          "element" : "pagebar_btnGoPage",
+          "how" : "ID",
+          "cmd" : "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//DIV[@id='pagebar']/A[@class='cur']",
+          }]
+        },
+      ],
+    },
+    "comment:loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "pagebar_next",
+          "how" : "ID",
+          "cmd" : "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//DIV[@id='pagebar']/A[@class='cur']",
+          }]
+        },
+      ],
+    }
+  }
+}
+
