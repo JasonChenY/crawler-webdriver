@@ -1,0 +1,115 @@
+{
+  "name" : "Disney",
+  "actions" :
+  [
+    {
+      "element": "http://chinajobs.disneycareers.com/",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "Job_SearchSwap",
+        "how" : "ID",
+      }]
+    },
+    {
+      "element" : "Job_SearchSwap",
+      "how" : "ID",
+      "cmd": "click",
+      "expections" : [{
+        "condition" : "visibilityOfElementsLocated",
+        "element" : "ddlASPostedDate",
+        "how" : "ID",
+      }]
+    },
+    {
+      "element" : "ddlASPostedDate",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "value": "30",
+    },
+    {
+      "element" : "btnASGo",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element": "conteinerForSearchResults",
+        "how" : "ID",
+      }]
+    },
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@class='tableSearchResults']/TBODY/TR",
+        "loop_type": "begin",
+        "begin_from" : 2,
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "jobDesc",
+                "how" : "ID",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "TD[1]/A",
+        },
+        "job_location": {
+          "element": "TD[2]",
+          "transforms" : [
+            {
+              "how" : "location_regex",
+              "value" : "s/([^,]*).*/$1/g",
+            },
+          ]
+        },
+        "job_date" : {
+          "element" : "TD[3]",
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "jobDesc",
+            "how" : "ID",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "search_result_next_page_link",
+          "how" : "ID",
+          "cmd" : "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//TABLE[@class='tableSearchResults']/TBODY/TR[3]/TD[1]/A",
+          }]
+        },
+      ],
+    }
+  }
+}
+
