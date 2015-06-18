@@ -1,0 +1,125 @@
+{
+  "name" : "Honeywell",
+  "actions" :
+  [
+    {
+      "element": "http://www.careersathoneywell.com/zh/home",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "dnn_ctr1823_ViewAutoCompleteSearch_hypAdvancedSearch",
+        "how" : "ID",
+      }]
+    },
+    {
+      "element" : "dnn_ctr1823_ViewAutoCompleteSearch_hypAdvancedSearch",
+      "how" : "ID",
+      "cmd": "click",
+      "expections" : [{
+        "condition" : "visibilityOfElementsLocated",
+        "element" : "dnn_ctr1191_ViewJobSearchAdvanced_ddlCountry",
+        "how" : "ID",
+      }]
+    },
+    {
+      "element" : "dnn_ctr1191_ViewJobSearchAdvanced_ddlCountry",
+      "how" : "ID",
+      "cmd" : "selectByVisibleText",
+      "value": "中国",
+      "expections" : [{
+        "condition" : "visibilityOfElementsLocated",
+        "element" : "dnn_ctr1191_ViewJobSearchAdvanced_ddltagitem3",
+        "how" : "ID",
+      }]
+    },
+    {
+      "element" : "dnn_ctr1191_ViewJobSearchAdvanced_ddltagitem3",
+      "how" : "ID",
+      "cmd" : "selectByValue",
+      "value": "28",
+    },
+    {
+      "element" : "dnn_ctr1191_ViewJobSearchAdvanced_btnCareerSubmit",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element": "dnn_ctr646_ViewJobSearchResult_grdResults",
+        "how" : "ID",
+      }]
+    },
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@id='dnn_ctr646_ViewJobSearchResult_grdResults']/TBODY/TR",
+        "loop_type": "begin",
+        "begin_from" : 1,
+        "actions": [
+          {
+            "element": "TD[1]/DIV/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "jobdetails",
+                "how" : "CLASS_NAME",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "TD[1]/DIV/A",
+        },
+        "job_location": {
+          "element": "TD[3]/DIV/SPAN",
+          "transforms" : [
+            {
+              "how" : "location_regex",
+              "value" : "s/([^-]+)-.*/$1/g",
+            },
+          ]
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "jobdetails",
+            "how" : "CLASS_NAME",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "dnn_ctr646_ViewJobSearchResult_lb_NextPage",
+          "how" : "ID",
+          "cmd" : "click",
+          "expections": [{
+            "condition" : "presenceOfElementsLocated",
+            "comment: condition": "elementTextChanged",
+            "element": "//A[@class='aspNetDisabled']",
+            "comment:element" : "//TABLE[@id='dnn_ctr646_ViewJobSearchResult_grdResults']/TBODY/TR/TD[1]/DIV/A"
+          }]
+        },
+      ],
+    }
+  }
+}
+
