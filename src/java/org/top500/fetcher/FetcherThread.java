@@ -71,7 +71,7 @@ import org.apache.oro.text.perl.Perl5Util;
 
 public class FetcherThread extends Thread {
     public static final Logger LOG = LoggerFactory.getLogger(FetcherThread.class);
-    private final Schema _schema;
+    public final Schema _schema;
     private volatile Throwable _throwable;
     private final Joblist _joblist = new Joblist();
     private static int fetch_n_pages = 2;
@@ -120,7 +120,6 @@ public class FetcherThread extends Thread {
 
             //Thread.sleep(1000);
         } catch (Throwable t) {
-            _throwable = t;
             LOG.warn("Exception for thread " + this.getName());
         } finally {
             if ( driver != null ) driver.quit();
@@ -150,6 +149,7 @@ public class FetcherThread extends Thread {
             Procedure(_schema.procedure, null);
         } catch ( Exception e ) {
             LOG.warn("Exception: ", e);
+            _schema.fetch_result = false;
         }
         //Thread.sleep(5000);
     }
@@ -499,7 +499,7 @@ public class FetcherThread extends Thread {
     private boolean Extracts(String xpath_prefix, int index, Schema.Extracts extracts, Job job){
         if ( extracts == null ) {
             LOG.debug("Nothing to be extracted, return");
-            return false;
+            return true;
         }
         if ( job == null) {
             LOG.warn("Nont know where to save extracts, return");
@@ -701,18 +701,18 @@ public class FetcherThread extends Thread {
                     return;
                 }
 
-                int number = 0;
-                for (int i = procedure.begin_from; i < loop_totalpages + procedure.end_to; i++) {
+                if ( _schema.fetch_cur_pages == -1 ) _schema.fetch_cur_pages = procedure.begin_from;
+                for (; _schema.fetch_cur_pages < loop_totalpages + procedure.end_to; _schema.fetch_cur_pages++) {
                     // some site wont have the next page button, should use the for loop as well for page navigation
                     // but we should not click the page Anchor in the first round, go to Procedure directly.
-                    if (i != procedure.begin_from ) {
+                    if (_schema.fetch_cur_pages != procedure.begin_from ) {
                         boolean result = true;
                         if ( procedure.loop_totalpages != null ) {
                             // via normal loop with index, in general get the toal pages firstly, then set "input" with index
-                            result = Actions(null, i+1, procedure.actions);
+                            result = Actions(null, _schema.fetch_cur_pages+1, procedure.actions);
                         } else {
                             // via the xpath prefix
-                            String newprefix = procedure.xpath_prefix_loop + "[" + Integer.toString(i + 1) + "]/";
+                            String newprefix = procedure.xpath_prefix_loop + "[" + Integer.toString(_schema.fetch_cur_pages + 1) + "]/";
                             result = Actions(newprefix, 0, procedure.actions);
                         }
                         if ( ! result ) {
@@ -721,7 +721,7 @@ public class FetcherThread extends Thread {
                         }
                     }
                     Procedure(procedure.procedure, null);
-                    if ( ++number >= fetch_n_pages) {
+                    if ( (_schema.fetch_cur_pages-procedure.begin_from+1) >= fetch_n_pages) {
                         LOG.debug("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
                         break;
                     }
@@ -733,12 +733,12 @@ public class FetcherThread extends Thread {
                     By locator = By.xpath(xpath_prefix_loop);
                     List<WebElement> elements = locator.findElements(driver);
                     LOG.debug("Procedure: loop of BEGIN type, find " + elements.size() + " jobs with " + xpath_prefix_loop);
-                    int number = 0;
-                    for (int i = procedure.begin_from; i < elements.size() + procedure.end_to; i++) {
+                    if ( _schema.fetch_cur_jobs == -1 ) _schema.fetch_cur_jobs = procedure.begin_from;
+                    for (; _schema.fetch_cur_jobs < elements.size() + procedure.end_to; _schema.fetch_cur_jobs++) {
                         final Job newjob = new Job();
                         newjob.addField(Job.JOB_COMPANY, _schema.getName());
-                        String newprefix = xpath_prefix_loop + "[" + Integer.toString(i + 1) + "]/";
-                        if (!Extracts(newprefix, i + 1, procedure.extracts, newjob)) {
+                        String newprefix = xpath_prefix_loop + "[" + Integer.toString(_schema.fetch_cur_jobs + 1) + "]/";
+                        if (!Extracts(newprefix, _schema.fetch_cur_jobs + 1, procedure.extracts, newjob)) {
                             LOG.debug("Failed to extract info for this job, ignore");
                             continue;
                         }
@@ -754,23 +754,35 @@ public class FetcherThread extends Thread {
 
                         _joblist.addJob(newjob);
 
-                        if (++number >= fetch_n_jobs_perpage) {
+                        if ((_schema.fetch_cur_jobs-procedure.begin_from+1) >= fetch_n_jobs_perpage) {
                             LOG.debug("Fetched " + fetch_n_jobs_perpage + " jobs, reach configured limit, return");
                             break;
                         }
                     }
+                    _schema.fetch_cur_jobs = -1;
                 } else {
                     LOG.warn("Procedure: loop of BEGIN type, dont have xpath_prefix");
                 }
             }
         } else if ( procedure.loop_type == Schema.LOOP_TYPE.END ) {
             LOG.debug("Procedure: loop of END type for page list");
-            int pages = 0;
             boolean result = true;
+            if ( _schema.fetch_cur_pages != -1 ) {
+                int tmppages = 0;
+                do {
+                    // move forward to the pages failed last time.
+                } while ( (tmppages++ < _schema.fetch_cur_pages) && (result=Actions(null, 0, procedure.actions)) );
+                if ( !result ) {
+                    LOG.warn("Failed again during moving to the failed place last time");
+                    return;
+                }
+            } else {
+                _schema.fetch_cur_pages = 0;
+            }
+
             do {
                 Procedure(procedure.procedure, null);
-                pages++;
-            } while ( (pages<fetch_n_pages) && (result=Actions(null, 0, procedure.actions)) );
+            } while ( (++_schema.fetch_cur_pages<fetch_n_pages) && (result=Actions(null, 0, procedure.actions)) );
             if ( !result ) {
                 LOG.info("Actions for going to next page failed, break");
             } else {

@@ -14,11 +14,14 @@ import org.top500.utils.Configuration;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 
 public class Fetcher extends RunListener {
     public static final Logger LOG = LoggerFactory.getLogger(Fetcher.class);
     private final List<Schema> _schemas;
     private final Configuration _conf;
+    private PrintWriter _pw;
+
     public Fetcher(List<Schema> schemas, Configuration conf) {
         _conf = conf;
         _schemas = schemas;
@@ -71,6 +74,8 @@ public class Fetcher extends RunListener {
     public void fetch_in_batch(final RunNotifier notifier) throws Exception {
         WebDriverService.CreateAndStartService(_conf.getInt("fetch.webdriver.port", 8899));
 
+        _pw = new PrintWriter("/tmp/fetchstatus.data");
+
         FetcherPool fetcherPool = new FetcherPool(_conf.getInt("fetch.thread.size", 3), new Runnable() {
             public void run() {
                 //System.out.println("General callback");
@@ -93,21 +98,25 @@ public class Fetcher extends RunListener {
         } catch (InterruptedException e) {
             throw e;
         }
+
+        _pw.close();
+
         WebDriverService.StopService();
     }
 
-    public void Started(Object o) {
-        FetcherThread thread = (FetcherThread)o;
-        LOG.debug("RunListener get Started for " + thread.getName());
-    }
+    public void Started(Object o) {}
 
     public void Finished(Object o) {
         FetcherThread thread = (FetcherThread)o;
-        LOG.debug("RunListener get Finished for " + thread.getName() + ",fetched " + thread.getJoblist().count() + " jobs");
-
-        Joblist joblist = thread.getJoblist();
-        for ( int i = 0; i < joblist.count(); i++ ) {
-            LOG.debug(joblist.get(i).getField(Job.JOB_URL));
+        LOG.debug("Fetcher get Finished for " + thread.getName() + " result: " + (thread._schema.fetch_result?"COMPLETE":"PARTLY"));
+        if ( thread._schema.fetch_result ) {
+            _pw.printf("%s   %b\n", thread._schema.getName(),
+                    thread._schema.fetch_result);
+        } else {
+            _pw.printf("%s   %b  %d  %d\n", thread._schema.getName(),
+                    thread._schema.fetch_result,
+                    thread._schema.fetch_cur_pages,
+                    thread._schema.fetch_cur_jobs);
         }
     }
 
@@ -123,15 +132,34 @@ public class Fetcher extends RunListener {
         {
             InputStreamReader in=new InputStreamReader(new FileInputStream(args[0]));
             BufferedReader br=new BufferedReader(in);
-            String company;
-            while ((company = br.readLine()) != null) {
-                if ( company.startsWith("#")) continue;
+            String line;
+            while ((line = br.readLine()) != null) {
+                if ( line.startsWith("#")) continue;
                 try {
-                    Schema s = new Schema(company+".json");
-                    s.print();
-                    schemas.add(s);
+                    java.util.Scanner scan = new java.util.Scanner(line);
+                    String company = scan.next();
+                    int resumePage = -1;
+                    int resumeJob = -1;
+                    try {
+                        Boolean result = scan.nextBoolean();
+                        if ( result ) {
+                            LOG.debug(company + " fetched completely last time");
+                            continue;
+                        } else {
+                            resumePage = scan.nextInt();
+                            resumeJob = scan.nextInt();
+                            LOG.debug(company + " fetched till " + resumePage + " page " + resumeJob + " job");
+                        }
+                    } catch ( java.util.NoSuchElementException ee ) {
+                    }
+                    Schema schema = new Schema(company+".json");
+                    schema.fetch_result = true;
+                    schema.fetch_cur_pages = resumePage;
+                    schema.fetch_cur_jobs = resumeJob;
+                    schema.print();
+                    schemas.add(schema);
                 } catch ( Exception e ) {
-                    LOG.warn("Failed to decode schema for " + company, e);
+                    LOG.warn("Failed to decode schema for " + line, e);
                 }
             }
         } catch(Exception e){
@@ -150,9 +178,10 @@ public class Fetcher extends RunListener {
         //Start Fetcher
         try {
             Fetcher fetcher = new Fetcher(schemas, conf);
-            RunNotifier notifer = new RunNotifier();
-            notifer.addListener(indexer);
-            fetcher.fetch_in_batch(notifer);
+            RunNotifier notifier = new RunNotifier();
+            notifier.addListener(indexer);
+            notifier.addListener(fetcher);
+            fetcher.fetch_in_batch(notifier);
         } catch ( Exception e ) {
             LOG.warn("Exception happen", e);
         } finally {

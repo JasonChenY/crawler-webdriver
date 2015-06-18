@@ -31,6 +31,10 @@ public class Schema {
     public RegexMatcher job_regex_matcher_for_location;
     public JobUniqueIdCalc job_unique_id_calc;
 
+    public boolean fetch_result = true;
+    public int fetch_cur_pages = -1;
+    public int fetch_cur_jobs = -1;
+
     public static void main(String[] args) {
         try {
             System.out.println("new schema from " + args[0]);

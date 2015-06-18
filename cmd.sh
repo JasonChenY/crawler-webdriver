@@ -20,5 +20,10 @@ export CLASSPATH
 
 #java org.top500.indexer.Indexer
 
+if [[ $# -ge 2 ]] && [[ $2 = "resume" ]]; then
+java org.top500.fetcher.Fetcher  /tmp/fetchstatus.data
+else
 java org.top500.fetcher.Fetcher conf/seed.txt
+fi
+
 
