@@ -16,7 +16,7 @@
   ],
   "procedure": {
     "loop": {
-      "xpath_prefix": "//DIV[@class='b-article-accordion has-open-first-tab']/H3[@class='acc-title']",
+      "xpath_prefix": "//DIV[@role='tablist']/H3[@class='acc-title']",
       "loop_type": "begin",
     },
     "extracts": {
@@ -24,10 +24,10 @@
         "how": "url",
       },
       "job_title": {
-        "element": "//DIV[@class='b-article-accordion has-open-first-tab']/H3[@class='acc-title'][%d]",
+        "element": "//DIV[@role='tablist']/H3[@class='acc-title'][%d]",
       },
       "job_location": {
-        "element": "//DIV[@class='b-article-accordion has-open-first-tab']/DIV[@class='acc-content'][%d]/P[1]",
+        "element": "//DIV[@role='tablist']/DIV[@class='acc-content'][%d]/P[1]",
         "transforms" : [
           {
             "how" : "location_regex",
@@ -36,7 +36,7 @@
         ]
       },
       "job_description" : {
-        "element" : "//DIV[@class='b-article-accordion has-open-first-tab']/DIV[@class='acc-content'][%d]",
+        "element" : "//DIV[@role='tablist']/DIV[@class='acc-content'][%d]",
       }
     },
   }
