@@ -1,0 +1,81 @@
+{
+  "name" : "Baidu",
+  "actions" :
+  [
+    {
+      "element": "http://talent.baidu.com/baidu/web/index/CompbaiduPagejoblist_social",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "hrs_joblistTable",
+        "how" : "ID",
+      }]
+    },
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@id='hrs_joblistTable']/TBODY/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "hrs_jobDetail",
+                "how" : "ID",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "TD[1]/A",
+        },
+        "job_location": {
+          "element": "TD[3]",
+        },
+        "job_date": {
+          "element" : "TD[4]",
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "//DIV[@id='hrs_jobDetail']/DL[@class='hrs_jobDuty' or @class='hrs_jobRequire']",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "//DIV[@class='hrs_page']/DIV[@class='hrs_page']/A[text()='下一页']",
+          "cmd" : "click",
+          "expections": [{
+            "condition" : "presenceOfElementsLocated",
+            "element" : "hrs_joblistTable",
+            "how" : "ID",
+          }]
+        },
+      ],
+    }
+  }
+}
+

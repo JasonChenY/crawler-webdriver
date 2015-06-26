@@ -174,8 +174,9 @@ public class FetcherThread extends Thread {
     private String formatXpath(String prefix, int index, String tgt) {
         String xpath;
         if ( tgt.startsWith("//") && index != 0 ) {
-            // Array of sibling elements, but need access children of them
+            // Airbus case: Array of sibling elements, but need access children of them
             // Absolute xpath expression with a %d in the schema
+            // This might be enchaned to use %d for relative xpath as well.
             xpath = String.format(tgt, index);
         } else if ( prefix != null ) {
             // Normal case, array of elements, and share same parent
