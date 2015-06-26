@@ -518,7 +518,13 @@ public class FetcherThread extends Thread {
                     Boolean formatted = false;
                     List<String> values = new ArrayList<String>();
                     List<WebElement> elements = locator.findElements(driver);
-                    LOG.debug("Located " + elements.size() + " elements for extracing " + key);
+
+                    if ( elements.size() == 0 ) {
+                        LOG.debug("Failed to locate elements for extracing " + key);
+                        return false;
+                    } else {
+                        LOG.debug("Located " + elements.size() + " elements for extracing " + key);
+                    }
                     for ( int i = 0; i < elements.size(); i++ ) {
                         if ( ele.method != null ) {
                             switch ( ele.method ) {
@@ -665,18 +671,19 @@ public class FetcherThread extends Thread {
 
         if ( newjob.getFields().containsKey(Job.JOB_COMPANY_SUBNAME) ) {
             String subname = newjob.getField(Job.JOB_COMPANY_SUBNAME);
-	    if ( subname != null && !subname.isEmpty() ) {
-		newjob.addField(Job.JOB_COMPANY, subname);
-	    }
+            if (subname != null && !subname.isEmpty()) {
+                newjob.addField(Job.JOB_COMPANY, subname);
+            }
+
 	    // This might be changed later,
 	    // Now Fetcher will combine company name and subname together via Transforms,
 	    // Finally we might need both fields to make client easier.
 	    // which means to disable the combination in schema and comment this section of code
-	    newjob.removeField(Job.JOB_COMPANY_SUBNAME);
-	}
+	        newjob.removeField(Job.JOB_COMPANY_SUBNAME);
+        }
     }
-    private void Procedure(Schema.Procedure procedure, Job job) {
-        if ( procedure == null ) return;
+    private boolean Procedure(Schema.Procedure procedure, Job job) {
+        if ( procedure == null ) return true;
         if ( procedure.loop_type == Schema.LOOP_TYPE.BEGIN ) {
             if ( procedure.loop_for_pages ) {
                 LOG.debug("Procedure: loop of BEGIN type for page list");
@@ -695,11 +702,11 @@ public class FetcherThread extends Thread {
                         LOG.debug("Procedure: loop of BEGIN type, find " + loop_totalpages + " with loop_totalpages");
                     } catch ( NoSuchElementException e ) {
                         LOG.warn("Procedure: loop of BEGIN type, loop_totalpages defined, but failed to parse valid number from this element");
-                        return;
+                        return false;
                     }
                 } else {
                     LOG.warn("Procedure: loop of BEGIN type, but neither xpath_prefix nor loop_totalpages, cant continue");
-                    return;
+                    return false;
                 }
 
                 if ( _schema.fetch_cur_pages == -1 ) _schema.fetch_cur_pages = procedure.begin_from;
@@ -748,8 +755,14 @@ public class FetcherThread extends Thread {
                             LOG.debug("Job older than configured date, ignore");
                             continue;
                         }
-                        Actions(newprefix, 0, procedure.actions);
-                        Procedure(procedure.procedure, newjob);
+                        if ( !Actions(newprefix, 0, procedure.actions) ) {
+                            LOG.warn("Action for job failed, ignore");
+                            continue;
+                        }
+                        if ( !Procedure(procedure.procedure, newjob) ) {
+                            LOG.warn("Procedure for job failed, ignore");
+                            continue;
+                        }
 
                         PostProcessJob(newjob, _schema);
 
@@ -775,7 +788,7 @@ public class FetcherThread extends Thread {
                 } while ( (tmppages++ < _schema.fetch_cur_pages) && (result=Actions(null, 0, procedure.actions)) );
                 if ( !result ) {
                     LOG.warn("Failed again during moving to the failed place last time");
-                    return;
+                    return false;
                 }
             } else {
                 _schema.fetch_cur_pages = 0;
@@ -791,8 +804,19 @@ public class FetcherThread extends Thread {
             }
         } else {
             LOG.debug("Procedure for single job");
-            Extracts(null, 0, procedure.extracts, job);
+            boolean valid_job = true;
+            if ( !Extracts(null, 0, procedure.extracts, job) ) {
+                LOG.info("Failed to extract info for this job (summary page), ignore");
+                valid_job = false;
+            }
+            if (DateUtils.nDaysAgo(job.getField(Job.JOB_DATE), fetch_n_days)) {
+                LOG.info("Job older than configured date (summary page), ignore");
+                valid_job = false;
+            }
             Actions(null, 0, procedure.actions);
+            // can return false directly, there will be 'restore/close window' action
+            return valid_job;
         }
+        return true;
     }
 }

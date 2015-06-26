@@ -1,0 +1,88 @@
+{
+  "name" : "Vanke",
+  "actions" :
+  [
+    {
+      "element": "http://vanke.zhiye.com/",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementsLocated",
+        "element" : "world-map",
+        "how" : "ID",
+      }],
+      "debug" : false,
+    },
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@class='job-list' and contains(@style, 'block')]/TABLE/TBODY/TR[count(*)=3]",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[3]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "detail_list",
+                "how" : "CLASS_NAME",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "TD[1]",
+        },
+        "job_location": {
+          "element": "TD[2]",
+          "transforms" : [
+            {
+              "how" : "regex",
+              "value" : "s/万科//g",
+            },
+          ]
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "//DIV[@class='txt']/DIV[@class='pannel']",
+          },
+          "job_url": {
+            "how": "url",
+          },
+          "job_date" : {
+            "element" : "//DIV[@class='txt']/SPAN[text()='发布时间：']/following-sibling::SPAN[1]"
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "begin",
+      "xpath_prefix":"//DIV[@id='world-map']/DIV[@class='jvectormap-container']/*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']/*[name()='g'][2]/*[name()='circle']",
+      "loop_for_pages" : true,
+      "actions": [
+        {
+          "element" : ".",
+          "cmd" : "click",
+        },
+      ],
+    }
+  }
+  "comment:job_expire" : {
+    "element" : "//DIV[@class='txt']/SPAN[text()='截至时间：']/following-sibling::SPAN[1]"
+  }
+}
+
