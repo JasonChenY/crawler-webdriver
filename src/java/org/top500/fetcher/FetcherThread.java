@@ -602,6 +602,11 @@ public class FetcherThread extends Thread {
                                         value = LocationUtils.format(value, transform.value);
                                         formatted = true;
                                         break;
+                                    case "regex_matcher":
+                                        value = LocationUtils.match(value, transform.value, transform.which, transform.group);
+                                        value = LocationUtils.format(value);
+                                        formatted = true;
+                                        break;
                                     default: break;
                                 }
                             }
@@ -646,16 +651,6 @@ public class FetcherThread extends Thread {
                         // some default handling to avoid config item in schema
                         if (key.equals(Job.JOB_DATE) || key.equals(Job.JOB_EXPIRE)) {
                             value = DateUtils.formatDate(value);
-                        }
-
-                        if (key.equals(Job.JOB_LOCATION)) {
-                            if (_schema.job_regex_matcher_for_location != null) {
-                                value = LocationUtils.match(value,
-                                        _schema.job_regex_matcher_for_location.regex,
-                                        _schema.job_regex_matcher_for_location.which,
-                                        _schema.job_regex_matcher_for_location.group);
-                            }
-                            value = LocationUtils.format(value);
                         }
                     }
                     job.addField(key, value);

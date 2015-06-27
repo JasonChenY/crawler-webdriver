@@ -1,0 +1,87 @@
+{
+  "name": "Axatp",
+  "actions" :
+  [
+    {
+      "element": "http://www.axatp.com/about_us/career.html",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition": "presenceOfElementLocated",
+          "element" : "informationList",
+          "how": "CLASS_NAME",
+        },
+      ],
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix" : "//DIV[@class='informationList']/DL[@class='dl_nobg']/DD[contains(@style, 'block')]",
+        "loop_type" : "begin",
+        "actions": [
+          {
+            "element": "DIV[2]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//DIV[@class='informationList']",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "DIV[2]/A"
+        },
+        "job_location": {
+          "element": "DIV[3]",
+          "transforms" : [
+            {
+              "how" : "regex_matcher",
+              "value" : "/【([^】]*)】/",
+              "which" : 0,
+              "group" : 1,
+            }
+          ]
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_url": {
+            "how": "url",
+          },
+          "job_description": {
+            "element" : "//DIV[@class='informationList']/DIV[@class='replacelink']",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//DIV[@id='page']/DL/DD/SPAN[text()='下一页']",
+          "cmd": "click",
+          "expections": [{
+              "condition": "elementTextChanged",
+              "element": "//DIV[@id='page']/DL/DD/A[contains(@style, 'color: rgb(255, 255, 255)')]",
+          }]
+        },
+      ],
+    }
+  },
+}
+

@@ -58,6 +58,14 @@
         "job_location": {
           "element": "TD[2]",
           "how": "XPATH",
+          "transforms" : [
+            {
+              "how" : "regex_matcher",
+              "value" : "/([^-]*)市/",
+              "which" : 1,
+              "group" : 1,
+            }
+          ]
         },
       },
       "procedure": {
@@ -98,10 +106,5 @@
       ],
     }
   },
-  "job_regex_matcher_for_location" : {
-    "regex" : "/([^-]*)市/",
-    "which" : 1,
-    "group" : 1,
-  }
 }
 

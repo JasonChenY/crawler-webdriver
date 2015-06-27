@@ -31,7 +31,6 @@ public class Schema {
     private String name;
     public Actions actions;
     public Procedure procedure;
-    public RegexMatcher job_regex_matcher_for_location;
     public JobUniqueIdCalc job_unique_id_calc;
 
     public boolean fetch_result = true;
@@ -49,9 +48,6 @@ public class Schema {
     public void print() {
         actions.print("");
         procedure.print("");
-        if ( job_regex_matcher_for_location!= null ) {
-            job_regex_matcher_for_location.print("");
-        }
         if ( job_unique_id_calc!= null ) {
             job_unique_id_calc.print("");
         }
@@ -62,11 +58,6 @@ public class Schema {
         name = (String) obj.get("name");
         actions = new Actions(obj.get("actions"));
         procedure = new Procedure(obj.get("procedure"));
-        if ( obj.get("job_regex_matcher_for_location") != null ) {
-            job_regex_matcher_for_location = new RegexMatcher(obj.get("job_regex_matcher_for_location"));
-        } else {
-            job_regex_matcher_for_location = null;
-        }
         if ( obj.get("job_unique_id_calc") != null ) {
             job_unique_id_calc = new JobUniqueIdCalc(obj.get("job_unique_id_calc"));
         } else {
@@ -112,36 +103,6 @@ public class Schema {
         return buffer.toString();
     }
 
-    public class RegexMatcher {
-        public String regex;
-        public int which;
-        public int group;
-        public RegexMatcher(Object o) throws Exception {
-
-            if ( o == null ) return;
-
-            JSONObject obj = (JSONObject)o;
-
-            if ( obj.get("regex") == null )
-                throw new Exception("regex can't be empty");
-            else
-                regex = (String) obj.get("regex");
-
-            if ( obj.get("which") == null )
-                which = 0;
-            else
-                which = Integer.valueOf(((Long) obj.get("which")).intValue());
-
-            if ( obj.get("group") == null )
-                group = 1;
-            else
-                group = Integer.valueOf(((Long)obj.get("group")).intValue());
-        }
-        public void print(String ident) {
-            System.out.println(ident+"'job_regex_matcher_for_location':{'regex':'"+regex+"','which':"+which+",'group':"+group+"}");
-        }
-    }
-
     public class JobUniqueIdCalc {
         public String how = null;
         public String value = null;
@@ -159,17 +120,32 @@ public class Schema {
     public class Transform {
         public String how;
         public String value;
+        public int which;
+        public int group;
         public Transform(Object o) {
             if ( o == null ) return;
             //JSONObject obj = (JSONObject)o;
-            Map<String, String> obj = (Map<String,String>)o;
+            Map<String, Object> obj = (Map<String,Object>)o;
             how = (String) obj.get("how");
             value = (String) obj.get("value");
+
+            if ( how.equals("regex_matcher") ) {
+                if (obj.get("which") == null)
+                    which = 0;
+                else
+                    which = Integer.valueOf(((Long) obj.get("which")).intValue());
+
+                if (obj.get("group") == null)
+                    group = 1;
+                else
+                    group = Integer.valueOf(((Long) obj.get("group")).intValue());
+            }
         }
         public void print(String ident) {
             System.out.println(ident + "{'how':" + how + "','value':'" + value + "'}");
         }
     }
+
     public class Element {
         public String element;
         public String how;
