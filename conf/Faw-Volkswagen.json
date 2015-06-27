@@ -1,0 +1,70 @@
+{
+  "name": "Faw-Volkswagen",
+  "actions" :
+  [
+    {
+      "element": "http://hr.faw-vw.com/Society/PositionList.aspx",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition": "presenceOfElementLocated",
+          "element" : "ctl00_ctl00_SubContent_MainContent_gvPosition",
+          "how": "ID",
+        },
+      ],
+    },
+  ],
+
+  "procedure": {
+    "loop": {
+      "xpath_prefix" : "//TABLE[@id='ctl00_ctl00_SubContent_MainContent_gvPosition']/TBODY/TR",
+      "loop_type" : "begin",
+      "begin_from" : 1,
+      "actions": [
+        {
+          "element": "TD[1]/A",
+          "cmd": "openInNewTab",
+          "expections" : [
+            {
+              "condition": "newWindowIsOpened",
+            },
+            {
+              "condition": "visibilityOfElementLocated",
+              "element": "ctl00_ctl00_SubContent_MainContent_fvPositionDetail",
+              "how" : "ID",
+            }
+          ]
+        },
+      ],
+    },
+    "procedure": {
+      "extracts": {
+        "job_url": {
+          "how": "url",
+        },
+        "job_title" : {
+          "element" : "//TABLE[@class='table_major']/TBODY/TR/TD/TABLE[2]/TBODY/TR[1]/TD[2]",
+        },
+        "job_date" : {
+          "element" : "//TABLE[@class='table_major']/TBODY/TR/TD/TABLE[2]/TBODY/TR[4]/TD[2]",
+        },
+        "job_expire" : {
+          "element" : "//TABLE[@class='table_major']/TBODY/TR/TD/TABLE[2]/TBODY/TR[8]/TD[2]",
+        },
+        "job_location" : {
+          "element" : "//TABLE[@class='table_major']/TBODY/TR/TD/TABLE[2]/TBODY/TR[5]/TD[2]",
+        },
+        "job_description": {
+          "element" : "//TABLE[@class='table_major']/TBODY/TR/TD/TABLE[2]/TBODY/TR[6]|//TABLE[@class='table_major']/TBODY/TR/TD/TABLE[2]/TBODY/TR[7]",
+        },
+      },
+      "actions": [
+        {
+          "cmd": "restore",
+        },
+      ]
+    },
+  }
+}
+
