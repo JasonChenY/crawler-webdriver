@@ -30,3 +30,4 @@ Vanke
 Baosteel
 Volkswagen
 Faw-Volkswagen
+Toyota

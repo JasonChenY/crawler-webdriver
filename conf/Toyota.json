@@ -1,0 +1,85 @@
+{
+  "name": "Toyota",
+  "actions" :
+  [
+    {
+      "element": "http://www.hotjob.cn/wt/TMCI/web/index/social",
+      "how": "url",
+      "cmd": "load",
+      "expections": [
+        {
+          "condition": "presenceOfElementLocated",
+          "element" : "search_result",
+          "how": "CLASS_NAME",
+        },
+      ],
+    },
+  ],
+
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix" : "//TABLE[@class='search_result']/TBODY/TR",
+        "loop_type" : "begin",
+        "begin_from" : 2,
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "position_content",
+                "how" : "CLASS_NAME",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_location": {
+          "element": "TD[5]",
+        },
+        "job_date": {
+          "element": "TD[6]",
+        },
+        "job_title": {
+          "element": "TD[1]/A"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "position_content",
+            "how" : "CLASS_NAME",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//DIV[@class='page_div']/TABLE/TBODY/TR/TD/A[3]",
+          "cmd": "click",
+          "expections": [{
+              "condition": "elementTextChanged",
+              "element": "//DIV[@class='page_div']/TABLE/TBODY/TR/TD",
+          }]
+        },
+      ],
+    }
+  },
+}
+
