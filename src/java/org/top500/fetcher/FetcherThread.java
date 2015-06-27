@@ -801,6 +801,7 @@ public class FetcherThread extends Thread {
                         || ((_schema.fetch_cur_jobs-procedure.begin_from+1) >= fetch_n_jobs_perpage) ) {
                             if ((_schema.fetch_cur_jobs - procedure.begin_from + 1) >= fetch_n_jobs_perpage) {
                                 LOG.info("Fetched " + fetch_n_jobs_perpage + " jobs perpage, reach configured limit, return");
+                                _schema.fetch_cur_jobs = -1;
                             }
                             if (_schema.fetch_total_jobs == fetch_n_jobs) {
                                 LOG.info("Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
@@ -808,7 +809,9 @@ public class FetcherThread extends Thread {
                             break;
                         }
                     }
-                    _schema.fetch_cur_jobs = -1;
+                    if ( _schema.fetch_cur_jobs == elements.size() + procedure.end_to ) {
+                        _schema.fetch_cur_jobs = -1;
+                    }
                 } else {
                     LOG.warn("Procedure: loop of BEGIN type, dont have xpath_prefix");
                     return false;
