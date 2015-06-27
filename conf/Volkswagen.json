@@ -1,0 +1,111 @@
+{
+  "name": "Volkswagen",
+  "actions" :
+  [
+    {
+      "element": "http://www.vw.com.cn/zh/corporate_information1/Recruitment/recruitment_vc.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "//DIV[@class='vwd4_rte']",
+        },
+      ],
+      "debug":false,
+    },
+  ],
+  "procedure" : {
+    "loop": {
+      "xpath_prefix": "//UL[@class='vwd4_module1col vwd4_m505']/LI",
+      "loop_type": "begin",
+      "loop_for_pages": true,
+      "actions": [
+        {
+          "element": "A",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//UL[@class='vwd4_module1col vwd4_m505']/LI[contains(@class, 'vwd4_active')]/A",
+            },
+          ],
+          "debug":false,
+        },
+      ],
+    }
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//UL[@class='vwd4_module1col vwd4_m505']/LI[contains(@class, 'vwd4_active')]/UL/LI",
+        "loop_type": "begin",
+        "loop_for_pages": true,
+        "loop_need_initial_action" : true,
+        "actions": [
+          {
+            "element": "A",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//DIV[@class='vwd4_rte']",
+              },
+            ],
+          },
+        ],
+      }
+      "procedure": {
+        "loop": {
+          "xpath_prefix": "//DIV[@class='vwd4_rte']/OL/LI",
+          "loop_type": "begin",
+          "actions": [
+            {
+              "element": "*/A|*/*/A",
+              "cmd": "openInNewTab",
+              "expections": [
+                {
+                  "condition": "newWindowIsOpened",
+                },
+                {
+                  "condition": "visibilityOfElementLocated",
+                  "element": "vwd4_rte",
+                  "how": "CLASS_NAME",
+                }
+              ],
+              "debug": false,
+            },
+          ],
+        },
+        "extracts" : {
+          "job_title" : {
+            "element": "*/A|*/*/A",
+          },
+        }
+        "procedure": {
+          "extracts": {
+            "job_location" : {
+              "element": "//DIV[@class='vwd4_rte']/H6[contains(text(), 'Location')] | //DIV[@class='vwd4_rte']/H6/SPAN[contains(text(), 'Location')]",
+              "transforms" : [
+                {
+                  "how" : "location_regex",
+                  "value" : "s/.*Location\\s*:\\s*([^\\s]*).*/$1/g",
+                }
+              ]
+            },
+            "job_description": {
+              "element": "//DIV[@class='vwd4_rte']/H6[5]/following-sibling::*",
+            },
+            "job_url": {
+              "how": "url",
+            },
+          },
+          "actions": [
+            {
+              "cmd": "restore",
+            },
+          ]
+        },
+      }
+    },
+  }
+}
+

@@ -16,6 +16,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 
 import java.lang.Boolean;
+import java.lang.Integer;
+import java.lang.StringBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 public class Schema {
     private String name;
@@ -32,8 +35,6 @@ public class Schema {
     public JobUniqueIdCalc job_unique_id_calc;
 
     public boolean fetch_result = true;
-    public int fetch_cur_pages = -1;
-    public int fetch_cur_jobs = -1;
     public int fetch_total_jobs = 0;
 
     public static void main(String[] args) {
@@ -84,6 +85,33 @@ public class Schema {
         BufferedReader bf = new BufferedReader(new InputStreamReader(input));
         init(bf);
     }
+
+    public void setFetchRuntimeIndex(String idxstr) {
+        StringTokenizer tokenizer = new StringTokenizer(idxstr, ".");
+        Procedure proc = procedure;
+        while (tokenizer.hasMoreTokens() && (proc!=null) ) {
+            String token = tokenizer.nextToken();
+            try {
+                int index = Integer.parseInt(token);
+                proc.fetch_runtime_index = index;
+            } catch ( Exception e ) {
+                return;
+            }
+            proc = proc.procedure;
+        }
+    }
+
+    public String getFetchRuntimeIndex() {
+        StringBuffer buffer = new StringBuffer();
+        Procedure proc = procedure;
+        while ( proc != null ) {
+            buffer.append(proc.fetch_runtime_index);
+            proc = proc.procedure;
+            if ( proc != null ) buffer.append(".");
+        }
+        return buffer.toString();
+    }
+
     public class RegexMatcher {
         public String regex;
         public int which;
@@ -429,10 +457,12 @@ public class Schema {
         public int begin_from = 0;
         public int end_to = 0;
         public boolean loop_for_pages = false;
+        public boolean loop_need_initial_action = false;
         public Element loop_totalpages = null;
         public Extracts extracts = null;
         public Actions actions = null;
         public Procedure procedure = null;
+        public int fetch_runtime_index = -1;
 
         public Procedure(Object o) throws Exception {
             if ( o == null ) return;
@@ -458,6 +488,9 @@ public class Schema {
                             loop_for_pages = (Boolean)loop.get("loop_for_pages");
                             if ( loop.get("loop_totalpages") != null ) {
                                 loop_totalpages = new Element(loop.get("loop_totalpages"));
+                            }
+                            if ( loop.get("loop_need_initial_action") != null ) {
+                                loop_need_initial_action = (Boolean)loop.get("loop_need_initial_action");
                             }
                         }
                     } else if (type.equals("end")) {
