@@ -34,6 +34,7 @@ public class Schema {
     public boolean fetch_result = true;
     public int fetch_cur_pages = -1;
     public int fetch_cur_jobs = -1;
+    public int fetch_total_jobs = 0;
 
     public static void main(String[] args) {
         try {

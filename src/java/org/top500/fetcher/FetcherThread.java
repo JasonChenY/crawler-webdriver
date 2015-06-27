@@ -74,9 +74,10 @@ public class FetcherThread extends Thread {
     public final Schema _schema;
     private volatile Throwable _throwable;
     private final Joblist _joblist = new Joblist();
-    private static int fetch_n_pages = 2;
-    private static int fetch_n_jobs_perpage = 2;
-    private static int fetch_n_days = 7;
+    private static int fetch_n_pages;
+    private static int fetch_n_jobs_perpage;
+    private static int fetch_n_days;
+    private static int fetch_n_jobs;
     private static String driver_download_directory;
 
     private WebDriver driver = null;
@@ -89,9 +90,11 @@ public class FetcherThread extends Thread {
         super(name);
         this._schema = schema;
         Configuration conf = Configuration.getInstance();
-        fetch_n_pages = conf.getInt("fetch.first.n.pages", 1000);
-        fetch_n_jobs_perpage = conf.getInt("fetch.first.n.jobs.perpage", 1000);
-        fetch_n_days = conf.getInt("fetch.winthin.n.days.pages", 180);
+        fetch_n_pages = conf.getInt("fetch.first.n.pages", 10);
+        fetch_n_jobs_perpage = conf.getInt("fetch.first.n.jobs.perpage", 50);
+        fetch_n_days = conf.getInt("fetch.winthin.n.days", 180);
+        fetch_n_jobs = conf.getInt("fetch.first.n.jobs",100);
+
         driver_wait = conf.getInt("fetch.webdriver.wait.default", 5);
         driver_download_directory = conf.get("fetch.webdriver.download.dir", "/tmp");
     }
@@ -750,8 +753,11 @@ public class FetcherThread extends Thread {
                         }
                     }
                     Procedure(procedure.procedure, null);
-                    if ( (_schema.fetch_cur_pages-procedure.begin_from+1) >= fetch_n_pages) {
-                        LOG.debug("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
+                    if ( _schema.fetch_total_jobs == fetch_n_jobs ) {
+                        LOG.info("Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
+                        break;
+                    } else if ((_schema.fetch_cur_pages-procedure.begin_from+1) >= fetch_n_pages) {
+                        LOG.info("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
                         break;
                     }
                 }
@@ -789,14 +795,23 @@ public class FetcherThread extends Thread {
 
                         _joblist.addJob(newjob);
 
-                        if ((_schema.fetch_cur_jobs-procedure.begin_from+1) >= fetch_n_jobs_perpage) {
-                            LOG.debug("Fetched " + fetch_n_jobs_perpage + " jobs, reach configured limit, return");
+                        _schema.fetch_total_jobs++;
+
+                        if ( (_schema.fetch_total_jobs == fetch_n_jobs)
+                        || ((_schema.fetch_cur_jobs-procedure.begin_from+1) >= fetch_n_jobs_perpage) ) {
+                            if ((_schema.fetch_cur_jobs - procedure.begin_from + 1) >= fetch_n_jobs_perpage) {
+                                LOG.info("Fetched " + fetch_n_jobs_perpage + " jobs perpage, reach configured limit, return");
+                            }
+                            if (_schema.fetch_total_jobs == fetch_n_jobs) {
+                                LOG.info("Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
+                            }
                             break;
                         }
                     }
                     _schema.fetch_cur_jobs = -1;
                 } else {
                     LOG.warn("Procedure: loop of BEGIN type, dont have xpath_prefix");
+                    return false;
                 }
             }
         } else if ( procedure.loop_type == Schema.LOOP_TYPE.END ) {
@@ -817,11 +832,14 @@ public class FetcherThread extends Thread {
 
             do {
                 Procedure(procedure.procedure, null);
-            } while ( (++_schema.fetch_cur_pages<fetch_n_pages) && (result=Actions(null, 0, procedure.actions)) );
+            } while ( (++_schema.fetch_cur_pages<fetch_n_pages) && (_schema.fetch_total_jobs<fetch_n_jobs) && (result=Actions(null, 0, procedure.actions)) );
             if ( !result ) {
-                LOG.info("Actions for going to next page failed, break");
+                LOG.warn("Actions for going to next page failed, break");
+                return false;
+            } else if ( _schema.fetch_total_jobs == fetch_n_jobs ) {
+                LOG.info("Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
             } else {
-                LOG.debug("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
+                LOG.info("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
             }
         } else {
             LOG.debug("Procedure for single job");

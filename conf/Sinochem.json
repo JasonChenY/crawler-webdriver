@@ -20,6 +20,7 @@
         "element":"search_result",
         "how":"CLASS_NAME",
       }],
+      "debug":true
     }
   ],
 
@@ -28,18 +29,22 @@
       "loop": {
         "xpath_prefix": "//TABLE[@class='search_result']/TBODY/TR",
         "loop_type": "begin",
+        "begin_from" : 2,
         "actions": [
           {
             "element": "TD[1]/A",
-            "cmd": "click",
+            "cmd": "openInNewTab",
             "expections": [
-                 {
-                     "condition": "presenceOfElementLocatedBy",
-                     "element": "position_content",
-                     "how": "CLASS_NAME",
-                 }
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocatedBy",
+                "element": "position_content",
+                "how": "CLASS_NAME",
+              }
             ],
-            "debug" : true,
+            "debug" : false,
           },
         ],
       },
@@ -71,13 +76,7 @@
         },
         "actions": [
           {
-            "cmd": "back",
-            "expections" : [{
-              "condition" : "presenceOfElementLocated",
-              "element":"search_result",
-              "how":"CLASS_NAME",
-            }],
-            "debug":true,
+            "cmd": "restore",
           },
         ]
       },
@@ -86,13 +85,12 @@
       "loop_type": "end",
       "actions": [
         {
-          "comment:element" : "//DIV[@class='page_div']/TABLE/TBODY/TR/TD/A[normalize-space(text())='Next']",
-          "element" : "//DIV[@class='page_div']/TABLE/TBODY/TR/TD/A[3]",
+          "element" : "//DIV[@class='page_div']/TABLE/TBODY/TR/TD/A[text()='下一页']",
+          "comment:element" : "//DIV[@class='page_div']/TABLE/TBODY/TR/TD/A[3]",
           "cmd":"click",
           "expections" : [{
-            "condition" : "presenceOfElementLocated",
-            "element":"search_result",
-            "how":"CLASS_NAME",
+            "condition" : "elementTextChanged",
+            "element":"//DIV[@class='page_div']/TABLE/TBODY/TR/TD",
           }],
         },
       ],

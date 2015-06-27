@@ -109,19 +109,14 @@ public class Fetcher extends RunListener {
     public void Finished(Object o) {
         FetcherThread thread = (FetcherThread)o;
         LOG.debug("Fetcher get Finished for " + thread.getName() + " result: " + (thread._schema.fetch_result?"COMPLETE":"PARTLY"));
-        if ( thread._schema.fetch_result ) {
-            _pw.printf("%s   %b    %d\n", thread._schema.getName(),
-                    thread._schema.fetch_result,
-                    thread.getJoblist().count());
-            _pw.flush();
-        } else {
-            _pw.printf("%s   %b    %d    %d    %d\n", thread._schema.getName(),
+        _pw.printf("%25s   %5b    %4d    %4d    %4d    %4d\n",
+                    thread._schema.getName(),
                     thread._schema.fetch_result,
                     thread._schema.fetch_cur_pages,
                     thread._schema.fetch_cur_jobs,
+                    thread._schema.fetch_total_jobs,
                     thread.getJoblist().count());
-            _pw.flush();
-        }
+        _pw.flush();
     }
 
     public static void main(String[] args) {
@@ -144,15 +139,17 @@ public class Fetcher extends RunListener {
                     String company = scan.next();
                     int resumePage = -1;
                     int resumeJob = -1;
+                    int resumeTotalJob = 0;
                     try {
                         Boolean result = scan.nextBoolean();
                         if ( result ) {
-                            LOG.debug(company + " fetched completely last time");
+                            LOG.info(company + " fetched completely last time");
                             continue;
                         } else {
                             resumePage = scan.nextInt();
                             resumeJob = scan.nextInt();
-                            LOG.debug(company + " fetched till " + resumePage + " page " + resumeJob + " job");
+                            resumeTotalJob = scan.nextInt();
+                            LOG.info(company + " fetched till " + resumePage + " page " + resumeJob + " job, last time total " + resumeTotalJob);
                         }
                     } catch ( java.util.NoSuchElementException ee ) {
                     }
@@ -160,6 +157,7 @@ public class Fetcher extends RunListener {
                     schema.fetch_result = true;
                     schema.fetch_cur_pages = resumePage;
                     schema.fetch_cur_jobs = resumeJob;
+                    schema.fetch_total_jobs = resumeTotalJob;
                     schema.print();
                     schemas.add(schema);
                 } catch ( Exception e ) {
