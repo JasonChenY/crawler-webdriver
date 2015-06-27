@@ -7,32 +7,29 @@
       "how" : "url",
       "cmd" : "load",
       "expections" : [{
-        "condition" : "elementToBeSelected",
+        "condition" : "visibilityOfElementLocated",
         "element":"selPostDateRange",
         "how": "ID",
       }],
     },
     {
-      "element" : "//SELECT[@id='selPostDateRange']/OPTION[4]",
-      "how" : "XPATH",
-      "cmd" : "click",
-      "expections" : [{
-        "condition" : "elementToBeClickable",
-        "element" : "btnSearch",
-        "how":"ID",
-      }],
+      "element" : "selPostDateRange",
+      "how" : "ID",
+      "cmd": "selectByValue",
+      "value" : "30",
     },
     {
       "element" : "btnSearch",
       "how" : "ID",
       "cmd" : "click",
-      "expections" : [{
-        "condition": "visibilityOfElementLocated",
-        "element": "tbodyJob",
-        "how":"ID",
-      }],
-      "debug" : false,
     },
+    {
+      "cmd": "switchToMainFrame",
+      "expections" : [{
+        "condition": "presenceOfElementLocated",
+        "element": "//TABLE[@class='t-joblist']/TBODY[@id='tbodyJob']/TR",
+      }],
+    }
   ],
 
   "procedure" : {
@@ -45,13 +42,13 @@
             "element": "TD/DIV/A",
             "cmd": "click",
             "expections": [
-                 {
-                     "condition": "newWindowIsOpened",
-                 },
-                 {
-                     "condition": "visibilityOfElementLocated",
-                     "element": "//DIV[@id='jobDiscription']",
-                 }
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "//DIV[@id='jobDiscription']",
+              }
             ],
             "debug" : false,
           },
@@ -83,9 +80,6 @@
         "actions": [
           {
             "cmd": "restore",
-            "expections": [{
-              "comment:condition": "onlywait",
-            }]
           }
         ]
       },
@@ -94,12 +88,11 @@
       "loop_type": "end",
       "actions": [
         {
-          "element": "//DIV[@class='jobPage']/UL/LI[@class='pgNext'][1]",
+          "element": "//DIV[@class='jobPage']/UL/LI[@class='pgNext'][text()='下一页']",
           "cmd": "click",
           "expections": [{
-            "condition": "visibilityOfElementLocated",
-            "element": "tbodyJob",
-            "how":"ID",
+            "condition": "elementTextChanged",
+            "element": "//DIV[@id='pager']/UL[@class='pages']/LI[@class='page-number pgCurrent']",
           }]
         },
       ],

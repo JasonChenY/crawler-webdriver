@@ -46,6 +46,12 @@
       "extracts": {
         "job_location": {
           "element": "TD[5]/FONT",
+          "transforms" : [
+            {
+              "how" : "regex",
+              "value" : "s/tiexiqu/Beijing/g",
+            }
+          ]
         },
         "job_title": {
           "element": "TD[1]/A/FONT",

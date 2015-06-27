@@ -92,25 +92,23 @@
         "loop_type": "begin",
         "actions": [
           {
-            "comment:cmd" : "switchToMainFrame",
-          },
-          {
             "element": "DIV[@class='multiline-data-container']/DIV/DIV/A",
             "cmd": "openInNewTab",
             "expections": [
               {
                 "condition": "newWindowIsOpened",
-              },
-              {
-                "comment:condition": "frameToBeAvailableAndSwitchToIt",
-                "element" : "ftlhiddenframe",
-                "how" : "ID",
-              },
+              }
+            ],
+          },
+          {
+            "cmd": "switchToMainFrame",
+            "expections" : [
               {
                 "condition": "visibilityOfElementLocated",
                 "element": "editablesection",
                 "how" :"CLASS_NAME",
-              }],
+              }
+            ],
             "debug" : false,
           },
         ],
@@ -119,6 +117,10 @@
         "job_location": {
           "element": "DIV[@class='multiline-data-container']/DIV[2]/SPAN",
           "transforms" : [
+            {
+              "how" : "regex",
+              "value" : "s/\(Canton\)//g",
+            },
             {
               "how" : "location_regex",
               "value" : "s/([^-]*-)*(.*)/$2/g",

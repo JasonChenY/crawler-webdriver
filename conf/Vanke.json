@@ -47,6 +47,10 @@
               "how" : "regex",
               "value" : "s/万科//g",
             },
+            {
+              "how" : "regex",
+              "value" : "s/集团总部/深圳/g",
+            },
           ]
         },
       },

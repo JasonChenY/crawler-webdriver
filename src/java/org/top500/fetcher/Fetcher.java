@@ -110,13 +110,17 @@ public class Fetcher extends RunListener {
         FetcherThread thread = (FetcherThread)o;
         LOG.debug("Fetcher get Finished for " + thread.getName() + " result: " + (thread._schema.fetch_result?"COMPLETE":"PARTLY"));
         if ( thread._schema.fetch_result ) {
-            _pw.printf("%s   %b\n", thread._schema.getName(),
-                    thread._schema.fetch_result);
+            _pw.printf("%s   %b    %d\n", thread._schema.getName(),
+                    thread._schema.fetch_result,
+                    thread.getJoblist().count());
+            _pw.flush();
         } else {
-            _pw.printf("%s   %b  %d  %d\n", thread._schema.getName(),
+            _pw.printf("%s   %b    %d    %d    %d\n", thread._schema.getName(),
                     thread._schema.fetch_result,
                     thread._schema.fetch_cur_pages,
-                    thread._schema.fetch_cur_jobs);
+                    thread._schema.fetch_cur_jobs,
+                    thread.getJoblist().count());
+            _pw.flush();
         }
     }
 

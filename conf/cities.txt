@@ -18,7 +18,7 @@
 巴中=BAZHONG
 北海=BEIHAI
 本溪=BENXI
-滨州=BINZHOU
+滨州=BINZHOU,Bingzhou
 博乐=BOLE
 亳州=BOZHOU
 沧州=CANGZHOU
@@ -114,7 +114,7 @@
 吉安=JIAN
 江都=JIANGDOU
 江门=JIANGMEN
-江阴=JIANGYIN
+江阴=JIANGYIN,Jiangying
 胶南=JIAONAN
 胶州=JIAOZHOU
 焦作=JIAOZUO
@@ -392,7 +392,8 @@
 淄博=ZIBO
 自贡=ZIGONG
 遵义=ZUNYI
-乌鲁木齐=WULUMUQI,Urumqi,Urumchi
+乌鲁木齐=WULUMUQI,Urumqi,Urumchi,urumuqi
+乌拉扎布=Wulazhabu
 福清=FUQING
 鄂州=EZHOU
 包头=BAOTOU
@@ -420,4 +421,5 @@
 全国=Any, Virtual, China
 新加坡=singapore
 海南=Hainan, Hainan Island
+红河=Honghe
 

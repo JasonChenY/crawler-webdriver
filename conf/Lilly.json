@@ -47,6 +47,10 @@
           "element": "TD[6]/DIV",
           "transforms" : [
             {
+              "how" : "regex",
+              "value" : "s/\\s+//g",
+            },
+            {
               "how" : "location_regex",
               "value" : "s#([^/]*).*#$1#g",
             }

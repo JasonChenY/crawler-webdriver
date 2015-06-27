@@ -395,37 +395,37 @@ public class FetcherThread extends Thread {
                 else
                     LOG.debug("Expection: " + expection.condition);
 
-                By wait_locator = getLocator(null, 0, expection.element);
-
-                switch (expection.condition) {
-                    case "titleIs":
-                        wait.until(titleIs(expection.value));
-                        break;
-                    case "presenceOfElementLocated":
-                        wait.until(presenceOfElementLocated(wait_locator));
-                        break;
-                    case "presenceOfAllElementsLocatedBy":
-                        wait.until(presenceOfAllElementsLocatedBy(wait_locator));
-                        break;
-                    case "visibilityOfElementLocated":
-                        wait.until(presenceOfElementLocated(wait_locator));
-                        break;
-                    case "visibilityOfAllElementsLocatedBy":
-                        wait.until(visibilityOfAllElementsLocatedBy(wait_locator));
-                        break;
-                    case "elementToBeClickable":
-                        wait.until(elementToBeClickable(wait_locator));
-                        break;
-                    case "newWindowIsOpened":
-                        try {
-                            String newwindow = wait.until(newWindowIsOpened(currentWindowHandles));
-                            windows_stack.push(newwindow);
-                            driver.switchTo().window(newwindow);
-                            //String handle = driver.getWindowHandle();
-                            LOG.debug("newWindowIsOpened: " + newwindow + " title:" + driver.getTitle());
-                        } catch (Exception e) {
-                            LOG.warn("Failed to open new window");
-                            return (action.isFatal ? false : true);
+                try {
+                    By wait_locator = getLocator(null, 0, expection.element);
+                    switch (expection.condition) {
+                        case "titleIs":
+                            wait.until(titleIs(expection.value));
+                            break;
+                        case "presenceOfElementLocated":
+                            wait.until(presenceOfElementLocated(wait_locator));
+                            break;
+                        case "presenceOfAllElementsLocatedBy":
+                            wait.until(presenceOfAllElementsLocatedBy(wait_locator));
+                            break;
+                        case "visibilityOfElementLocated":
+                            wait.until(presenceOfElementLocated(wait_locator));
+                            break;
+                        case "visibilityOfAllElementsLocatedBy":
+                            wait.until(visibilityOfAllElementsLocatedBy(wait_locator));
+                            break;
+                        case "elementToBeClickable":
+                            wait.until(elementToBeClickable(wait_locator));
+                            break;
+                        case "newWindowIsOpened":
+                            try {
+                                String newwindow = wait.until(newWindowIsOpened(currentWindowHandles));
+                                windows_stack.push(newwindow);
+                                driver.switchTo().window(newwindow);
+                                //String handle = driver.getWindowHandle();
+                                LOG.debug("newWindowIsOpened: " + newwindow + " title:" + driver.getTitle());
+                            } catch (Exception e) {
+                                LOG.warn("Failed to open new window");
+                                return (action.isFatal ? false : true);
                             /*
                             for (int i = 0; i < 5; i++) {
                                 try {
@@ -442,38 +442,42 @@ public class FetcherThread extends Thread {
                                 LOG.warn("Failed to see Alert Dialog");
                             }
                             */
-                        }
-                        break;
-                    case "frameToBeAvailableAndSwitchToIt":
-                        wait.until(frameToBeAvailableAndSwitchToIt(wait_locator));
-                        //driver.switchTo().frame("garage");
-                        break;
-                    case "onlywait":
-                        try {
-                            wait.until(onlywait());
-                        } catch (TimeoutException e) {
-                            LOG.debug("onlywait 5 seconds");
-                        }
-                        break;
-                    case "elementTextChanged":
-                        String currentText = currentTexts.poll();
-                        LOG.debug("Current text: " + currentText);
-                        String newtext = wait.until(elementTextChanged(wait_locator, currentText));
-                        LOG.debug("Element text changed to " + newtext);
-                        break;
-                    case "elementValueChanged":
-                        String currentValue = currentTexts.poll();
-                        LOG.debug("Current value: " + currentValue);
-                        String newvalue = wait.until(elementValueChanged(wait_locator, currentValue));
-                        LOG.debug("Element value changed to " + newvalue);
-                        break;
-                    case "elementToBeSelected":
-                        wait.until(elementToBeSelected(wait_locator));
-                        break;
-                    default:
-                        driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);
-                        LOG.debug("waited 5 seconds");
-                        break;
+                            }
+                            break;
+                        case "frameToBeAvailableAndSwitchToIt":
+                            wait.until(frameToBeAvailableAndSwitchToIt(wait_locator));
+                            //driver.switchTo().frame("garage");
+                            break;
+                        case "onlywait":
+                            try {
+                                wait.until(onlywait());
+                            } catch (TimeoutException e) {
+                                LOG.debug("onlywait 5 seconds");
+                            }
+                            break;
+                        case "elementTextChanged":
+                            String currentText = currentTexts.poll();
+                            LOG.debug("Current text: " + currentText);
+                            String newtext = wait.until(elementTextChanged(wait_locator, currentText));
+                            LOG.debug("Element text changed to " + newtext);
+                            break;
+                        case "elementValueChanged":
+                            String currentValue = currentTexts.poll();
+                            LOG.debug("Current value: " + currentValue);
+                            String newvalue = wait.until(elementValueChanged(wait_locator, currentValue));
+                            LOG.debug("Element value changed to " + newvalue);
+                            break;
+                        case "elementToBeSelected":
+                            wait.until(elementToBeSelected(wait_locator));
+                            break;
+                        default:
+                            driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);
+                            LOG.debug("waited 5 seconds");
+                            break;
+                    }
+                } catch ( Exception ee ) {
+                    LOG.warn("Specific expection failed, return false >>> Exception ", ee);
+                    return false;
                 }
             }
         }
@@ -488,9 +492,17 @@ public class FetcherThread extends Thread {
             LOG.debug("No Actions, return");
             return true;
         }
+        int original_windows = windows_stack.size();
         for ( int i = 0; i < actions.actions.size(); i++ ) {
             boolean ret = Action(xpath_prefix, index, actions.actions.get(i));
             if ( !ret ) {
+                while ( windows_stack.size() > original_windows ) {
+                    LOG.info("close window opened by failed action before return false");
+                    windows_stack.pop();
+                    String previousWindowHandle = (String) windows_stack.peek();
+                    driver.close();
+                    driver.switchTo().window(previousWindowHandle);
+                }
                 return ret;
             }
         }
