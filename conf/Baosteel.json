@@ -1,0 +1,127 @@
+{
+  "name" : "Baosteel",
+  "actions" :
+  [
+    {
+      "element": "http://job.baosteel.com",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "Map2",
+        "how" : "ID",
+      }]
+    },
+    {
+      "element" : "//MAP[@id='Map2']/AREA[2]",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "frameToBeAvailableAndSwitchToIt",
+          "element" : "//DIV[@class='wrap w1000 mt10']/iframe"
+        },
+        {
+          "condition" : "frameToBeAvailableAndSwitchToIt",
+          "element" : "iframeJob",
+          "how" : "ID",
+        },
+      ]
+    },
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE/TBODY/TR[descendant::TH]",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TH/A",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpenedBackground",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element" : "WRSS01",
+                "how" : "ID",
+              }
+            ]
+          },
+        ],
+      },
+      "procedure": {
+        "extracts": {
+          "job_title" : {
+            "element" : "//DIV[@class='wrap w974']/TABLE[1]/TBODY/TR[1]/TD[1]/strong/font"
+          },
+          "job_company_subname" : {
+            "element" : "//DIV[@class='wrap w974']/TABLE[1]/TBODY/TR[2]/TD[1]/strong"
+          },
+          "job_location" : {
+            "element" : "//DIV[@class='wrap w974']/TABLE[2]/TBODY/TR[1]/TD[1]",
+            "transforms" : [
+              {
+                "how" : "location_regex",
+                "value" : "s/工作地点：(.*省)?(.*)/$2/g",
+              },
+            ]
+          },
+          "job_date" : {
+            "element" : "//DIV[@class='wrap w974']/TABLE[2]/TBODY/TR[1]/TD[2]",
+            "transforms" : [
+              {
+                "how" : "regex",
+                "value" : "s/\\D*([^~]*)~.*/$1/g",
+              },
+            ]
+          },
+          "job_expire" : {
+            "element" : "//DIV[@class='wrap w974']/TABLE[2]/TBODY/TR[1]/TD[2]",
+            "transforms" : [
+              {
+                "how" : "regex",
+                "value" : "s/.*~(.*)/$1/g",
+              },
+            ]
+          },
+          "job_description": {
+            "element" : "//DIV[@class='wrap w974']/TABLE[3]/TBODY/TR",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "begin",
+      "loop_for_pages":  true,
+      "loop_totalpages": {
+        "element" : "//DIV[@class='wrap w1007 mt5']/TABLE/TBODY/TR[1]/TD[1]/FONT[2]",
+      },
+      "actions": [
+        {
+          "element": "gotoPageNum",
+          "how": "ID",
+          "cmd": "setPage",
+        },
+        {
+          "element" : "go",
+          "how" : "ID",
+          "cmd" : "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//DIV[@class='wrap w1007 mt5']/TABLE/TBODY/TR[1]/TD[1]/SPAN[@class='current']",
+          }]
+        },
+      ],
+    },
+  }
+}
+

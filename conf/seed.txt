@@ -27,3 +27,4 @@ Honeywell
 3M
 Baidu
 Vanke
+Baosteel

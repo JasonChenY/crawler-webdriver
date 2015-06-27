@@ -417,12 +417,21 @@ public class FetcherThread extends Thread {
                             wait.until(elementToBeClickable(wait_locator));
                             break;
                         case "newWindowIsOpened":
+                        case "newWindowIsOpenedBackground":
                             try {
                                 String newwindow = wait.until(newWindowIsOpened(currentWindowHandles));
-                                windows_stack.push(newwindow);
-                                driver.switchTo().window(newwindow);
-                                //String handle = driver.getWindowHandle();
-                                LOG.debug("newWindowIsOpened: " + newwindow + " title:" + driver.getTitle());
+                                if ( expection.condition.equals("newWindowIsOpened") ) {
+                                    windows_stack.push(newwindow);
+                                    driver.switchTo().window(newwindow);
+                                    //String handle = driver.getWindowHandle();
+                                    LOG.debug("newWindowIsOpened: " + newwindow + " title:" + driver.getTitle());
+                                } else {
+                                    // stupid Baosteel bug which will open summary page in old window, but replace job list in new window
+                                    String origwindow = (String)windows_stack.pop();
+                                    windows_stack.push(newwindow);
+                                    windows_stack.push(origwindow);
+                                    LOG.debug("newWindowIsOpened(but in background): " + newwindow + " title:" + driver.getTitle());
+                                }
                             } catch (Exception e) {
                                 LOG.warn("Failed to open new window");
                                 return (action.isFatal ? false : true);
