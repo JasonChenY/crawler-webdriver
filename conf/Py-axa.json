@@ -1,0 +1,109 @@
+{
+  "name" : "Py-axa",
+  "limitation" : "can only use navigation back, when back will switch to first page automatically",
+  "actions" :
+  [
+    {
+      "element": "http://www.py-axa.com/web/aboutus/job.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfAllElementsLocated",
+        "element": "searpage1",
+        "how" : "ID"
+      }],
+      "debug":false
+    },
+  ],
+  "procedure": {
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "pagenext",
+          "how" : "ID",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//DIV[@id='fixpage']/SPAN/SPAN[@id='pageno']",
+            },
+          ],
+        },
+      ],
+    },
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@id='searpage1']/DIV/DIV/TABLE[@id='datatable']/TBODY[2]/TR",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "executeScript",
+            "value": "var jobid = arguments[0].getAttribute('jobid');arguments[0].setAttribute('href', '/pyweb/aboutus/job_p.ha?jobpk='+jobid);arguments[0].removeAttribute('onclick');"
+          },
+          {
+            "element": "TD[1]/A",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "recruitmentform",
+                "how" : "ID"
+              },
+            ],
+          },
+        ],
+      },
+      "extracts" : {
+        "job_title": {
+          "element": "TD[1]/A",
+        },
+        "job_date" : {
+          "element" : "TD[4]/SPAN",
+        },
+      }
+      "procedure" : {
+        "extracts": {
+          "job_url": {
+            "how": "url",
+          },
+          "job_location": {
+            "element": "workplace",
+            "how": "ID",
+            "transforms": [
+              {
+                "how": "regex",
+                "value": "s#/#,#g",
+              }
+            ]
+          },
+          "job_expire" : {
+            "element" : "endtime",
+            "how": "ID",
+          }
+          "job_description": {
+            "element": "//SPAN[@id='explain' or @id='condition']",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+            "expections" :
+            [
+              {
+                "condition" : "presenceOfAllElementsLocated",
+                "element": "searpage1",
+                "how" : "ID"
+              }
+            ],
+          },
+        ]
+      }
+    },
+  }
+}
+

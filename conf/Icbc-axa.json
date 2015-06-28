@@ -1,0 +1,70 @@
+{
+  "name" : "Icbc-axa",
+  "actions" :
+  [
+    {
+      "element": "https://www.icbc-axa.com/joinus/vacancy01/vacancy/vacancy.jsp",
+      "comment:element": "http://192.168.137.128:8080/jstest/Icbc-axa/job_list.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfAllElementsLocated",
+        "element": "page_content",
+        "how" : "CLASS_NAME"
+      }],
+      "debug":false
+    },
+  ],
+  "procedure": {
+    "loop": {
+      "xpath_prefix": "//DIV[@class='product_left_list']/UL/LI",
+      "loop_type": "begin",
+      "loop_for_pages": true,
+      "actions": [
+        {
+          "element": "SPAN[1]/A[text()='正在招聘']",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "presenceOfElementLocated",
+              "element": "page_content",
+              "how" : "CLASS_NAME"
+            },
+          ],
+        },
+      ],
+    },
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "(//DIV[@class='link'])",
+        "loop_type": "begin",
+      },
+      "extracts": {
+        "job_url": {
+          "how": "url",
+        },
+        "job_title": {
+          "element": "A",
+          "method": "innerHTML",
+        },
+        "job_location": {
+          "element": "parent::DIV[@class='positions']/preceding-sibling::DIV[@class='name']/A",
+          "method": "innerHTML",
+          "transforms": [
+            {
+              "how": "regex",
+              "value": "s/总部/上海/g",
+            }
+          ]
+        },
+        "job_description": {
+          "element": "following-sibling::DIV[@class='table'][1]",
+        }
+      },
+    },
+  }
+  "job_unique_id_calc" : {
+    "how" : "url_plus_title",
+  },
+}
+

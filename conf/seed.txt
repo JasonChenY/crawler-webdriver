@@ -32,3 +32,6 @@ Volkswagen
 Faw-Volkswagen
 Toyota
 Axatp
+Icbc-axa
+Axa-assistance
+Py-axa

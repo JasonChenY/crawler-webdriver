@@ -387,6 +387,14 @@ public class FetcherThread extends Thread {
                     //element.clear(); element.sendKeys(String.valueOf(index));
                     new Actions(driver).clickAndHold(element).sendKeys(Keys.chord(Keys.CONTROL, "a"), String.valueOf(index)).build().perform();
                     break;
+                case openInNewTab_ContextClick:
+                    LOG.debug("openInNewTab_ContextClick " + dbgstr);
+                    new Actions(driver).contextClick(element).sendKeys(Keys.ARROW_DOWN).sendKeys(Keys.ENTER).build().perform();
+                    break;
+                case executeScript:
+                    LOG.debug("executeScript " + dbgstr);
+                    ((JavascriptExecutor)driver).executeScript(action.setvalue, element);
+                    break;
                 default: break;
             }
         }
@@ -540,7 +548,7 @@ public class FetcherThread extends Thread {
                 Schema.Element ele = extracts.items.get(key);
                 if ( (ele.how != null) && ele.how.equals("url") ) {
                     job.addField(Job.JOB_URL, driver.getCurrentUrl());
-                    LOG.debug("job_url" + ":" + driver.getCurrentUrl());
+                    LOG.debug("job_url" + ": " + driver.getCurrentUrl());
                 } else {
                     By locator = getLocator(xpath_prefix, index, ele);
                     String value = "";
@@ -651,6 +659,9 @@ public class FetcherThread extends Thread {
                         // some default handling to avoid config item in schema
                         if (key.equals(Job.JOB_DATE) || key.equals(Job.JOB_EXPIRE)) {
                             value = DateUtils.formatDate(value);
+                        }
+                        if (key.equals(Job.JOB_LOCATION)) {
+                            value = LocationUtils.format(value);
                         }
                     }
                     job.addField(key, value);

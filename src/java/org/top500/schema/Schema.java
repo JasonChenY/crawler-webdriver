@@ -287,7 +287,7 @@ public class Schema {
 
     public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore,
                          ScrollIntoView, selectByVisibleText, selectByValue, zoom,
-                         openInNewTab, sendKeys, switchToMainFrame, setPage};
+                         openInNewTab, sendKeys, switchToMainFrame, setPage, openInNewTab_ContextClick, executeScript};
     public class Command {
         /* 'click':  if not configured ( default value ) ----> changed to None if not configured
            'None':   if unknown cmd configured.
@@ -340,6 +340,7 @@ public class Schema {
                             break;
                         case "openInNewTab":
                             code = CmdType.openInNewTab;
+                            //CTRL + click
                             break;
                         case "sendKeys":
                             code = CmdType.sendKeys;
@@ -350,6 +351,13 @@ public class Schema {
                         case "setPage":
                             // in fact using sendKeys, just with value by runtime data.
                             code = CmdType.setPage;
+                            break;
+                        case "openInNewTab_ContextClick":
+                            code = CmdType.openInNewTab_ContextClick;
+                            //Right click
+                            break;
+                        case "executeScript":
+                            code = CmdType.executeScript;
                             break;
                         default:
                             code = CmdType.None;

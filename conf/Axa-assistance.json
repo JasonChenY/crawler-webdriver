@@ -1,0 +1,92 @@
+{
+  "name" : "Axa-assistance",
+  "actions" :
+  [
+    {
+      "element": "http://axa-assistance.com.cn/joinus.php?category_id-38.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfAllElementsLocated",
+        "element": "newsList",
+        "how" : "ID"
+      }],
+      "debug":false
+    },
+  ],
+  "procedure": {
+    "loop": {
+      "xpath_prefix": "//DIV[@id='newsList']/P[@class='p_page']/A[not(@class='pages')]",
+      "loop_type": "begin",
+      "loop_for_pages": true,
+      "actions": [
+        {
+          "element": ".",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "presenceOfElementLocated",
+              "element": "newsList",
+              "how" : "ID"
+            },
+          ],
+        },
+      ],
+    },
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@id='newsList']/UL/LI",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "A[1]",
+            "cmd": "openInNewTab",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "content2",
+                "how" : "ID"
+              },
+            ],
+          },
+        ],
+      },
+      "extracts" : {
+        "job_title": {
+          "element": "A[1]",
+        },
+        "job_date" : {
+          "element" : "SPAN[1]",
+          "transforms": [
+            {
+              "how" : "dateFormat",
+              "value" : "yyyy-MM-dd",
+            }
+          ]
+        }
+      }
+      "procedure" : {
+        "extracts": {
+          "job_url": {
+            "how": "url",
+          },
+          "job_location": {
+            "element": "//DIV[@id='output2']//SPAN[starts-with(text(),'Based in:')]/following-sibling::SPAN[1]",
+          },
+          "job_description": {
+            "element": "//DIV[@id='output2']",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      }
+    },
+  }
+}
+
