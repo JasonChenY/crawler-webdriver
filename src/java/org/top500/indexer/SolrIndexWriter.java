@@ -51,7 +51,7 @@ public class SolrIndexWriter {
         String title = "";
         for(String key : job.getFields().keySet()) {
             String val = job.getField(key);
-
+/*
             if (key.equals(Job.JOB_DESCRIPTION)) {
                 try {
                     MessageDigest md = MessageDigest.getInstance("MD5");
@@ -62,6 +62,7 @@ public class SolrIndexWriter {
                     LOG.warn("failed to get MD5 algo");
                 }
             }
+*/
 
             inputDoc.addField(solrMapping.mapKey(key), val);
             String sCopy = solrMapping.mapCopyKey(key);
@@ -69,11 +70,6 @@ public class SolrIndexWriter {
                 inputDoc.addField(sCopy, val);
             }
         }
-
-        // Some internal field
-
-        inputDoc.addField("tstamp", DateUtils.getCurrentDate());
-        inputDoc.addField("boost","1.0");
 
         inputDoc.setDocumentBoost(0);
         inputDocs.add(inputDoc);

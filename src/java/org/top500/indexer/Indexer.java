@@ -127,6 +127,9 @@ public class Indexer extends RunListener {
             job.addField(Job.JOB_LOCATION, "Shanghai");
             job.addField(Job.JOB_DATE, org.top500.utils.DateUtils.getCurrentDate());
             job.addField(Job.JOB_DESCRIPTION, str);
+            job.addField(Job.JOB_INDEX_DATE, org.top500.utils.DateUtils.getCurrentDate());
+            job.addField(Job.JOB_UNIQUE_ID, str); 
+            
             try {
                 indexer.getWriter().write(job);
             } catch ( Exception e ) {

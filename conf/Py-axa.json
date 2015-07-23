@@ -1,6 +1,5 @@
 {
   "name" : "Py-axa",
-  "limitation" : "can only use navigation back, when back will switch to first page automatically",
   "actions" :
   [
     {

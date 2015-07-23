@@ -716,6 +716,9 @@ public class FetcherThread extends Thread {
 	    // which means to disable the combination in schema and comment this section of code
 	        newjob.removeField(Job.JOB_COMPANY_SUBNAME);
         }
+
+        // for potential future remove outdated jobs
+        newjob.addField(Job.JOB_INDEX_DATE, DateUtils.getCurrentDate());
     }
     private boolean Procedure(Schema.Procedure procedure, Job job) {
         if ( procedure == null ) return true;

@@ -17,32 +17,16 @@
 -->
 
 <mapping>
-	<!-- Simple mapping of fields created by Nutch IndexingFilters
-	     to fields defined (and expected) in Solr schema.xml.
-
-             Any fields in NutchDocument that match a name defined
-             in field/@source will be renamed to the corresponding
-             field/@dest.
-             Additionally, if a field name (before mapping) matches
-             a copyField/@source then its values will be copied to 
-             the corresponding copyField/@dest.
-
-             uniqueKey has the same meaning as in Solr schema.xml
-             and defaults to "id" if not defined.
-         -->
-	<fields>
-		<field dest="title" source="title"/>
-		<field dest="host" source="host"/>
-		<field dest="batchId" source="batchId"/>
-		<field dest="boost" source="boost"/>
-		<field dest="digest" source="digest"/>
-		<field dest="tstamp" source="tstamp"/>
+    <fields>
+        <!-- After refractoring, dont need do remapping anymore
+        <field dest="job_url" source="job_url"/>
+        <field dest="job_index_date" source="job_index_date"/>
         <field dest="job_company" source="job_company"/>
-		<field dest="job_title" source="job_title"/>
-		<field dest="job_location" source="job_location"/>
-		<field dest="job_date" source="job_date"/>
-        <field dest="content" source="job_description"/>
-        <field dest="url" source="job_url"/>
-	</fields>
-	<uniqueKey>id</uniqueKey>
+        <field dest="job_title" source="job_title"/>
+        <field dest="job_location" source="job_location"/>
+        <field dest="job_date" source="job_date"/>
+        <field dest="job_description" source="job_description"/>
+        -->
+    </fields>
+    <uniqueKey>id</uniqueKey>
 </mapping>
