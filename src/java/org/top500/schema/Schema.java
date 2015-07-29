@@ -150,6 +150,7 @@ public class Schema {
         public String element;
         public String how;
         public String method;
+        public String value; /* optional, to specify which attr to extract with method 'getAttribute' */
         public List<Transform> transforms;
         public Element(Object o) throws Exception {
             if ( o == null ) return;
@@ -169,10 +170,11 @@ public class Schema {
                         transforms.add(transform);
                     }
                 } else {
-                    String value = (String) entry.getValue();
-                    if (name.equals("element")) element = value;
-                    if (name.equals("how")) how = value;
-                    if (name.equals("method")) method = value;
+                    String val = (String) entry.getValue();
+                    if (name.equals("element")) element = val;
+                    if (name.equals("how")) how = val;
+                    if (name.equals("method")) method = val;
+                    if (name.equals("value")) value = val;
                 }
             }
         }
@@ -181,7 +183,15 @@ public class Schema {
             how = h;
         }
         public void print(String ident) {
-            System.out.println(ident + "{" + "element:'" + element + "',how:'" + how + "',");
+            System.out.println(ident + "{");
+            System.out.println(ident + "    'element':'" + element + "',");
+            System.out.println(ident + "    'how':'" + how + "',");
+            if ( method != null ) {
+                System.out.println(ident + "    'method':'" + method + "',");
+            }
+            if ( value != null ) {
+                System.out.println(ident + "    'value':'" + value + "',");
+            }
             if ( transforms != null ) {
                 System.out.println(ident + "'transforms' : [");
                 for ( int i = 0; i < transforms.size(); i++ ) transforms.get(i).print(ident + "   ");

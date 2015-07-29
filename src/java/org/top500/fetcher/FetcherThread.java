@@ -565,6 +565,13 @@ public class FetcherThread extends Thread {
                     for ( int i = 0; i < elements.size(); i++ ) {
                         if ( ele.method != null ) {
                             switch ( ele.method ) {
+                                case "getAttribute":
+                                    if ( ele.value != null ) {
+                                        value = elements.get(i).getAttribute(ele.value);
+                                    } else {
+                                        value = elements.get(i).getAttribute("value");
+                                    }
+                                    break;
                                 case "getValue":
                                     value = elements.get(i).getAttribute("value");
                                     break;

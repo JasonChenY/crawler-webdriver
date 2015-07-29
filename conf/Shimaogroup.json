@@ -38,11 +38,9 @@
             ]
           },
         ],
+        "debug":true,
       },
       "extracts": {
-        "job_location": {
-          "element": "TD[5]",
-        },
         "job_date": {
           "element": "TD[6]",
         },
@@ -58,6 +56,11 @@
           },
           "job_url": {
             "how": "url",
+          },
+          "job_location": {
+            "element": "//DIV[@class='main_div_content']/UL/LI[4]/SPAN[2]/SPAN",
+            "method" : "getAttribute",
+            "value" : "title",
           },
         },
         "actions": [
