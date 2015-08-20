@@ -19,15 +19,17 @@
       "cmd" : "click",
       "expections" : [{
         "condition" : "presenceOfElementLocated",
-        "element" : "Question19849__FORMTEXT4",
+        "element" : "ctl00_MainContent_submit1",
         "how" : "ID",
       }],
     },
     {
-      "element" : "Question19849__FORMTEXT4",
-      "how" : "ID",
-      "cmd" : "selectByVisibleText",
-      "value" : "China",
+      "comment:element" : "Question19849__FORMTEXT4",
+      "comment:how" : "ID",
+      "comment:cmd" : "selectByVisibleText",
+      "element" : "//INPUT[@title='Job Country']",
+      "cmd" : "sendKeys",
+      "value" : "",
     },
     {
       "element" : "ctl00_MainContent_LastDateUpdated",
