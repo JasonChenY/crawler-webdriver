@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 
 public class Schema {
     private String name;
+    private String fullname;
     public Actions actions;
     public Procedure procedure;
     public JobUniqueIdCalc job_unique_id_calc;
@@ -56,6 +57,7 @@ public class Schema {
         JSONParser parser = new JSONParser();
         JSONObject obj = (JSONObject) parser.parse(input);
         name = (String) obj.get("name");
+        fullname = (String) obj.get("fullname");
         actions = new Actions(obj.get("actions"));
         procedure = new Procedure(obj.get("procedure"));
         if ( obj.get("job_unique_id_calc") != null ) {
@@ -65,6 +67,7 @@ public class Schema {
         }
     }
     public String getName() { return name; }
+    public String getFullName() { return fullname; }
 
     public Schema(Reader input) throws Exception {
         init(input);

@@ -1,5 +1,6 @@
 {
   "name" : "Pingan",
+  "fullname" : "中国平安保险（集团）股份有限公司",
   "actions" :
   [
     {
@@ -82,7 +83,7 @@
           "job_url": {
             "how": "url",
           },
-          "job_date": {
+          "job_post_date": {
             "element" : "//TABLE[@class='c_t_a m_a']/TBODY/TR[@class='c_t_a_a'][2]/TD[2]/B",
           },
         },

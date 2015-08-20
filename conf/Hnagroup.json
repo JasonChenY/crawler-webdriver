@@ -1,5 +1,6 @@
 {
   "name": "Hnagroup",
+  "fullname" : "海航集团",
   "actions" :
   [
     {
@@ -44,7 +45,7 @@
         "job_title": {
           "element": "TD[1]/A",
         }
-        "job_expire": {
+        "job_expire_date": {
           "element": "gv_Browse_ctl02_lbl_EndTime",
           "how": "ID",
         }

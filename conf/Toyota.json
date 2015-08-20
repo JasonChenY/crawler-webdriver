@@ -1,5 +1,6 @@
 {
   "name": "Toyota",
+  "fullname" : "丰田汽车公司",
   "actions" :
   [
     {
@@ -43,7 +44,7 @@
         "job_location": {
           "element": "TD[5]",
         },
-        "job_date": {
+        "job_post_date": {
           "element": "TD[6]",
         },
         "job_title": {

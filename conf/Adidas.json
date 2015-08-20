@@ -1,5 +1,6 @@
 {
   "name": "Adidas",
+  "fullname" : "阿迪达斯",
   "actions" :
   [
     {
@@ -64,7 +65,7 @@
         "job_title" : {
           "element": "TD[2]/A",
         },
-        "job_date" : {
+        "job_post_date" : {
           "element" : "TD[1]",
         }
         "job_location" : {

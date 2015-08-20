@@ -1,5 +1,6 @@
 {
   "name" : "Vanke",
+  "fullname" : "万科",
   "actions" :
   [
     {
@@ -62,7 +63,7 @@
           "job_url": {
             "how": "url",
           },
-          "job_date" : {
+          "job_post_date" : {
             "element" : "//DIV[@class='txt']/SPAN[text()='发布时间：']/following-sibling::SPAN[1]"
           },
         },
@@ -85,7 +86,7 @@
       ],
     }
   }
-  "comment:job_expire" : {
+  "comment:job_expire_date" : {
     "element" : "//DIV[@class='txt']/SPAN[text()='截至时间：']/following-sibling::SPAN[1]"
   }
 }

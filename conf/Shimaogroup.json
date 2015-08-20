@@ -1,5 +1,6 @@
 {
   "name": "Shimaogroup",
+  "fullname" : "世集团茂",
   "actions" :
   [
     {
@@ -41,7 +42,7 @@
         "debug":true,
       },
       "extracts": {
-        "job_date": {
+        "job_post_date": {
           "element": "TD[6]",
         },
         "job_title": {

@@ -1,5 +1,6 @@
 {
   "name": "Sanofi",
+  "fullname" : "赛诺菲",
   "actions" :
   [
     {
@@ -80,7 +81,7 @@
           "job_title": {
             "element": "//TABLE[@class='job-base']/TBODY/TR[1]/TD[2]",
           },
-          "job_date": {
+          "job_post_date": {
             "element": "//TABLE[@class='job-base']/TBODY/TR[5]/TD[2]",
             "how": "XPATH",
           }

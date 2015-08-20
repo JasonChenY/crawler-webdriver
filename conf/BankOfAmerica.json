@@ -1,5 +1,6 @@
 {
   "name": "BankOfAmerica",
+  "fullname" : "美国银行",
   "actions" :
   [
     {
@@ -72,7 +73,7 @@
         "job_title" : {
           "element": "TD[1]/A",
         },
-        "job_date" : {
+        "job_post_date" : {
           "element" : "TD[3]/SPAN",
           "transforms" : [
             {

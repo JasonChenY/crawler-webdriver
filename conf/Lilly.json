@@ -1,5 +1,6 @@
 {
   "name": "Lilly",
+  "fullname" : "礼来",
   "actions" :
   [
     {
@@ -56,7 +57,7 @@
             }
           ]
         },
-        "job_date": {
+        "job_post_date": {
           "element": "TD[7]/DIV",
         },
         "job_title": {
@@ -80,7 +81,7 @@
               },
             ],
           },
-          "job_expire" : {
+          "job_expire_date" : {
             "element" : "删除日期",
             "how" : "ID",
           }

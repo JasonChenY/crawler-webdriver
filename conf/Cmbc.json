@@ -1,5 +1,6 @@
 {
   "name" : "Cmbc",
+  "fullname" : "中国民生银行",
   "actions" :
   [
     {
@@ -67,7 +68,7 @@
         "job_location": {
           "element": "TD[3]",
         },
-        "job_expire" : {
+        "job_expire_date" : {
           "element": "TD[4]",
         },
       },

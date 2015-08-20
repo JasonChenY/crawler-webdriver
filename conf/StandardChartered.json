@@ -1,5 +1,6 @@
 {
   "name": "StandardChartered",
+  "fullname" : "渣打银行",
   "actions" :
   [
     {
@@ -63,7 +64,7 @@
         ],
       },
       "extracts": {
-        "job_date": {
+        "job_post_date": {
           "element": "TD[6]/DIV/SPAN",
           "transforms" : [
             {

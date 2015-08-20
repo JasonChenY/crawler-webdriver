@@ -1,5 +1,6 @@
 {
   "name" : "Cmbchina",
+  "fullname" : "招商银行",
   "actions" :
   [
     {
@@ -91,10 +92,10 @@
             }
         ]
       },
-      "job_date" : {
+      "job_post_date" : {
         "element": "TD[4]",
       },
-      "job_expire" : {
+      "job_expire_date" : {
         "element": "TD[5]",
       },
     },

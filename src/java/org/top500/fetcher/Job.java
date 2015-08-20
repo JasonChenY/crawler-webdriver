@@ -8,27 +8,30 @@ public class Job {
     public static final String JOB_COMPANY = "job_company";
     public static final String JOB_COMPANY_SUBNAME = "job_company_subname";
     public static final String JOB_URL = "job_url";
+    public static final String JOB_URL_TYPE = "job_url_type";
+    public static final String JOB_TYPE = "job_type";
     public static final String JOB_TITLE = "job_title";
     public static final String JOB_LOCATION = "job_location";
-    public static final String JOB_DATE = "job_date";
-    public static final String JOB_EXPIRE = "job_expire";
+    public static final String JOB_POST_DATE = "job_post_date";
+    public static final String JOB_EXPIRE_DATE = "job_expire_date";
     public static final String JOB_DESCRIPTION = "job_description";
-    public static final String JOB_INDEX_DATE= "job_index_date";
-    public static final String JOB_CATEGORY= "job_category";
+    public static final String JOB_INDEX_DATE = "job_index_date";
+    public static final String JOB_CATEGORY_DOMAIN = "job_category_domain";
+    public static final String JOB_EXPIRED = "job_expired";
 
-    final Map<String, String> fields;
+    final Map<String, Object> fields;
 
     public Job() {
-        fields = new HashMap<String, String>();
+        fields = new HashMap<String, Object>();
     }
 
-    public void addField(String key, String value) {
+    public void addField(String key, Object value) {
         fields.put(key, value);
     }
     public void removeField(String key) {
 	fields.remove(key);
     }
-    public String getField(String key) {
+    public Object getField(String key) {
         if (fields.containsKey(key)) {
             return fields.get(key);
         } else {
@@ -36,7 +39,7 @@ public class Job {
         }
     }
 
-    public final Map<String, String> getFields() {
+    public final Map<String, Object> getFields() {
         return fields;
     }
 }

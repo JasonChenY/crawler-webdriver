@@ -664,7 +664,7 @@ public class FetcherThread extends Thread {
 
                     if ( !formatted ) {
                         // some default handling to avoid config item in schema
-                        if (key.equals(Job.JOB_DATE) || key.equals(Job.JOB_EXPIRE)) {
+                        if (key.equals(Job.JOB_POST_DATE) || key.equals(Job.JOB_EXPIRE_DATE)) {
                             value = DateUtils.formatDate(value);
                         }
                         if (key.equals(Job.JOB_LOCATION)) {
@@ -686,12 +686,12 @@ public class FetcherThread extends Thread {
         JobUniqueIdCalc calc = _schema.job_unique_id_calc;
         if (calc != null && calc.how != null) {
             if (calc.how.equals("url_plus_title")) {
-                newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL) + newjob.getField(Job.JOB_TITLE));
+                newjob.addField(Job.JOB_UNIQUE_ID, (String)newjob.getField(Job.JOB_URL) + (String)newjob.getField(Job.JOB_TITLE));
             } else if (calc.how.equals("regex_on_url")) {
                 if ( calc.value != null && !calc.value.isEmpty() ) {
                     try {
                         Perl5Util plutil = new Perl5Util();
-                        String newurl = plutil.substitute(calc.value, newjob.getField(Job.JOB_URL));
+                        String newurl = plutil.substitute(calc.value, (String)newjob.getField(Job.JOB_URL));
                         newjob.addField(Job.JOB_UNIQUE_ID, newurl);
                     } catch (MalformedPerl5PatternException me) {
                         LOG.warn("Failed to generate unique id for job via regex " + calc.value);
@@ -706,11 +706,11 @@ public class FetcherThread extends Thread {
             newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
         }
 
-        if (!newjob.getFields().containsKey(Job.JOB_DATE) ) {
+        if (!newjob.getFields().containsKey(Job.JOB_POST_DATE) ) {
             LOG.info("No Job_date field extracted, use current time");
-            newjob.addField(Job.JOB_DATE, DateUtils.getCurrentDate());
+            newjob.addField(Job.JOB_POST_DATE, DateUtils.getCurrentDate());
         }
-
+    /*
         if ( newjob.getFields().containsKey(Job.JOB_COMPANY_SUBNAME) ) {
             String subname = newjob.getField(Job.JOB_COMPANY_SUBNAME);
             if (subname != null && !subname.isEmpty()) {
@@ -723,9 +723,21 @@ public class FetcherThread extends Thread {
 	    // which means to disable the combination in schema and comment this section of code
 	        newjob.removeField(Job.JOB_COMPANY_SUBNAME);
         }
-
+    */
         // for potential future remove outdated jobs
         newjob.addField(Job.JOB_INDEX_DATE, DateUtils.getCurrentDate());
+
+        if (!newjob.getFields().containsKey(Job.JOB_TYPE) ) {
+            newjob.addField(Job.JOB_TYPE, 0);
+        }
+
+        if (!newjob.getFields().containsKey(Job.JOB_URL_TYPE) ) {
+            newjob.addField(Job.JOB_URL_TYPE, 0);
+        }
+
+        if (!newjob.getFields().containsKey(Job.JOB_EXPIRED) ) {
+            newjob.addField(Job.JOB_EXPIRED, false);
+        }
     }
     private boolean Procedure(Schema.Procedure procedure, Job job) {
         if ( procedure == null ) return true;
@@ -801,14 +813,14 @@ public class FetcherThread extends Thread {
                     if ( procedure.fetch_runtime_index == -1 ) procedure.fetch_runtime_index = procedure.begin_from;
                     for (; procedure.fetch_runtime_index < elements.size() + procedure.end_to; procedure.fetch_runtime_index++) {
                         final Job newjob = new Job();
-                        newjob.addField(Job.JOB_COMPANY, _schema.getName());
+                        newjob.addField(Job.JOB_COMPANY, _schema.getFullName());
                         String newprefix = xpath_prefix_loop + "[" + Integer.toString(procedure.fetch_runtime_index + 1) + "]/";
                         if (!Extracts(newprefix, procedure.fetch_runtime_index + 1, procedure.extracts, newjob)) {
                             LOG.debug("Failed to extract info for this job, ignore");
                             continue;
                         }
 
-                        if (DateUtils.nDaysAgo(newjob.getField(Job.JOB_DATE), fetch_n_days)) {
+                        if (DateUtils.nDaysAgo((String)newjob.getField(Job.JOB_POST_DATE), fetch_n_days)) {
                             LOG.debug("Job older than configured date, ignore");
                             continue;
                         }
@@ -881,7 +893,7 @@ public class FetcherThread extends Thread {
                 LOG.info("Failed to extract info for this job (summary page), ignore");
                 valid_job = false;
             }
-            if (DateUtils.nDaysAgo(job.getField(Job.JOB_DATE), fetch_n_days)) {
+            if (DateUtils.nDaysAgo((String)job.getField(Job.JOB_POST_DATE), fetch_n_days)) {
                 LOG.info("Job older than configured date (summary page), ignore");
                 valid_job = false;
             }

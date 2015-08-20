@@ -1,5 +1,6 @@
 {
   "name" : "3M",
+  "fullname" : "3M公司",
   "limitation": "maximum 10 pages, otherwise need fallback to enhance loop_totalpages",
   "actions" :
   [
@@ -49,7 +50,7 @@
             },
           ]
         },
-        "job_date": {
+        "job_post_date": {
           "element" : "TD[3]/SPAN",
           "transforms" : [
             {

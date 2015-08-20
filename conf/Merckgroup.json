@@ -1,5 +1,6 @@
 {
   "name": "Merckgroup",
+  "fullname" : "默克集团",
   "actions" :
   [
     {
@@ -77,7 +78,7 @@
         "job_title" : {
           "element": "TD[1]/DIV[1]/A",
         },
-        "job_date" : {
+        "job_post_date" : {
           "element" : "TD[1]/DIV[2]/SPAN[2]",
           "transforms" : [
             {

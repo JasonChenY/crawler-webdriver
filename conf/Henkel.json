@@ -1,5 +1,6 @@
 {
   "name": "Henkel",
+  "fullname" : "汉高公司",
   "actions" :
   [
     {
@@ -56,7 +57,7 @@
           }
         ]
       },
-      "job_date": {
+      "job_post_date": {
         "element": "TD[1]/DIV",
         "transforms" : [
           {

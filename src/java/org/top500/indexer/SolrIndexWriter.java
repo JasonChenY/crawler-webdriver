@@ -50,7 +50,7 @@ public class SolrIndexWriter {
         String url = "";
         String title = "";
         for(String key : job.getFields().keySet()) {
-            String val = job.getField(key);
+            Object val = job.getField(key);
 /*
             if (key.equals(Job.JOB_DESCRIPTION)) {
                 try {
@@ -78,6 +78,7 @@ public class SolrIndexWriter {
             try {
                 LOG.info("Adding " + Integer.toString(inputDocs.size()) + " documents");
                 solr.add(inputDocs);
+                if ( (documentCount%100) == 0 ) commit();
             } catch (final SolrServerException e) {
                 throw new IOException(e);
             }

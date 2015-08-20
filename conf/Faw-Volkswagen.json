@@ -1,5 +1,6 @@
 {
   "name": "Faw-Volkswagen",
+  "fullname" : "上海大众",
   "actions" :
   [
     {
@@ -46,10 +47,10 @@
         "job_title" : {
           "element" : "//TABLE[@class='table_major']/TBODY/TR/TD/TABLE[2]/TBODY/TR[1]/TD[2]",
         },
-        "job_date" : {
+        "job_post_date" : {
           "element" : "//TABLE[@class='table_major']/TBODY/TR/TD/TABLE[2]/TBODY/TR[4]/TD[2]",
         },
-        "job_expire" : {
+        "job_expire_date" : {
           "element" : "//TABLE[@class='table_major']/TBODY/TR/TD/TABLE[2]/TBODY/TR[8]/TD[2]",
         },
         "job_location" : {

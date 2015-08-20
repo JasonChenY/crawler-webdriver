@@ -1,5 +1,6 @@
 {
   "name": "Sinochem",
+  "fullname" : "中国中化集团公司",
   "actions" :
   [
     {
@@ -61,7 +62,7 @@
         "job_title": {
           "element": "TD[1]/A/FONT",
         },
-        "job_date": {
+        "job_post_date": {
           "element": "TD[6]",
         }
       },

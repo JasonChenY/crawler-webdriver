@@ -1,5 +1,6 @@
 {
   "name" : "Disney",
+  "fullname" : "华特迪士尼公司",
   "actions" :
   [
     {
@@ -75,7 +76,7 @@
             },
           ]
         },
-        "job_date" : {
+        "job_post_date" : {
           "element" : "TD[3]",
         }
       },

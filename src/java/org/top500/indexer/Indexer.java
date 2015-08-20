@@ -36,7 +36,7 @@ public class Indexer extends RunListener {
 
         Joblist joblist = thread.getJoblist();
         for (int i = 0; i < joblist.count(); i++) {
-            LOG.debug(joblist.get(i).getField(Job.JOB_URL));
+            LOG.debug((String)joblist.get(i).getField(Job.JOB_URL));
         }
 
         synchronized (finish_queue){
@@ -125,7 +125,7 @@ public class Indexer extends RunListener {
             job.addField(Job.JOB_URL, "http://a.b.c/" + str);
             job.addField(Job.JOB_TITLE, str);
             job.addField(Job.JOB_LOCATION, "Shanghai");
-            job.addField(Job.JOB_DATE, org.top500.utils.DateUtils.getCurrentDate());
+            job.addField(Job.JOB_POST_DATE, org.top500.utils.DateUtils.getCurrentDate());
             job.addField(Job.JOB_DESCRIPTION, str);
             job.addField(Job.JOB_INDEX_DATE, org.top500.utils.DateUtils.getCurrentDate());
             job.addField(Job.JOB_UNIQUE_ID, str); 

@@ -1,5 +1,6 @@
 {
   "name" : "Baidu",
+  "fullname" : "百度",
   "actions" :
   [
     {
@@ -42,7 +43,7 @@
         "job_location": {
           "element": "TD[3]",
         },
-        "job_date": {
+        "job_post_date": {
           "element" : "TD[4]",
         },
       },

@@ -1,5 +1,6 @@
 {
   "name" : "Py-axa",
+  "fullname" : "浦银安盛基金",
   "actions" :
   [
     {
@@ -61,7 +62,7 @@
         "job_title": {
           "element": "TD[1]/A",
         },
-        "job_date" : {
+        "job_post_date" : {
           "element" : "TD[4]/SPAN",
         },
       }
@@ -80,7 +81,7 @@
               }
             ]
           },
-          "job_expire" : {
+          "job_expire_date" : {
             "element" : "endtime",
             "how": "ID",
           }

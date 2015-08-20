@@ -1,5 +1,6 @@
 {
   "name": "Google",
+  "fullname" : "谷歌",
   "actions" :
   [
     {
@@ -77,7 +78,7 @@
           "element": "without prefix part",
           "how": "XPATH",
         },
-        "job_date": {
+        "job_post_date": {
           "element": "without prefix part",
           "how": "XPATH",
         }
@@ -104,7 +105,7 @@
               }
             ]
           },
-          "job_date": {
+          "job_post_date": {
             "element": "//DIV[@class='details']/DIV[@class='detail-item'][5]/DIV[@class='detail-content']/DIV[5]/DIV[@itemprop='datePosted']",
             "how": "XPATH",
             "transforms" : [

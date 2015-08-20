@@ -1,5 +1,6 @@
 {
   "name": "Thermofisher",
+  "fullname" : "赛默飞世尔科技",
   "actions" :
   [
     {
@@ -62,7 +63,7 @@
               },
               {
                 "condition": "presenceOfElementLocated",
-                "element": "tms_job_row_jobdescription",
+                "element": "jobDesc",
                 "how" : "ID",
               }
             ],
@@ -86,7 +87,7 @@
       "procedure": {
         "extracts": {
           "job_description": {
-            "element" : "tms_job_row_jobdescription",
+            "element" : "jobDesc",
             "how" : "ID",
           },
           "job_url": {

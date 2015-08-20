@@ -1,5 +1,6 @@
 {
   "name": "Exxonmobil",
+  "fullname" : "埃克森美孚",
   "actions" :
   [
     {
@@ -94,7 +95,7 @@
             }
           ]
         },
-        "job_date": {
+        "job_post_date": {
           "element": "TD[6]/DIV",
           "method" : "getText",
           "transforms" : [

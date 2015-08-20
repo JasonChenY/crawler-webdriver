@@ -1,5 +1,6 @@
 {
   "name" : "Axa-assistance",
+  "fullname" : "安盛援助",
   "actions" :
   [
     {
@@ -58,7 +59,7 @@
         "job_title": {
           "element": "A[1]",
         },
-        "job_date" : {
+        "job_post_date" : {
           "element" : "SPAN[1]",
           "transforms": [
             {

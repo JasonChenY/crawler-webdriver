@@ -1,5 +1,6 @@
 {
-  "name": "Abb",
+  "name" : "ABB",
+  "fullname": "瑞士ABB集团",
   "actions" :
   [
     {
@@ -88,7 +89,7 @@
           "job_url": {
             "how": "url",
           },
-          "job_date": {
+          "job_post_date": {
             "element": "//DIV[@class='offerDetails']/DL/DD[3]",
             "how": "XPATH",
           }

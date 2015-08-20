@@ -1,5 +1,6 @@
 {
   "name" : "Baosteel",
+  "fullname" : "宝钢集团有限公司",
   "actions" :
   [
     {
@@ -67,7 +68,7 @@
               },
             ]
           },
-          "job_date" : {
+          "job_post_date" : {
             "element" : "//DIV[@class='wrap w974']/TABLE[2]/TBODY/TR[1]/TD[2]",
             "transforms" : [
               {
@@ -76,7 +77,7 @@
               },
             ]
           },
-          "job_expire" : {
+          "job_expire_date" : {
             "element" : "//DIV[@class='wrap w974']/TABLE[2]/TBODY/TR[1]/TD[2]",
             "transforms" : [
               {
