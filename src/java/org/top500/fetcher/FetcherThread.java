@@ -711,8 +711,8 @@ public class FetcherThread extends Thread {
             newjob.addField(Job.JOB_POST_DATE, DateUtils.getCurrentDate());
         }
     /*
-        if ( newjob.getFields().containsKey(Job.JOB_COMPANY_SUBNAME) ) {
-            String subname = newjob.getField(Job.JOB_COMPANY_SUBNAME);
+        if ( newjob.getFields().containsKey(Job.JOB_SUB_COMPANY) ) {
+            String subname = newjob.getField(Job.JOB_SUB_COMPANY);
             if (subname != null && !subname.isEmpty()) {
                 newjob.addField(Job.JOB_COMPANY, subname);
             }
@@ -721,7 +721,7 @@ public class FetcherThread extends Thread {
 	    // Now Fetcher will combine company name and subname together via Transforms,
 	    // Finally we might need both fields to make client easier.
 	    // which means to disable the combination in schema and comment this section of code
-	        newjob.removeField(Job.JOB_COMPANY_SUBNAME);
+	    newjob.removeField(Job.JOB_SUB_COMPANY);
         }
     */
         // for potential future remove outdated jobs

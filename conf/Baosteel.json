@@ -56,7 +56,7 @@
           "job_title" : {
             "element" : "//DIV[@class='wrap w974']/TABLE[1]/TBODY/TR[1]/TD[1]/strong/font"
           },
-          "job_company_subname" : {
+          "job_sub_company" : {
             "element" : "//DIV[@class='wrap w974']/TABLE[1]/TBODY/TR[2]/TD[1]/strong"
           },
           "job_location" : {

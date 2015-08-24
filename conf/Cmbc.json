@@ -56,7 +56,7 @@
         "job_title": {
           "element": "TD[1]/A",
         },
-        "job_company_subname" : {
+        "job_sub_company" : {
           "element": "TD[2]",
           "transforms" : [
             {
