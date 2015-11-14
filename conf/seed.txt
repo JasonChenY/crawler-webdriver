@@ -17,6 +17,7 @@ Deloitte
 Novozymes
 Thermofisher
 Merckgroup
+#(network not reachable )
 BankOfAmerica
 Adidas
 Cmbchina
@@ -24,6 +25,7 @@ Cmbc
 Pingan
 Disney
 Honeywell
+#(website unreachable)
 3M
 Baidu
 Vanke

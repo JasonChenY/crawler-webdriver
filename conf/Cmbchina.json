@@ -1,6 +1,5 @@
 {
   "name" : "Cmbchina",
-  "fullname" : "招商银行",
   "actions" :
   [
     {
@@ -64,12 +63,6 @@
       },
       "job_sub_company" : {
         "element": "TD[2]",
-        "transforms" : [
-            {
-                "how" : "insertBefore",
-                "value" : "招商银行-",
-            }
-        ]
       },
       "job_location": {
         "element": "TD[3]",

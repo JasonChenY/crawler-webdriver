@@ -1,11 +1,11 @@
 {
   "name" : "3M",
-  "fullname" : "3M公司",
+  "use_proxy": true,
   "limitation": "maximum 10 pages, otherwise need fallback to enhance loop_totalpages",
   "actions" :
   [
     {
-      "element": "https://jobs.3m.com/search/?q=CN",
+      "element": "https://jobs.3m.com/search/?location=,CN",
       "how" : "url",
       "cmd" : "load",
       "expections" : [{
@@ -80,7 +80,7 @@
     "loop": {
       "xpath_prefix": "//DIV[@class='pagination-bottom']/DIV[@class='paginationShell']/DIV/SPAN[@class='pagination-links']/A",
       "loop_type": "begin",
-      "loop_for_pages" : true,
+      "loop_item_type" : "page",
       "begin_from" : 0,
       "end_to" : -1,
       "actions": [

@@ -1,6 +1,6 @@
 {
+  "comment" : "job_url_type:2, and some problem when return back to job list page from first job detail page",
   "name": "StandardChartered",
-  "fullname" : "渣打银行",
   "actions" :
   [
     {
@@ -12,26 +12,28 @@
         "element" : "HRS_SCH_WRK_HRS_CE_LOCATIONS",
         "how" : "ID",
       }],
-      "debug" : true,
+      "debug" : false,
     },
     {
       "element" : "HRS_SCH_WRK_HRS_CE_LOCATIONS",
       "how" : "ID",
       "cmd" : "click",
       "expections" : [{
-        "condition" : "elementToBeClickable",
-        "element" : "HRS_SCH_WRK_HRS_SELECT$15",
-        "how" : "ID",
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//DIV/SPAN[text()='China - SCB']",
       }],
-      "debug" : true,
+      "debug" : false,
     },
     {
-      "element" : "HRS_SCH_WRK_HRS_SELECT$15",
-      "how" : "ID",
+      "element": "//TD/DIV/SPAN[text()='China - SCB']/parent::DIV/parent::TD/preceding-sibling::TD/DIV/INPUT[@type='checkbox']",
       "cmd" : "click",
-      "expections" : [{
-        "condition" : "onlywait",
-      }],
+      "expections" : [
+        {
+          "condition" : "wait",
+          "value" : "5",
+        }
+      ],
+      "debug" : true,
     },
     {
       "element" : "PSFT_CLOSE_MODAL",
@@ -39,10 +41,20 @@
       "cmd" : "click",
       "expections" : [{
         "condition" : "visibilityOfElementLocated",
-        "element" : "//TABLE[@class='PSLEVEL1GRID']",
+        "element" : "PSGRIDCOUNTER",
+        "how": "CLASS_NAME",
       }],
-      "debug" : true,
+      "debug" : false,
     },
+    {
+      "element" : "//DIV[@id='SEARCHACTIONS']/A[@id='Left']",
+      "cmd" : "click",
+      "expections" : [{
+        "condition" : "elementTextChanged",
+        "element" : "PSGRIDCOUNTER",
+        "how" : "CLASS_NAME"
+      }],
+    }
   ],
 
   "procedure" : {
@@ -56,8 +68,8 @@
             "cmd": "click",
             "expections": [{
               "condition": "visibilityOfElementLocated",
-              "element": "ACE_HRS_SCH_PSTDSC$0",
-              "how" :"ID",
+              "element": "HRS_SCH_WRK_CITY",
+              "how": "ID",
             }],
             "debug" : true,
           },
@@ -69,12 +81,16 @@
           "transforms" : [
             {
               "how" : "dateFormat",
-              "value" : "dd MM yyyy",
+              "value" : "yyyy/MM/dd",
             }
           ]
         },
         "job_title": {
           "element": "TD[2]/DIV/SPAN/A"
+        },
+        "job_url_type" : {
+          "value" : "2",
+          "how" : "int",
         }
       },
       "procedure": {
@@ -90,6 +106,10 @@
             "element": "HRS_SCH_WRK_CITY",
             "how": "ID",
           },
+          "job_category_domain" : {
+            "element": "JOBFUNCTION_TBL_DESCR",
+            "how": "ID",
+          }
         },
         "actions": [
           {
@@ -108,8 +128,7 @@
       "loop_type": "end",
       "actions": [
         {
-          "element": "HRS_CE_JO_EXT_I$hdown$0",
-          "how" : "ID",
+          "element": "//A/img[contains(@title,'Show next row')]/parent::A",
           "cmd": "click",
           "expections": [{
               "condition": "visibilityOfElementLocated",
@@ -118,6 +137,9 @@
         },
       ],
     }
+  },
+  "job_unique_id_calc" : {
+    "how" : "url_plus_title",
   },
 }
 

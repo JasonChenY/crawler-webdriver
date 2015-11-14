@@ -1,6 +1,6 @@
 {
   "name" : "Novozymes",
-  "fullname" : "诺维信",
+  "use_proxy": true,
   "actions" :
   [
     {

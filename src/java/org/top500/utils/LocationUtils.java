@@ -112,7 +112,7 @@ public class LocationUtils {
 
     public static String format(String d, String regex) {
         d = d.trim();
-        if ( d.isEmpty() ) return "全国";
+        if ( d.isEmpty() ) return "其他";
         //d = SolrUtils.stripNonCharCodepoints(d);
         if ( regex != null && !regex.isEmpty() ){
             try {
@@ -171,23 +171,26 @@ public class LocationUtils {
         } catch ( Exception e ) {}
 
         boolean first = true;
+        Map<String,Object> tmpmap = new HashMap<String,Object>();
         StringTokenizer tokenizer = new StringTokenizer(d, ",");
         while (tokenizer.hasMoreTokens()) {
             String actualToken = tokenizer.nextToken().trim().toLowerCase();
             String out = CITIES_MAP.get(actualToken);
             if (out != null) {
-                if ( first ) {
-                    result.append(out);
-                    first = false;
-                } else {
-                    result.append("," + out);
-                }
+                tmpmap.put(out, null);
             } else if ( prop.getProperty(actualToken) != null ) {
-                if ( first ) {
-                    result.append(actualToken);
+                tmpmap.put(actualToken, null);
+            }
+        }
+        if (tmpmap.entrySet().isEmpty()) {
+            result.append("其他");
+        } else {
+            for (String key : tmpmap.keySet()) {
+                if (first) {
+                    result.append(key);
                     first = false;
                 } else {
-                    result.append("," + actualToken);
+                    result.append("," + key);
                 }
             }
         }
@@ -252,6 +255,20 @@ public class LocationUtils {
         try {
             for ( int i = 0; i < test4.length; i++ ) {
                 LOG.debug(test4[i] + " : " + match(test4[i], reg, 1, 1));
+            }
+        } catch ( Exception e ) {
+            e.printStackTrace();
+        }
+
+        System.out.println("=======");
+        String test5[] = {
+                "Africa, Asia, Australasia-CN-Jiangsu-Taizhou",
+                "Africa, Asia, Australasia-China",
+                "Africa, Asia, Australasia-CN-Shanghai-Shanghai, Africa, Asia, Australasia-CN-Jiangsu-Taizhou"
+        };
+        try {
+            for ( int i = 0; i < test5.length; i++ ) {
+                System.out.println(test5[i] + " : " + tokenize(test5[i]));
             }
         } catch ( Exception e ) {
             e.printStackTrace();

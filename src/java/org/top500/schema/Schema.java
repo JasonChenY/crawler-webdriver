@@ -29,13 +29,20 @@ import java.util.StringTokenizer;
 
 public class Schema {
     private String name;
-    private String fullname;
     public Actions actions;
     public Procedure procedure;
     public JobUniqueIdCalc job_unique_id_calc;
 
+    // fields for resuming fetcher
     public boolean fetch_result = true;
     public int fetch_total_jobs = 0;
+
+    // local configurations take high priority than global configurations
+    public Boolean use_proxy_specified = false;
+    public Boolean use_proxy = false;
+    public int fetch_n_pages = -1;
+    public int fetch_n_days = -1;
+    public int fetch_n_jobs = -1;
 
     public static void main(String[] args) {
         try {
@@ -57,7 +64,6 @@ public class Schema {
         JSONParser parser = new JSONParser();
         JSONObject obj = (JSONObject) parser.parse(input);
         name = (String) obj.get("name");
-        fullname = (String) obj.get("fullname");
         actions = new Actions(obj.get("actions"));
         procedure = new Procedure(obj.get("procedure"));
         if ( obj.get("job_unique_id_calc") != null ) {
@@ -65,9 +71,22 @@ public class Schema {
         } else {
             job_unique_id_calc = null;
         }
+
+        if ( obj.get("use_proxy") != null ) {
+            use_proxy = (Boolean)obj.get("use_proxy");
+            use_proxy_specified = true;
+        }
+        if ( obj.get("fetch.n.pages") != null ) {
+            fetch_n_pages = Integer.valueOf(((Long) obj.get("fetch.n.pages")).intValue());
+        }
+        if ( obj.get("fetch.n.days") != null ) {
+            fetch_n_days = Integer.valueOf(((Long) obj.get("fetch.n.days")).intValue());
+        }
+        if ( obj.get("fetch.n.jobs") != null ) {
+            fetch_n_jobs = Integer.valueOf(((Long) obj.get("fetch.n.jobs")).intValue());
+        }
     }
     public String getName() { return name; }
-    public String getFullName() { return fullname; }
 
     public Schema(Reader input) throws Exception {
         init(input);
@@ -274,7 +293,7 @@ public class Schema {
         public void print(String ident) {
             System.out.println(ident+"{'condition':'" + condition + "',");
             if (element != null ) element.print(ident);
-            System.out.println(ident + ",'value':" + value + "'},");
+            System.out.println(ident + ",'value':'" + value + "'},");
         }
     }
 
@@ -300,7 +319,7 @@ public class Schema {
 
     public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore,
                          ScrollIntoView, selectByVisibleText, selectByValue, zoom,
-                         openInNewTab, sendKeys, switchToMainFrame, setPage, openInNewTab_ContextClick, executeScript};
+                         openInNewTab, sendKeys, switchToMainFrame, setPage, openInNewTab_ContextClick, executeScript, moveToElement};
     public class Command {
         /* 'click':  if not configured ( default value ) ----> changed to None if not configured
            'None':   if unknown cmd configured.
@@ -372,6 +391,9 @@ public class Schema {
                         case "executeScript":
                             code = CmdType.executeScript;
                             break;
+                        case "moveToElement":
+                            code = CmdType.moveToElement;
+                            break;
                         default:
                             code = CmdType.None;
                             break;
@@ -385,6 +407,7 @@ public class Schema {
     }
 
     public class Action {
+        public Action preaction = null; //for Baidu, where jobs categorized via location, should first focus on the location button.
         public Element element = null;
         public Command command;
         public String setvalue;
@@ -396,6 +419,9 @@ public class Schema {
             if ( o == null ) return;
             JSONObject obj = (JSONObject)o;
 
+            if ( obj.get("preaction") != null ) {
+                preaction = new Action(obj.get("preaction"));
+            }
             String name = (String) obj.get("element");
             String how = (String) obj.get("how");
             if ( name != null ) element = new Element(name, how);
@@ -448,12 +474,13 @@ public class Schema {
         }
     }
     public enum LOOP_TYPE {NONE, BEGIN, END}
+    public enum LOOP_ITEM_TYPE {JOB,PAGE,OTHER}
     public class Procedure {
         public String xpath_prefix_loop = "";
         public LOOP_TYPE loop_type = LOOP_TYPE.NONE;
         public int begin_from = 0;
         public int end_to = 0;
-        public boolean loop_for_pages = false;
+        public LOOP_ITEM_TYPE loop_item_type = LOOP_ITEM_TYPE.JOB; // for Vanke, we will break for PAGE loop if return PROC_RESULT_OK_NDAYS, but continue for OTHER.
         public boolean loop_need_initial_action = false;
         public Element loop_totalpages = null;
         public Extracts extracts = null;
@@ -481,8 +508,14 @@ public class Schema {
                         if ( loop.get("end_to") != null ) {
                             end_to = Integer.valueOf(((Long) loop.get("end_to")).intValue());
                         }
-                        if ( loop.get("loop_for_pages") != null ) {
-                            loop_for_pages = (Boolean)loop.get("loop_for_pages");
+                        if ( loop.get("loop_item_type") != null ) {
+                            String item_type = (String)loop.get("loop_item_type");
+                            switch (item_type) {
+                                case "job": loop_item_type = LOOP_ITEM_TYPE.JOB; break;
+                                case "page": loop_item_type = LOOP_ITEM_TYPE.PAGE; break;
+                                case "other": loop_item_type = LOOP_ITEM_TYPE.OTHER; break;
+                                default: throw new Exception("unknow loop_item_type" + item_type);
+                            }
                             if ( loop.get("loop_totalpages") != null ) {
                                 loop_totalpages = new Element(loop.get("loop_totalpages"));
                             }
@@ -516,7 +549,7 @@ public class Schema {
             System.out.println(ident + "  'loop_type':'" + loop_type + "'");
             System.out.println(ident + "  'begin_from':'" + begin_from + "'");
             System.out.println(ident + "  'end_to':'" + end_to + "'");
-            System.out.println(ident + "  'loop_for_pages':'" + loop_for_pages + "'");
+            System.out.println(ident + "  'loop_item_type':'" + loop_item_type + "'");
             if ( loop_totalpages != null ) {
                 System.out.print(ident + "  'loop_totalpages':");
                 loop_totalpages.print(ident + "  ");

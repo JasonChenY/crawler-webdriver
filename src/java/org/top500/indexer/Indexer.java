@@ -118,7 +118,7 @@ public class Indexer extends RunListener {
             System.exit(0);
         }
 
-        for ( int i = 0; i < 100; i++) {
+        for ( int i = 0; i < 1; i++) {
             String str = String.valueOf(i);
             Job job = new Job();
             job.addField(Job.JOB_COMPANY, "Test");

@@ -1,6 +1,6 @@
 {
   "name": "BankOfAmerica",
-  "fullname" : "美国银行",
+  "use_proxy": true,
   "actions" :
   [
     {

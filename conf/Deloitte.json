@@ -1,6 +1,5 @@
 {
   "name": "Deloitte",
-  "fullname" : "德勤",
   "actions" :
   [
     {
@@ -120,5 +119,6 @@
       ],
     }
   },
+  "fetch.n.pages":100
 }
 

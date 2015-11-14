@@ -1,6 +1,6 @@
 {
   "name": "Adidas",
-  "fullname" : "阿迪达斯",
+  "use_proxy": true,
   "actions" :
   [
     {

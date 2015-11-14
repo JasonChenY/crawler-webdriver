@@ -1,6 +1,5 @@
 {
   "name" : "Axa-assistance",
-  "fullname" : "安盛援助",
   "actions" :
   [
     {
@@ -19,7 +18,7 @@
     "loop": {
       "xpath_prefix": "//DIV[@id='newsList']/P[@class='p_page']/A[not(@class='pages')]",
       "loop_type": "begin",
-      "loop_for_pages": true,
+      "loop_item_type": "page",
       "actions": [
         {
           "element": ".",

@@ -1,6 +1,5 @@
 {
   "name": "Sinochem",
-  "fullname" : "中国中化集团公司",
   "actions" :
   [
     {
@@ -50,17 +49,35 @@
         ],
       },
       "extracts": {
+        "job_category_domain":{
+          "element": "TD[2]/FONT",
+          "method" : "getAttribute",
+          "value" : "title",
+        },
+        "job_sub_company":{
+          "element": "TD[3]",
+          "method" : "getAttribute",
+          "value" : "title",
+        },
         "job_location": {
           "element": "TD[5]/FONT",
+          "method" : "getAttribute",
+          "value" : "title",
           "transforms" : [
             {
               "how" : "regex",
               "value" : "s/tiexiqu/Beijing/g",
-            }
+            },
+            {
+              "how" : "regex",
+              "value" : "s/[^,]*省//g",
+            },
           ]
         },
         "job_title": {
           "element": "TD[1]/A/FONT",
+          "method" : "getAttribute",
+          "value" : "title",
         },
         "job_post_date": {
           "element": "TD[6]",

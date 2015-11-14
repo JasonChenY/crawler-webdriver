@@ -4,14 +4,17 @@ import org.top500.schema.Schema;
 import org.top500.utils.DateUtils;
 import org.top500.utils.LocationUtils;
 import org.top500.utils.StringUtils;
+import org.top500.utils.CompanyUtils;
 import org.top500.utils.Configuration;
 import org.top500.schema.Schema.JobUniqueIdCalc;
 
+import java.lang.*;
+
+import java.lang.Boolean;
 import java.lang.Integer;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.Thread;
-
 import java.util.*;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
@@ -69,20 +72,27 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import org.apache.oro.text.perl.MalformedPerl5PatternException;
 import org.apache.oro.text.perl.Perl5Util;
 
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
+
+
 public class FetcherThread extends Thread {
     public static final Logger LOG = LoggerFactory.getLogger(FetcherThread.class);
     public final Schema _schema;
     private volatile Throwable _throwable;
     private final Joblist _joblist = new Joblist();
-    private static int fetch_n_pages;
-    private static int fetch_n_jobs_perpage;
-    private static int fetch_n_days;
-    private static int fetch_n_jobs;
-    private static String driver_download_directory;
+    private int fetch_n_pages;
+    private int fetch_n_jobs_perpage;
+    private int fetch_n_days;
+    private int fetch_n_jobs;
+    private String driver_download_directory;
 
     private WebDriver driver = null;
     private Wait<WebDriver> wait = null;
     private int driver_wait;
+    private Boolean use_proxy = false;
+    private String proxy_server = null;
 
     private Stack windows_stack = new Stack();
 
@@ -90,13 +100,35 @@ public class FetcherThread extends Thread {
         super(name);
         this._schema = schema;
         Configuration conf = Configuration.getInstance();
-        fetch_n_pages = conf.getInt("fetch.first.n.pages", 10);
-        fetch_n_jobs_perpage = conf.getInt("fetch.first.n.jobs.perpage", 50);
-        fetch_n_days = conf.getInt("fetch.winthin.n.days", 180);
-        fetch_n_jobs = conf.getInt("fetch.first.n.jobs",100);
+        fetch_n_pages = conf.getInt("fetch.n.pages", 1000);
+        fetch_n_jobs_perpage = conf.getInt("fetch.n.jobs.perpage", 5000);
+        fetch_n_days = conf.getInt("fetch.n.days", 180);
+        fetch_n_jobs = conf.getInt("fetch.n.jobs",10000);
 
         driver_wait = conf.getInt("fetch.webdriver.wait.default", 5);
         driver_download_directory = conf.get("fetch.webdriver.download.dir", "/tmp");
+
+        proxy_server = conf.get("fetch.proxy_server");
+        use_proxy = conf.getBoolean("fetch.use_proxy", false);
+
+        // check whether any local configuration existing to overwrite global settings
+        if ( schema.use_proxy_specified ) {
+            use_proxy = schema.use_proxy;
+        }
+        if ( (proxy_server == null || proxy_server.isEmpty()) && use_proxy ) {
+            LOG.warn("no valid proxy specified");
+            use_proxy = false;
+        }
+
+        if ( schema.fetch_n_days != -1 ) {
+            // local fetch_n_days specified, jobs are sorted by post date, ignore other criterias.
+            fetch_n_days = schema.fetch_n_days;
+            fetch_n_pages = 1000;
+            fetch_n_jobs = 10000;
+        } else {
+            if (schema.fetch_n_pages != -1) fetch_n_pages = schema.fetch_n_pages;
+            if (schema.fetch_n_jobs != -1) fetch_n_jobs = schema.fetch_n_jobs;
+        }
     }
     public Throwable getThrowable() {
         return _throwable;
@@ -116,14 +148,14 @@ public class FetcherThread extends Thread {
         try {
 
             String subdir = Long.toString(Thread.currentThread().getId());
-            driver = WebDriverService.getWebDriver("http://127.0.0.1:8899", driver_download_directory + "/" + subdir);
+            driver = WebDriverService.getWebDriver("http://127.0.0.1:8899", driver_download_directory + "/" + subdir, use_proxy?proxy_server:null);
             wait = new WebDriverWait(driver, driver_wait);
 
             fetch();
 
             //Thread.sleep(1000);
         } catch (Throwable t) {
-            LOG.warn("Exception for thread " + this.getName());
+            LOG.warn("Exception for thread " + this.getName(), t);
         } finally {
             if ( driver != null ) driver.quit();
         }
@@ -240,6 +272,13 @@ public class FetcherThread extends Thread {
         return true;
     }
     private boolean Action(String xpath_prefix, int index, Schema.Action action) {
+        // any pre-condition action configured
+        if ( action.preaction != null ) {
+            if ( !Action(null, 0, action.preaction) ) {
+                LOG.warn("preaction failed");
+                return false;
+            }
+        }
         // save some necessary inforamtion before action
         String currentWindowHandle = driver.getWindowHandle();
         Set<String> currentWindowHandles = driver.getWindowHandles();
@@ -271,6 +310,7 @@ public class FetcherThread extends Thread {
         }
 
         if ( action.command.code == Schema.CmdType.None ) {
+            LOG.info("Action without command, skip");
             return true;
         } else if ( action.command.code == Schema.CmdType.Load ) {
             LOG.debug("Action load " + action.element.element);
@@ -389,11 +429,44 @@ public class FetcherThread extends Thread {
                     break;
                 case openInNewTab_ContextClick:
                     LOG.debug("openInNewTab_ContextClick " + dbgstr);
-                    new Actions(driver).contextClick(element).sendKeys(Keys.ARROW_DOWN).sendKeys(Keys.ENTER).build().perform();
+                    /*
+                    Actions a = new Actions(driver);
+                    a.moveToElement(element);
+                    a.contextClick(element);
+                    try { Thread.sleep(100); } catch ( InterruptedException e ) { };
+                    a.sendKeys(Keys.chord("t"));
+                    */
+
+                    try {
+                        Actions oAction = new Actions(driver);
+                        oAction.moveToElement(element);
+                        Thread.sleep(100);
+                        oAction.contextClick(element).build().perform();
+
+                        Robot robot = new Robot();
+                        robot.keyPress(KeyEvent.VK_T);
+                        robot.keyRelease(KeyEvent.VK_T);
+                    } catch ( AWTException e ) {
+                        LOG.warn("failed to create Robot for openInNewTab_ContextClick ", e);
+                        return false;
+                    } catch ( InterruptedException e ) {
+                        LOG.warn("InterruptedException ", e);
+                        return false;
+                    }
+
                     break;
                 case executeScript:
                     LOG.debug("executeScript " + dbgstr);
                     ((JavascriptExecutor)driver).executeScript(action.setvalue, element);
+                    break;
+                case moveToElement:
+                    LOG.debug("moveToElement " + dbgstr);
+                    if( "input".equalsIgnoreCase(element.getTagName()) ){
+                        element.sendKeys("");
+                    } else{
+                        new Actions(driver).moveToElement(element).perform();
+                    }
+                    //((JavascriptExecutor)driver).executeScript("arguments[0].focus();", element);
                     break;
                 default: break;
             }
@@ -495,9 +568,25 @@ public class FetcherThread extends Thread {
                         case "elementToBeSelected":
                             wait.until(elementToBeSelected(wait_locator));
                             break;
+                        case "wait":
+                            int val = 10;
+                            try {
+                                val = Integer.parseInt(expection.value);
+                                LOG.debug("wait seconds " + expection.value);
+                            } catch ( Exception e ) {
+                                LOG.warn("wait without valid value, wait 10 seconds");
+                            }
+
+                            //implicitlyWait looks works in asynchrous mode
+                            //driver.manage().timeouts().implicitlyWait(val*1000, MILLISECONDS);
+                            try {
+                                Thread.sleep(val * 1000);
+                            } catch ( Exception ee ) {}
+                            LOG.debug("waited seconds " + expection.value);
+                            break;
                         default:
                             driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);
-                            LOG.debug("waited 5 seconds");
+                            LOG.debug("waited 10 seconds");
                             break;
                     }
                 } catch ( Exception ee ) {
@@ -549,6 +638,13 @@ public class FetcherThread extends Thread {
                 if ( (ele.how != null) && ele.how.equals("url") ) {
                     job.addField(Job.JOB_URL, driver.getCurrentUrl());
                     LOG.debug("job_url" + ": " + driver.getCurrentUrl());
+                } else if ( (ele.how != null) && ele.how.equals("int") ) {
+                    int val = 0;
+                    try {
+                        val = Integer.parseInt(ele.value);
+                    } catch (java.lang.Exception e) {}
+                    job.addField(key, val);
+                    LOG.debug(key + " : (int)" + ele.value);
                 } else {
                     By locator = getLocator(xpath_prefix, index, ele);
                     String value = "";
@@ -588,12 +684,12 @@ public class FetcherThread extends Thread {
                             else
                                 value = elements.get(i).getText();
                         }
-
+                        LOG.debug(" raw-> " + value);
                         if ( ele.transforms != null ) {
                             // Firstly handle transform against single item.
                             for ( int j = 0; j < ele.transforms.size(); j++ ) {
                                 Schema.Transform transform = ele.transforms.get(j);
-                                if ( transform == null || transform.value == null || transform.value.isEmpty() ) continue;
+                                if ( transform == null ) continue;
                                 switch ( transform.how ) {
                                     case "insertBefore":
                                         value = transform.value + value;
@@ -620,6 +716,10 @@ public class FetcherThread extends Thread {
                                     case "regex_matcher":
                                         value = LocationUtils.match(value, transform.value, transform.which, transform.group);
                                         value = LocationUtils.format(value);
+                                        formatted = true;
+                                        break;
+                                    case "tokenize":
+                                        value = LocationUtils.tokenize(value);
                                         formatted = true;
                                         break;
                                     default: break;
@@ -709,6 +809,8 @@ public class FetcherThread extends Thread {
         if (!newjob.getFields().containsKey(Job.JOB_POST_DATE) ) {
             LOG.info("No Job_date field extracted, use current time");
             newjob.addField(Job.JOB_POST_DATE, DateUtils.getCurrentDate());
+
+            // here to check solr repository whether this item  exist already.
         }
     /*
         if ( newjob.getFields().containsKey(Job.JOB_SUB_COMPANY) ) {
@@ -739,11 +841,16 @@ public class FetcherThread extends Thread {
             newjob.addField(Job.JOB_EXPIRED, false);
         }
     }
-    private boolean Procedure(Schema.Procedure procedure, Job job) {
-        if ( procedure == null ) return true;
+
+    private static int PROC_RESULT_FAIL = 0;
+    private static int PROC_RESULT_OK = 1;
+    private static int PROC_RESULT_OK_NDAYS = 2;
+    private int Procedure(Schema.Procedure procedure, Job job) {
+        if ( procedure == null ) return PROC_RESULT_OK;
         if ( procedure.loop_type == Schema.LOOP_TYPE.BEGIN ) {
-            if ( procedure.loop_for_pages ) {
-                LOG.debug("Procedure: loop of BEGIN type for page list");
+            if ( ( procedure.loop_item_type==Schema.LOOP_ITEM_TYPE.PAGE )
+                    || (procedure.loop_item_type == Schema.LOOP_ITEM_TYPE.OTHER) ) {
+                LOG.debug("Procedure: loop of BEGIN type for LOOP_ITEM_TYPE of " + (procedure.loop_item_type==Schema.LOOP_ITEM_TYPE.PAGE?"PAGE":"OTHER"));
                 int loop_totalpages = 0;
                 String xpath_prefix_loop = procedure.xpath_prefix_loop;
                 if (xpath_prefix_loop != null && !xpath_prefix_loop.isEmpty()) {
@@ -759,11 +866,11 @@ public class FetcherThread extends Thread {
                         LOG.debug("Procedure: loop of BEGIN type, find " + loop_totalpages + " with loop_totalpages");
                     } catch ( NoSuchElementException e ) {
                         LOG.warn("Procedure: loop of BEGIN type, loop_totalpages defined, but failed to parse valid number from this element");
-                        return false;
+                        return PROC_RESULT_FAIL;
                     }
                 } else {
                     LOG.warn("Procedure: loop of BEGIN type, but neither xpath_prefix nor loop_totalpages, cant continue");
-                    return false;
+                    return PROC_RESULT_FAIL;
                 }
 
                 if ( procedure.fetch_runtime_index == -1 ) procedure.fetch_runtime_index = procedure.begin_from;
@@ -787,7 +894,15 @@ public class FetcherThread extends Thread {
                             break;
                         }
                     }
-                    Procedure(procedure.procedure, null);
+                    int res = Procedure(procedure.procedure, null);
+                    if ( (res == PROC_RESULT_OK_NDAYS) ) {
+                        if ( procedure.loop_item_type == Schema.LOOP_ITEM_TYPE.PAGE ) {
+                            LOG.info("Fetched jobs within " + fetch_n_days + " days, reach configured limit, return");
+                            break;
+                        } else {
+                            LOG.debug("Fetched jobs within " + fetch_n_days + " days, but continue(LOOP_ITEM_TYPE.OTHER)");
+                        }
+                    }
                     if ( _schema.fetch_total_jobs == fetch_n_jobs ) {
                         LOG.info("Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
                         break;
@@ -811,25 +926,36 @@ public class FetcherThread extends Thread {
                     List<WebElement> elements = locator.findElements(driver);
                     LOG.debug("Procedure: loop of BEGIN type, find " + elements.size() + " jobs with " + xpath_prefix_loop);
                     if ( procedure.fetch_runtime_index == -1 ) procedure.fetch_runtime_index = procedure.begin_from;
+                    boolean hit_outdated_jobs = false;
                     for (; procedure.fetch_runtime_index < elements.size() + procedure.end_to; procedure.fetch_runtime_index++) {
                         final Job newjob = new Job();
-                        newjob.addField(Job.JOB_COMPANY, _schema.getFullName());
+                        newjob.addField(Job.JOB_COMPANY, CompanyUtils.getDisplayName(_schema.getName()));
                         String newprefix = xpath_prefix_loop + "[" + Integer.toString(procedure.fetch_runtime_index + 1) + "]/";
                         if (!Extracts(newprefix, procedure.fetch_runtime_index + 1, procedure.extracts, newjob)) {
-                            LOG.debug("Failed to extract info for this job, ignore");
+                            LOG.warn("Failed to extract info for this job, ignore");
                             continue;
                         }
 
                         if (DateUtils.nDaysAgo((String)newjob.getField(Job.JOB_POST_DATE), fetch_n_days)) {
                             LOG.debug("Job older than configured date, ignore");
+                            // current page list already has some jobs older than configured date,
+                            // but will continue fetching all the jobs in current page, because some company will use reverse order
+                            // just set a tmp flag here, and will return PROC_RESULT_OK_NDAYS, wont continue try next page any more.
+                            hit_outdated_jobs = true;
                             continue;
                         }
                         if ( !Actions(newprefix, 0, procedure.actions) ) {
                             LOG.warn("Action for job failed, ignore");
                             continue;
                         }
-                        if ( !Procedure(procedure.procedure, newjob) ) {
-                            LOG.warn("Procedure for job failed, ignore");
+
+                        int res = Procedure(procedure.procedure, newjob);
+                        if ( res == PROC_RESULT_FAIL ) {
+                            LOG.warn("Procedure for single job failed, ignore");
+                            continue;
+                        } else if ( res == PROC_RESULT_OK_NDAYS ) {
+                            LOG.debug("Job older than configured date(detected in job detail page), ignore");
+                            hit_outdated_jobs = true;
                             continue;
                         }
 
@@ -854,9 +980,13 @@ public class FetcherThread extends Thread {
                     if ( procedure.fetch_runtime_index == elements.size() + procedure.end_to ) {
                         procedure.fetch_runtime_index = -1;
                     }
+                    if ( hit_outdated_jobs )
+                        return PROC_RESULT_OK_NDAYS; // won't continue next page.
+                    else
+                        return PROC_RESULT_OK; // will continue next page.
                 } else {
                     LOG.warn("Procedure: loop of BEGIN type, dont have xpath_prefix");
-                    return false;
+                    return PROC_RESULT_FAIL;
                 }
             }
         } else if ( procedure.loop_type == Schema.LOOP_TYPE.END ) {
@@ -869,38 +999,46 @@ public class FetcherThread extends Thread {
                 } while ( (tmppages++ < procedure.fetch_runtime_index) && (result=Actions(null, 0, procedure.actions)) );
                 if ( !result ) {
                     LOG.warn("Failed again during moving to the failed place last time");
-                    return false;
+                    return PROC_RESULT_FAIL;
                 }
             } else {
                 procedure.fetch_runtime_index = 0;
             }
 
+            int res;
             do {
-                Procedure(procedure.procedure, null);
+                res = Procedure(procedure.procedure, null);
+                if ( res == PROC_RESULT_OK_NDAYS ) break;
             } while ( (++procedure.fetch_runtime_index<fetch_n_pages) && (_schema.fetch_total_jobs<fetch_n_jobs) && (result=Actions(null, 0, procedure.actions)) );
-            if ( !result ) {
+            if ( res == PROC_RESULT_OK_NDAYS ) {
+                LOG.info("Fetched jobs within configured " + fetch_n_days + " days, break");
+                return PROC_RESULT_OK;
+            } else if ( !result ) {
                 LOG.warn("Actions for going to next page failed, break");
-                return false;
+                return PROC_RESULT_FAIL;
             } else if ( _schema.fetch_total_jobs == fetch_n_jobs ) {
                 LOG.info("Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
+                return PROC_RESULT_OK;
             } else {
                 LOG.info("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
+                return PROC_RESULT_OK;
             }
         } else {
             LOG.debug("Procedure for single job");
-            boolean valid_job = true;
+            int res = PROC_RESULT_OK;
             if ( !Extracts(null, 0, procedure.extracts, job) ) {
                 LOG.info("Failed to extract info for this job (summary page), ignore");
-                valid_job = false;
+                res = PROC_RESULT_FAIL;
             }
             if (DateUtils.nDaysAgo((String)job.getField(Job.JOB_POST_DATE), fetch_n_days)) {
                 LOG.info("Job older than configured date (summary page), ignore");
-                valid_job = false;
+                res = PROC_RESULT_OK_NDAYS;
             }
             Actions(null, 0, procedure.actions);
-            // can return false directly, there will be 'restore/close window' action
-            return valid_job;
+            // can't return false directly, there will be 'restore/close window' action
+
+            return res;
         }
-        return true;
+        return PROC_RESULT_OK;
     }
 }

@@ -1,6 +1,5 @@
 {
   "name" : "Baosteel",
-  "fullname" : "宝钢集团有限公司",
   "actions" :
   [
     {
@@ -102,7 +101,7 @@
     }
     "loop": {
       "loop_type": "begin",
-      "loop_for_pages":  true,
+      "loop_item_type":  "page",
       "loop_totalpages": {
         "element" : "//DIV[@class='wrap w1007 mt5']/TABLE/TBODY/TR[1]/TD[1]/FONT[2]",
       },

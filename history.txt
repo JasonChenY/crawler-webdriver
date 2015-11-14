@@ -1,0 +1,5 @@
+StandardCharted:  can fetch most of info, but still problem for first job and next page.
+ABB: CookieConsentBtn removed.
+Nike: Adding Proxy function (need access google CDN), delay 5 seconds before click country selection.
+Boehringer-ingelheim: Big, totally different: pDateL removed, cant select jobs via date; new website cannt openInNewTab
+Abbott: job_title A anchor tag changed.

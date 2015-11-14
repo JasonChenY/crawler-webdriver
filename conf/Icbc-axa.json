@@ -1,6 +1,5 @@
 {
   "name" : "Icbc-axa",
-  "fullname" : "工银安盛人寿",
   "actions" :
   [
     {
@@ -20,7 +19,7 @@
     "loop": {
       "xpath_prefix": "//DIV[@class='product_left_list']/UL/LI",
       "loop_type": "begin",
-      "loop_for_pages": true,
+      "loop_item_type": "other",
       "actions": [
         {
           "element": "SPAN[1]/A[text()='正在招聘']",

@@ -1,6 +1,5 @@
 {
   "name": "Shimaogroup",
-  "fullname" : "世集团茂",
   "actions" :
   [
     {
@@ -42,9 +41,6 @@
         "debug":true,
       },
       "extracts": {
-        "job_post_date": {
-          "element": "TD[6]",
-        },
         "job_title": {
           "element": "TD[1]/A"
         }
@@ -59,9 +55,10 @@
             "how": "url",
           },
           "job_location": {
-            "element": "//DIV[@class='main_div_content']/UL/LI[4]/SPAN[2]/SPAN",
-            "method" : "getAttribute",
-            "value" : "title",
+            "element": "//DIV[@class='main_div_content']/descendant::SPAN[text()='工作地点：']/following-sibling::SPAN",
+          },
+          "job_post_date": {
+            "element": "//DIV[@class='main_div_content']/descendant::SPAN[text()='发布时间：']/following-sibling::SPAN",
           },
         },
         "actions": [

@@ -1,6 +1,5 @@
 {
   "name": "Boehringer-ingelheim",
-  "fullname" : "勃林格殷格翰",
   "actions" :
   [
     {
@@ -24,8 +23,13 @@
         },
         {
           "condition" : "presenceOfElementLocated",
-          "element" : "pDateL",
-          "how" : "ID",
+          "element" : "contentlist",
+          "how" : "CLASS_NAME",
+        },
+        {
+          "comment:condition" : "presenceOfElementLocated",
+          "comment:element" : "pDateL",
+          "comment:how" : "ID",
         },
       ],
       "debug":false,
@@ -33,19 +37,17 @@
     {
       "element" : "pDateL",
       "how" : "ID",
-      "cmd" : "selectByValue",
-      "comment:value" : "7",
-      "comment:value" : "14",
+      "comment:cmd" : "selectByValue",
       "value" : "31",
     },
     {
       "element" : "srcsubmit",
       "how" : "ID",
-      "cmd" : "click",
+      "comment:cmd" : "click",
       "expections" : [
         {
           "condition" : "presenceOfElementLocated",
-          "element" : "Lst-Tabel",
+          "element" : "contentlist",
           "how" : "CLASS_NAME",
         }
       ]
@@ -55,22 +57,23 @@
   "procedure" : {
     "procedure": {
       "loop": {
-        "xpath_prefix": "//TABLE[@class='Lst-Tabel']/TBODY/TR",
+        "xpath_prefix": "//TABLE[@class='contentlist']/TBODY/TR",
         "loop_type": "begin",
-        "begin_from" : 1,
+        "begin_from" : 0,
         "end_to" : -1,
         "actions": [
           {
-            "element": "TD[1]/A",
-            "cmd": "openInNewTab",
+            "element": "descendant::A[@title='View this job description']",
+            "comment:cmd": "openInNewTab",
+            "cmd": "click",
             "expections": [
               {
-                "condition": "newWindowIsOpened",
+                "comment:condition": "newWindowIsOpened",
               },
               {
                 "condition": "visibilityOfElementLocated",
-                "element": "JD-AllFields",
-                "how" :"ID",
+                "element": "editablesection",
+                "how" :"CLASS_NAME",
               }],
             "debug" : false,
           },
@@ -78,35 +81,47 @@
       },
       "extracts": {
         "job_location": {
-          "element": "TD[2]",
+          "element": "descendant::DIV[@class='morelocation']",
           "transforms" : [
             {
-              "how" : "location_regex",
-              "value" : "s/([^\\s]*)\\s+(.*)/$2/g",
+              "comment:how" : "location_regex",
+              "comment:value" : "s/([^\\s]*)\\s+(.*)/$2/g",
+              "how" : "tokenize",
             }
           ]
         },
         "job_title": {
-          "element": "TD[1]/A"
+          "element": "descendant::A[@title='View this job description']"
         }
       },
       "procedure": {
         "extracts": {
           "job_description": {
-            "element": "JD-AllFields",
-            "how": "ID",
+            "element": "editablesection",
+            "how": "CLASS_NAME",
           },
           "job_url": {
-            "how": "url",
+            "comment:how": "url",
+            "element": "requisitionDescriptionInterface.reqContestNumberValue.row1",
+            "how" : "ID",
+            "method" : "getText",
+            "transforms" : [
+              {
+                "how" : "insertBefore",
+                "value" : "https://tas-boehringer.taleo.net/careersection/global+template+career+section+28external29/jobdetail.ftl?job="
+              },
+            ],
           },
         },
         "actions": [
           {
-            "cmd": "restore",
+            "comment:cmd": "restore",
+            "element": "//A[text()='Back to prior page']",
+            "cmd": "click",
             "expections" : [
               {
                 "condition" : "presenceOfElementLocated",
-                "element" : "Lst-Tabel",
+                "element" : "contentlist",
                 "how" : "CLASS_NAME",
               },],
           },
@@ -114,21 +129,23 @@
       },
     }
     "loop": {
-      "xpath_prefix": "//SPAN[@class='Lst-NavPage']",
-      "loop_type": "begin",
-      "loop_for_pages" : true,
+      "comment:xpath_prefix": "//SPAN[@class='pagerlink']",
+      "comment:loop_type": "begin",
+      "comment:loop_item_type" : "page",
+      "loop_type":"end",
       "actions": [
         {
-          "element": "A",
+          "element": "//A[@title='Go to the next page']",
           "cmd": "click",
           "expections" : [
             {
               "condition" : "elementTextChanged",
-              "element" : "//SPAN[@class='Lst-NavPage'][count(*)=0]",
+              "comment:element" : "//SPAN[@class='pagerlink'][count(*)=0]",
+              "element" : "//SPAN[@class='pagerlinkselected']"
             },
             {
               "condition" : "presenceOfElementLocated",
-              "element" : "Lst-Tabel",
+              "element" : "contentlist",
               "how" : "CLASS_NAME",
             },
           ],

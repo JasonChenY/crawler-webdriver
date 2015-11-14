@@ -1,6 +1,5 @@
 {
   "name" : "Vanke",
-  "fullname" : "万科",
   "actions" :
   [
     {
@@ -77,7 +76,7 @@
     "loop": {
       "loop_type": "begin",
       "xpath_prefix":"//DIV[@id='world-map']/DIV[@class='jvectormap-container']/*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']/*[name()='g'][2]/*[name()='circle']",
-      "loop_for_pages" : true,
+      "loop_item_type" : "other",
       "actions": [
         {
           "element" : ".",

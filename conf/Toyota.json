@@ -1,6 +1,5 @@
 {
   "name": "Toyota",
-  "fullname" : "丰田汽车公司",
   "actions" :
   [
     {
@@ -42,13 +41,22 @@
       },
       "extracts": {
         "job_location": {
-          "element": "TD[5]",
+          "element": "TD[5]/font",
+          "method" : "getAttribute",
+          "value" : "title",
         },
         "job_post_date": {
           "element": "TD[6]",
         },
         "job_title": {
-          "element": "TD[1]/A"
+          "element": "TD[1]/A",
+          "method" : "getAttribute",
+          "value" : "title",
+        },
+        "job_category_domain": {
+          "element": "TD[2]/font",
+          "method" : "getAttribute",
+          "value" : "title",
         }
       },
       "procedure": {

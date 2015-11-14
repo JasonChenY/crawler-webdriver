@@ -1,31 +1,18 @@
 {
   "name" : "ABB",
-  "fullname": "瑞士ABB集团",
   "actions" :
   [
     {
       "element": "http://new.abb.com/cn/careers/job-search",
       "how" : "url",
       "cmd" : "load",
-      "expections" : [{
-        "condition" : "presenceOfElementLocated",
-        "element":"CookieConsentBtn",
-        "how":"ID",
-      }],
-      "debug":true
-    },
-    {
-      "cmd" : "zoom",
-      "value": "-3",
-    },
-    {
-      "element": "CookieConsentBtn",
-      "how" : "ID",
-      "cmd" : "click",
-      "expections" : [{
-        "condition" : "visibilityOfElementLocated",
-        "element" : "//SELECT[@data-placeholder='Country']",
-      }],
+      "expections" : [
+        {
+          "condition" : "presenceOfElementLocated",
+          "element" : "//SELECT[@data-placeholder='Country']/OPTION[@value='CN']",
+        },
+      ],
+      "debug" : true
     },
     {
       "element" : "//SELECT[@data-placeholder='Country']",

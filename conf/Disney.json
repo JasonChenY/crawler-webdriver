@@ -1,6 +1,6 @@
 {
   "name" : "Disney",
-  "fullname" : "华特迪士尼公司",
+  "use_proxy": true,
   "actions" :
   [
     {

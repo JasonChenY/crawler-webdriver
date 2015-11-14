@@ -1,6 +1,5 @@
 {
   "name" : "Abbott",
-  "fullname": "雅培公司",
   "actions" :
   [
     {
@@ -93,7 +92,7 @@
         "loop_type": "begin",
         "actions": [
           {
-            "element": "DIV[@class='multiline-data-container']/DIV/DIV/A",
+            "element": "DIV[@class='multiline-data-container']/descendant::A",
             "cmd": "openInNewTab",
             "expections": [
               {
@@ -129,7 +128,7 @@
           ]
         },
         "job_title": {
-          "element": "DIV[@class='multiline-data-container']/DIV/DIV/A"
+          "element": "DIV[@class='multiline-data-container']/descendant::A"
         }
       },
       "procedure": {

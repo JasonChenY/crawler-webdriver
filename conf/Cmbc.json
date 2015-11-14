@@ -1,6 +1,5 @@
 {
   "name" : "Cmbc",
-  "fullname" : "中国民生银行",
   "actions" :
   [
     {
@@ -58,12 +57,6 @@
         },
         "job_sub_company" : {
           "element": "TD[2]",
-          "transforms" : [
-            {
-              "how" : "insertBefore",
-              "value" : "民生银行-",
-            }
-          ]
         },
         "job_location": {
           "element": "TD[3]",
@@ -91,7 +84,7 @@
     }
     "loop": {
       "loop_type": "begin",
-      "loop_for_pages":  true,
+      "loop_item_type":  "page",
       "loop_totalpages": {
         "element" : "//DIV[@id='pagebar']/SPAN[1]/B",
       },

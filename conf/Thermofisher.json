@@ -1,6 +1,7 @@
 {
   "name": "Thermofisher",
-  "fullname" : "赛默飞世尔科技",
+  "use_proxy": true,
+  "comment" : "stupid design: click A, back on 2nd page will revert back to 1st page, ctrl + click, orig and new page both navigate to job detail page, solution via contextclick plus Robot",
   "actions" :
   [
     {
@@ -9,38 +10,25 @@
       "cmd": "load",
       "expections": [
         {
-          "condition" : "presenceOfElementLocated",
-          "element" : "toggleswitch",
+          "condition" : "visibilityOfElementLocated",
+          "element" : "advanced-search-country",
           "how" : "CLASS_NAME",
         },
       ],
     },
     {
-      "element" : "toggleswitch",
+      "element" : "advanced-search-country",
       "how" : "CLASS_NAME",
-      "cmd" : "click",
-      "expections" : [
-        {
-          "condition" : "visibilityOfElementLocated",
-          "element" : "ddlASCountry",
-          "how" : "ID",
-        }
-      ]
-    },
-    {
-      "element": "ddlASCountry",
-      "how": "ID",
-      "cmd": "selectByValue",
+      "cmd": "selectByVisibleText",
       "value" : "China",
     },
     {
-      "element": "btnASGo",
-      "how": "ID",
+      "element": "//button[@type='submit']",
       "cmd": "click",
       "expections" : [
         {
           "condition" : "presenceOfElementLocated",
-          "element" : "conteinerForSearchResults",
+          "element" : "search-results-list",
           "how" : "ID",
         }
       ]
@@ -50,21 +38,21 @@
   "procedure" : {
     "procedure": {
       "loop": {
-        "xpath_prefix": "//TABLE[@class='tableSearchResults']/TBODY/TR",
+        "xpath_prefix": "//section[@id='search-results-list']/ul/li",
         "loop_type": "begin",
-        "begin_from" : 2,
+        "begin_from" : 0,
         "actions": [
           {
-            "element": "TD[1]/A",
-            "cmd": "openInNewTab",
+            "element": "A",
+            "cmd": "openInNewTab_ContextClick",
             "expections" : [
               {
                 "condition": "newWindowIsOpened",
               },
               {
                 "condition": "presenceOfElementLocated",
-                "element": "jobDesc",
-                "how" : "ID",
+                "element": "ats-description",
+                "how" : "CLASS_NAME",
               }
             ],
           },
@@ -72,10 +60,10 @@
       },
       "extracts" : {
         "job_title" : {
-          "element": "TD[1]/A",
+          "element": "A/h2",
         },
         "job_location" : {
-          "element" : "TD[2]",
+          "element" : "A/span[@class='job-location']",
           "transforms" : [
             {
               "how" : "location_regex",
@@ -87,12 +75,21 @@
       "procedure": {
         "extracts": {
           "job_description": {
-            "element" : "jobDesc",
-            "how" : "ID",
+            "element": "ats-description",
+            "how" : "CLASS_NAME",
           },
           "job_url": {
             "how" : "url",
           },
+          "job_post_date" : {
+            "element" : "//span[contains(@class,'job-date')]",
+            "transforms" : [
+              {
+                "how" : "dateFormat",
+                "value" : "MM dd yyyy"
+              }
+            ]
+          }
         },
         "actions": [
           {
@@ -105,13 +102,13 @@
       "loop_type": "end",
       "actions": [
         {
-          "element": "search_result_next_page_link",
-          "how" : "ID",
+          "element": "next",
+          "how" : "CLASS_NAME",
           "cmd": "click",
           "expections": [{
-              "condition": "elementTextChanged",
-              "element": "numberedCurrent",
-              "how" : "CLASS_NAME",
+              "condition": "elementValueChanged",
+              "element": "pagination-current-bottom",
+              "how" : "ID",
           }]
         },
       ],

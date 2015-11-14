@@ -1,81 +1,126 @@
 {
   "name" : "Baidu",
-  "fullname" : "百度",
   "actions" :
   [
     {
-      "element": "http://talent.baidu.com/baidu/web/index/CompbaiduPagejoblist_social",
+      "element": "http://talent.baidu.com/external/baidu/index.html#/social/2",
       "how" : "url",
       "cmd" : "load",
       "expections" : [{
         "condition" : "presenceOfElementsLocated",
-        "element" : "hrs_joblistTable",
-        "how" : "ID",
+        "element" : "job-list",
+        "how" : "CLASS_NAME",
       }]
     },
   ],
-  "procedure" : {
-    "procedure": {
-      "loop": {
-        "xpath_prefix": "//TABLE[@id='hrs_joblistTable']/TBODY/TR",
-        "loop_type": "begin",
-        "actions": [
-          {
-            "element": "TD[1]/A",
-            "cmd": "openInNewTab",
+  "procedure": {
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type": "other",
+      "xpath_prefix": "//ul[@class='filter-container']/li[@iconclass='coordinate-icon']/ul/li",
+      "actions": [
+        {
+          "element": ".",
+          "cmd": "click",
+          "preaction": {
+            "element": "//ul[@class='filter-container']/li[@iconclass='coordinate-icon']",
+            "cmd": "moveToElement",
             "expections" : [
               {
-                "condition": "newWindowIsOpened",
-              },
+                "condition": "presenceOfElementsLocated",
+                "element" : "//ul[@class='filter-container']/li[@iconclass='coordinate-icon' and contains(@class,'active')]",
+              }
+            ]
+          },
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//ul[@class='filter-container']/li[@iconclass='coordinate-icon']/label[@class='show-text active']",
+            }
+          ]
+        },
+      ],
+    },
+    "procedure": {
+      "loop": {
+        "loop_type": "end",
+        "actions": [
+          {
+            "element": "//DIV[@class='pagination']/descendant::A[@class='next']",
+            "cmd": "click",
+            "expections": [
               {
-                "condition": "visibilityOfElementLocated",
-                "element" : "hrs_jobDetail",
-                "how" : "ID",
+                "condition": "elementTextChanged",
+                "comment:element": "//DIV[@class='pagination']/descendant::A[@class='active']",
+                "element": "//div[@class='job-list']"
               }
             ]
           },
         ],
       },
-      "extracts": {
-        "job_title": {
-          "element": "TD[1]/A",
-        },
-        "job_location": {
-          "element": "TD[3]",
-        },
-        "job_post_date": {
-          "element" : "TD[4]",
-        },
-      },
       "procedure": {
+        "loop": {
+          "xpath_prefix": "//div[@class='job-list']/div[@class='list-body']/div[@class='list-row']",
+          "loop_type": "begin",
+          "actions": [
+            {
+              "element": "div[1]/A",
+              "cmd": "openInNewTab",
+              "expections": [
+                {
+                  "condition": "newWindowIsOpened",
+                },
+                {
+                  "condition": "visibilityOfElementLocated",
+                  "element": "job-detail-container",
+                  "how": "ID",
+                }
+              ]
+            },
+          ],
+        },
         "extracts": {
-          "job_description": {
-            "element" : "//DIV[@id='hrs_jobDetail']/DL[@class='hrs_jobDuty' or @class='hrs_jobRequire']",
+          "job_title": {
+            "element": "div[1]/A",
           },
-          "job_url": {
-            "how": "url",
-          },
+          "job_location": {
+            "element": "div[3]",
+          }
         },
-        "actions": [
-          {
-            "cmd": "restore",
+        "procedure": {
+          "extracts": {
+            "job_post_date": {
+              "element": "//div[@id='job-detail-container']/descendant::div[@class='job-survey']/descendant::label[contains(.,'发布时间')]/parent::li",
+              "transforms" : [
+                {
+                  "how" : "regex",
+                  "value" : "s/发布时间: (.*)/$1/g",
+                },
+              ]
+            },
+            "job_category_domain": {
+              "element": "//div[@id='job-detail-container']/descendant::div[@class='job-survey']/descendant::label[contains(.,'职位类别')]/parent::li",
+              "transforms" : [
+                {
+                  "how" : "regex",
+                  "value" : "s/职位类别: (.*)/$1/g",
+                },
+              ]
+            },
+            "job_description": {
+              "element": "//div[@id='job-detail-container']/descendant::div[@class='job-detail' or @class='job-demand']",
+            },
+            "job_url": {
+              "how": "url",
+            },
           },
-        ]
-      },
-    }
-    "loop": {
-      "loop_type": "end",
-      "actions": [
-        {
-          "element" : "//DIV[@class='hrs_page']/DIV[@class='hrs_page']/A[text()='下一页']",
-          "cmd" : "click",
-          "expections": [{
-            "condition" : "presenceOfElementsLocated",
-            "element" : "hrs_joblistTable",
-            "how" : "ID",
-          }]
+          "actions": [
+            {
+              "cmd": "restore",
+            },
+          ]
         },
-      ],
+      }
     }
   }
 }

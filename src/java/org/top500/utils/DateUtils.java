@@ -1,5 +1,6 @@
 package org.top500.utils;
 
+import java.lang.System;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -301,12 +302,14 @@ public class DateUtils {
                 Perl5Util plutil = new Perl5Util();
                 if ( format.equals("MM-dd-yyyy") ) {
                     d = plutil.substitute("s/\\D*(\\d{1,})[^-]*-\\D*(\\d{1,})[^-]*-\\D*(\\d{4})/$3-$1-$2/g", d);
+                } else if ( format.equals("MM dd yyyy") ) {
+                    d = plutil.substitute("s/\\D*(\\d{1,})\\D+(\\d{1,})\\D+(\\d{4})/$3-$1-$2/g", d);
                 } else if ( format.equals("MMM dd yyyy") ) {
                     d = plutil.substitute("s/([a-zA-Z]{3})\\S*\\s+\\D*(\\d{1,})\\D+(\\d{4})/$2 $1 $3/g", d);
                 } else if ( format.equals("MMM-dd-yyyy") ) {
                     d = plutil.substitute("s/\\s*([a-zA-Z]{3})[^-]*-\\D*(\\d{1,})[^-]*-\\D*(\\d{4})/$2-$1-$3/g", d);
                 } else if ( format.equals("dd MM yyyy") ) {
-                    d = plutil.substitute("s/\\D*(\\d{1,})\\S*\\s\\D*(\\d{1,})\\S*\\s\\D*(\\d{4})/$3-$2-$1/g", d);
+                    d = plutil.substitute("s/\\D*(\\d{1,})\\D*(\\d{1,})\\D*(\\d{4})/$3-$2-$1/g", d);
                 } else if ( format.equals("yyyy-MM-dd") ) {
                     d = plutil.substitute("s/\\D*(\\d{4})[^-]*-\\D*(\\d{1,})[^-]*-\\D*(\\d{1,})/$1-$2-$3/g", d);
                 } else if ( format.equals("yyyy MM dd") ) {
@@ -343,6 +346,14 @@ public class DateUtils {
             return false;
         }
     }
+    public static int nDaysDelta(String date) {
+        try {
+            long prev = getThreadLocalDateFormat().parse(date).getTime();
+            return (int)((System.currentTimeMillis() - prev) / (24 * 60 * 60 * 1000L)) + 1;
+        } catch ( Exception e ) {
+            return 0;
+        }
+    }
     public static void main(String args[]) {
         String    strs[] = {"m06a - a19b - c2014", "April a15b   year2014a", "April-a15b-year2014a", "d19a   m06b  y2014c",
                 "y2014a-m6b - d19c - "};
@@ -358,11 +369,14 @@ public class DateUtils {
             e.printStackTrace();
         }
 
-        String prev = "2015-05-03T00:00:00.000Z";
+        String prev = "2015-01-30T15:09:27.293Z";
         if ( nDaysAgo(prev, 10) ) {
             System.out.println("yes, n days ago");
         } else {
             System.out.println("not n days ago");
         }
+
+        int delta = nDaysDelta(prev);
+        System.out.println(delta + " days ago");
     }
 }

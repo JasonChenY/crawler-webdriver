@@ -1,6 +1,6 @@
 {
   "name" : "Py-axa",
-  "fullname" : "浦银安盛基金",
+  "use_proxy": true,
   "actions" :
   [
     {

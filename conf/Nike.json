@@ -1,20 +1,25 @@
 {
   "name": "Nike",
-  "fullname" : "耐克公司",
   "actions" :
   [
     {
       "element": "http://jobs.nike.com/article/corporate",
       "how" : "url",
       "cmd" : "load",
-      "expections" : [{
-        "condition" : "elementToBeClickable",
-        "element" : "//section[@class='searchWrapper']/SPAN[@class='searchToggle blue']",
-      }],
-      "debug":true,
+      "expections" : [
+        {
+          "condition":"wait",
+          "value":"5"
+        },
+        {
+          "condition" : "elementToBeClickable",
+          "element" : "//section[@class='searchWrapper']/SPAN[@class='searchToggle blue']/SPAN[@class='arrows arrowDown2']",
+        }
+      ],
+      "debug":false,
     },
     {
-      "element" : "//section[@class='searchWrapper']/SPAN[@class='searchToggle blue']",
+      "element" : "//section[@class='searchWrapper']/SPAN[@class='searchToggle blue']/SPAN[@class='arrows arrowDown2']",
       "cmd" : "click",
       "expections" : [{
         "condition" : "visibilityOfElementLocated",
@@ -108,7 +113,8 @@
           "cmd": "click",
           "expections" : [
             {
-              "condition": "onlywait",
+              "condition": "wait",
+              "value": "10",
             },
             {
               "condition" : "elementTextChanged",
@@ -125,5 +131,6 @@
       ],
     }
   },
+  "use_proxy":true,
 }
 

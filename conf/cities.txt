@@ -1,6 +1,6 @@
 北京=BEIJING
-上海=SHANGHAI
-天津=TIANJIN
+上海=SHANGHAI,浦东新区
+天津=TIANJIN,滨海新区
 重庆=CHONGQING
 阿克苏=AKESU
 安宁=ANNING
@@ -418,7 +418,7 @@
 香港=Hongkong, Hong Kong, ZHO_Hong Kong, Tsing Yi Terminal, Hong Kong Island, 香港特别行政区, Hong Kong S.A.R.
 澳门=澳门特别行政区
 台北=ZHO_Taipei, Taipei
-全国=Any, Virtual, China
+其他=Any, Virtual, China
 新加坡=singapore
 海南=Hainan, Hainan Island
 红河=Honghe

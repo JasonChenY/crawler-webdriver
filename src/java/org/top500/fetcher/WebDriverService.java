@@ -8,6 +8,7 @@ import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.CapabilityType;
 
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -28,7 +29,7 @@ public class WebDriverService {
     public static void CreateAndStartService(int port) throws Exception {
         if ( service == null ) {
             service = new ChromeDriverService.Builder()
-                    .usingDriverExecutable(new File("/sdk/memo/search/webdriver/lib/chromedriver"))
+                    .usingDriverExecutable(new File("/sdk/tools/webdriver/lib/chromedriver"))
                             //.usingAnyFreePort()
                     .usingPort(port)
                     .build();
@@ -40,7 +41,7 @@ public class WebDriverService {
         if ( service != null ) service.stop();
     }
 
-    public static WebDriver getWebDriver(String url, String dir) throws Exception {
+    public static WebDriver getWebDriver(String url, String dir, String proxyIpAndPort) throws Exception {
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
         capabilities.setCapability("chrome.switches", "disable-images");// to disable image showing
 
@@ -56,6 +57,15 @@ public class WebDriverService {
         options.setExperimentalOption("prefs", prefs);
 
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+
+        if ( proxyIpAndPort != null ) {
+            org.openqa.selenium.Proxy proxy = new org.openqa.selenium.Proxy();
+            proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
+            capabilities.setCapability(CapabilityType.ForSeleniumServer.AVOIDING_PROXY, true);
+            capabilities.setCapability(CapabilityType.ForSeleniumServer.ONLY_PROXYING_SELENIUM_TRAFFIC, true);
+            System.setProperty("http.nonProxyHosts", "localhost");
+            capabilities.setCapability(CapabilityType.PROXY, proxy);
+        }
 
         return new RemoteWebDriver(service.getUrl()/*new java.net.URL(url)*/, capabilities);
     }
@@ -89,7 +99,7 @@ public class WebDriverService {
             WebDriver driver = null;
             try {
                 subdir = Long.toString(Thread.currentThread().getId());
-            driver = getWebDriver("http://127.0.0.1:8899", download_directory + "/" + subdir);
+            driver = getWebDriver("http://127.0.0.1:8899", download_directory + "/" + subdir, null);
             driver.get(url);
                 System.out.println("Page Title: " +  driver.getTitle());
                 Thread.sleep(10000);

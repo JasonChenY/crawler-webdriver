@@ -1,6 +1,6 @@
 {
   "name": "Volkswagen",
-  "fullname" : "大众中国",
+  "use_proxy": true,
   "actions" :
   [
     {
@@ -20,7 +20,7 @@
     "loop": {
       "xpath_prefix": "//UL[@class='vwd4_module1col vwd4_m505']/LI",
       "loop_type": "begin",
-      "loop_for_pages": true,
+      "loop_item_type": "other",
       "actions": [
         {
           "element": "A",
@@ -39,7 +39,7 @@
       "loop": {
         "xpath_prefix": "//UL[@class='vwd4_module1col vwd4_m505']/LI[contains(@class, 'vwd4_active')]/UL/LI",
         "loop_type": "begin",
-        "loop_for_pages": true,
+        "loop_item_type": "other",
         "loop_need_initial_action" : true,
         "actions": [
           {

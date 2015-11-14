@@ -1,6 +1,5 @@
 {
   "name": "Hnagroup",
-  "fullname" : "海航集团",
   "actions" :
   [
     {
@@ -42,9 +41,6 @@
         ],
       },
       "extracts": {
-        "job_title": {
-          "element": "TD[1]/A",
-        }
         "job_expire_date": {
           "element": "gv_Browse_ctl02_lbl_EndTime",
           "how": "ID",
@@ -52,6 +48,14 @@
       },
       "procedure": {
         "extracts": {
+          "job_title": {
+            "element": "lbl_PostName",
+            "how": "ID",
+          },
+          "job_category_domain": {
+            "element": "lbl_PostType",
+            "how": "ID",
+          },
           "job_description": {
             "element" : "//DIV[@class='abouttext']/TABLE/TBODY/TR[6]/TD[*] | //DIV[@class='abouttext']/TABLE/TBODY/TR[7]/TD[*]",
           },
