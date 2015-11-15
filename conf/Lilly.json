@@ -47,12 +47,11 @@
           "element": "TD[6]/DIV",
           "transforms" : [
             {
-              "how" : "regex",
-              "value" : "s/\\s+//g",
+              "how":"regex",
+              "value": "s/[Ss]hang [Hh]ai/Shanghai/g"
             },
             {
-              "how" : "location_regex",
-              "value" : "s#([^/]*).*#$1#g",
+              "how": "tokenize"
             }
           ]
         },

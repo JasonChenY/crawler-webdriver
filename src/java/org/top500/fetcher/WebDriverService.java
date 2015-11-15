@@ -99,8 +99,8 @@ public class WebDriverService {
             WebDriver driver = null;
             try {
                 subdir = Long.toString(Thread.currentThread().getId());
-            driver = getWebDriver("http://127.0.0.1:8899", download_directory + "/" + subdir, null);
-            driver.get(url);
+                driver = getWebDriver("http://127.0.0.1:8899", download_directory + "/" + subdir, null);
+                driver.get(url);
                 System.out.println("Page Title: " +  driver.getTitle());
                 Thread.sleep(10000);
                 System.out.println("Fetched file: " + lastFileModified(download_directory + "/" + subdir).getName());

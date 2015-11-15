@@ -30,7 +30,7 @@
 朝阳=CHAOYANG
 潮州=CHAOZHOU
 承德=CHENGDE
-成都=CHENGDU
+成都=CHENGDU,CHENDU
 城固=CHENGGU
 郴州=CHENZHOU
 赤壁=CHIBI
@@ -422,4 +422,5 @@
 新加坡=singapore
 海南=Hainan, Hainan Island
 红河=Honghe
+襄阳=Xiangyang
 
