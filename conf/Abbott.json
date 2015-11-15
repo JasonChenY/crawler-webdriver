@@ -1,5 +1,6 @@
 {
   "name" : "Abbott",
+  "use_proxy" : true,
   "actions" :
   [
     {
@@ -118,12 +119,15 @@
           "element": "DIV[@class='multiline-data-container']/DIV[2]/SPAN",
           "transforms" : [
             {
-              "how" : "regex",
+              "comment:how" : "regex",
               "value" : "s/\(Canton\)//g",
             },
             {
-              "how" : "location_regex",
+              "comment:how" : "location_regex",
               "value" : "s/([^-]*-)*(.*)/$2/g",
+            },
+            {
+              "how" : "tokenize"
             }
           ]
         },

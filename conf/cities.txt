@@ -418,7 +418,7 @@
 香港=Hongkong, Hong Kong, ZHO_Hong Kong, Tsing Yi Terminal, Hong Kong Island, 香港特别行政区, Hong Kong S.A.R.
 澳门=澳门特别行政区
 台北=ZHO_Taipei, Taipei
-其他=Any, Virtual, China
+其他=Any, Virtual
 新加坡=singapore
 海南=Hainan, Hainan Island
 红河=Honghe

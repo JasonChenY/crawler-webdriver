@@ -151,7 +151,7 @@ public class Schema {
             how = (String) obj.get("how");
             value = (String) obj.get("value");
 
-            if ( how.equals("regex_matcher") ) {
+            if ( (how != null) && how.equals("regex_matcher") ) {
                 if (obj.get("which") == null)
                     which = 0;
                 else

@@ -689,7 +689,7 @@ public class FetcherThread extends Thread {
                             // Firstly handle transform against single item.
                             for ( int j = 0; j < ele.transforms.size(); j++ ) {
                                 Schema.Transform transform = ele.transforms.get(j);
-                                if ( transform == null ) continue;
+                                if ( transform == null || transform.how == null ) continue;
                                 switch ( transform.how ) {
                                     case "insertBefore":
                                         value = transform.value + value;
@@ -733,7 +733,7 @@ public class FetcherThread extends Thread {
                     if ( ele.transforms != null ) {
                         for (int j = 0; j < ele.transforms.size(); j++) {
                             Schema.Transform transform = ele.transforms.get(j);
-                            if (transform == null) continue;
+                            if (transform == null || transform.how == null) continue;
                             switch (transform.how) {
                                 case "regex_on_all":
                                     // TODO
