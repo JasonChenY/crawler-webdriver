@@ -1,5 +1,6 @@
 {
   "name": "Google",
+  "use_proxy": true,
   "actions" :
   [
     {

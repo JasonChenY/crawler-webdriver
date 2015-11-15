@@ -26,10 +26,10 @@ import java.io.InputStreamReader;
 
 public class WebDriverService {
     private static ChromeDriverService service = null;
-    public static void CreateAndStartService(int port) throws Exception {
+    public static void CreateAndStartService(String driver, int port) throws Exception {
         if ( service == null ) {
             service = new ChromeDriverService.Builder()
-                    .usingDriverExecutable(new File("/sdk/tools/webdriver/lib/chromedriver"))
+                    .usingDriverExecutable(new File(driver))
                             //.usingAnyFreePort()
                     .usingPort(port)
                     .build();
@@ -115,7 +115,7 @@ public class WebDriverService {
     
     public static void main(String[] args) { 
         try {
-            CreateAndStartService(8899);
+            CreateAndStartService("/sdk/tools/jobs/webdriver/lib/chromedriver", 8899);
         } catch ( Exception e ) {
             e.printStackTrace();
         }

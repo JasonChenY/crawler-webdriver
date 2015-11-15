@@ -96,6 +96,7 @@ public class LocationUtils {
 
         StringBuilder result = new StringBuilder();
         StringTokenizer tokenizer = new StringTokenizer(str, ",");
+        boolean hitunknown = false;
         while (tokenizer.hasMoreTokens()) {
             String actualToken = tokenizer.nextToken();
             String out = CITIES_MAP.get(actualToken.trim().toLowerCase());
@@ -103,10 +104,12 @@ public class LocationUtils {
                 result.append(out);
                 if (LOG.isDebugEnabled()) LOG.debug("Translating " + actualToken + "  " + out);
             } else {
-                result.append(actualToken);
+                //result.append(actualToken);
+                hitunknown = true;
             }
             if ( tokenizer.hasMoreTokens() ) result.append(",");
         }
+        if ( hitunknown && (result.length()==0) ) result.append("其他");
         return result.toString();
     }
 
