@@ -116,7 +116,7 @@ public class FetcherThread extends Thread {
             use_proxy = schema.use_proxy;
         }
         if ( (proxy_server == null || proxy_server.isEmpty()) && use_proxy ) {
-            LOG.warn("no valid proxy specified");
+            LOG.warn(this.getName() + ":" +"no valid proxy specified");
             use_proxy = false;
         }
 
@@ -142,7 +142,7 @@ public class FetcherThread extends Thread {
         if ( notifier != null ) {
             notifier.fireStarted(this);
         } else {
-            LOG.info(this.getName() + " for " + _schema.getName() + " start .... (no notifier)");
+            LOG.info(this.getName() + ":" +this.getName() + " for " + _schema.getName() + " start .... (no notifier)");
         }
 
         try {
@@ -155,7 +155,7 @@ public class FetcherThread extends Thread {
 
             //Thread.sleep(1000);
         } catch (Throwable t) {
-            LOG.warn("Exception for thread " + this.getName(), t);
+            LOG.warn(this.getName() + ":" +"Exception for thread " + this.getName() + ":" + t);
         } finally {
             if ( driver != null ) driver.quit();
         }
@@ -163,34 +163,34 @@ public class FetcherThread extends Thread {
         if ( notifier != null ) {
             notifier.fireFinished(this);
         } else {
-            LOG.info(this.getName() + " for " + _schema.getName() + " finish (no notifier)");
+            LOG.info(this.getName() + ":" +this.getName() + " for " + _schema.getName() + " finish (no notifier)");
         }
     }
 
     @Override
     public void run() {
         //this is the original JDK thread
-        LOG.info("Not in Threadpool mode");
+        LOG.info(this.getName() + ":" +"Not in Threadpool mode");
         run(null);
     }
 
     private void fetch() throws Exception {
         try {
             String window = driver.getWindowHandle();
-            LOG.debug("Inital window handle: " + window);
+            LOG.debug(this.getName() + ":" +"Inital window handle: " + window);
             windows_stack.push(window);
 
             Actions(null, 0, _schema.actions);
             Procedure(_schema.procedure, null);
         } catch ( Exception e ) {
-            LOG.warn("Exception: ", e);
+            LOG.warn(this.getName() + ":" +"Exception: ", e);
             _schema.fetch_result = false;
         }
         //Thread.sleep(5000);
     }
 
     ////////////////////////driver part///////////////////////
-    public static void save_page_content(String content) {
+    public void save_page_content(String content) {
         try {
             String date = DateUtils.getThreadLocalDateFormat().format(new Date());
             String suffix = ".html";
@@ -201,9 +201,9 @@ public class FetcherThread extends Thread {
             bw.flush();
             bw.close();
             fw.close();
-            LOG.debug("Content saved to " + fname);
+            LOG.debug(this.getName() + ":" +"Content saved to " + fname);
         } catch (Exception ee) {
-            LOG.warn("Failed to save content to file " + ee.getMessage());
+            LOG.warn(this.getName() + ":" +"Failed to save content to file " + ee.getMessage());
         };
     }
     private String formatXpath(String prefix, int index, String tgt) {
@@ -236,7 +236,7 @@ public class FetcherThread extends Thread {
         if ( element.how == null || element.how.equals("XPATH") ) {
             String xpath = formatXpath(xpath_prefix, index, val);
             locator = By.xpath(xpath);
-            LOG.debug("Locating element via " + xpath);
+            LOG.debug(this.getName() + ":" +"Locating element via " + xpath);
         } else {
             switch (element.how) {
                 case "CLASS_NAME": locator = By.className(val); break;
@@ -248,7 +248,7 @@ public class FetcherThread extends Thread {
                 case "TAG_NAME":locator = By.tagName(val); break;
                 default: return null;
             }
-            LOG.debug("Locating element via " + val);
+            LOG.debug(this.getName() + ":" +"Locating element via " + val);
         }
         return locator;
     }
@@ -264,10 +264,10 @@ public class FetcherThread extends Thread {
         } else if ( element.how.equals("ID") ) {
             statement = String.format("document.getElementById(\"%s\").scrollIntoView();", element.element);
         } else {
-            LOG.warn("Dont support this manner to locate element in JS " + element.how);
+            LOG.warn(this.getName() + ":" +"Dont support this manner to locate element in JS " + element.how);
             return false;
         }
-        LOG.debug("execute JS: " + statement);
+        LOG.debug(this.getName() + ":" +"execute JS: " + statement);
         ((JavascriptExecutor)driver).executeScript(statement);
         return true;
     }
@@ -275,7 +275,7 @@ public class FetcherThread extends Thread {
         // any pre-condition action configured
         if ( action.preaction != null ) {
             if ( !Action(null, 0, action.preaction) ) {
-                LOG.warn("preaction failed");
+                LOG.warn(this.getName() + ":" +"preaction failed");
                 return false;
             }
         }
@@ -283,7 +283,7 @@ public class FetcherThread extends Thread {
         String currentWindowHandle = driver.getWindowHandle();
         Set<String> currentWindowHandles = driver.getWindowHandles();
         for(String handle : currentWindowHandles) {
-            LOG.debug("existing window handle: " + handle);
+            LOG.debug(this.getName() + ":" +"existing window handle: " + handle);
         }
 
         // current text value or value for expected elements
@@ -302,7 +302,7 @@ public class FetcherThread extends Thread {
                         else if ( expection.condition.equals("elementValueChanged" ) )
                             currentTexts.add(currentElement.getAttribute("value"));
                     } catch ( NoSuchElementException e ) {
-                        LOG.warn("Expected element with " + expection.element.element + " not found, return " , e);
+                        LOG.warn(this.getName() + ":" +"Expected element with " + expection.element.element + " not found, return " , e);
                         return (action.isFatal ? false : true);
                     }
                 }
@@ -310,39 +310,39 @@ public class FetcherThread extends Thread {
         }
 
         if ( action.command.code == Schema.CmdType.None ) {
-            LOG.info("Action without command, skip");
+            LOG.info(this.getName() + ":" +"Action without command, skip");
             return true;
         } else if ( action.command.code == Schema.CmdType.Load ) {
-            LOG.debug("Action load " + action.element.element);
+            LOG.debug(this.getName() + ":" +"Action load " + action.element.element);
             driver.get(action.element.element);
         } else if ( action.command.code == Schema.CmdType.Back ) {
-            LOG.debug("Action navigate back");
+            LOG.debug(this.getName() + ":" +"Action navigate back");
             driver.navigate().back();
         } else if ( action.command.code == Schema.CmdType.Forward ) {
-            LOG.debug("Action navigate forward");
+            LOG.debug(this.getName() + ":" +"Action navigate forward");
             driver.navigate().forward();
         } else if ( action.command.code == Schema.CmdType.Refresh ) {
-            LOG.debug("Action refresh");
+            LOG.debug(this.getName() + ":" +"Action refresh");
             driver.navigate().refresh();
         } else if ( action.command.code == Schema.CmdType.Restore ) {
             String topWindowHandle = (String) windows_stack.peek();
             if (!driver.getWindowHandle().equals(topWindowHandle)) {
-                LOG.warn("Action restore, but something wrong, current window not equal topwindow");
+                LOG.warn(this.getName() + ":" +"Action restore, but something wrong, current window not equal topwindow");
                 return (action.isFatal ? false : true);
             } else {
                 windows_stack.pop();
                 String previousWindowHandle = (String) windows_stack.peek();
-                LOG.debug("Restore saved window: " + previousWindowHandle);
+                LOG.debug(this.getName() + ":" +"Restore saved window: " + previousWindowHandle);
                 driver.close();
                 driver.switchTo().window(previousWindowHandle);
             }
         } else if ( action.command.code == Schema.CmdType.ScrollIntoView ) {
-            LOG.debug("Action ScrollIntoView");
+            LOG.debug(this.getName() + ":" +"Action ScrollIntoView");
             boolean ret = scrolIntoView(xpath_prefix, index, action.element);
             if (!ret) return (action.isFatal ? false : true);
         } else if ( action.command.code == Schema.CmdType.zoom ) {
             /* not working yet */
-            LOG.debug("Action zoom window");
+            LOG.debug(this.getName() + ":" +"Action zoom window");
             try {
                 int val = Integer.parseInt(action.setvalue);
                 int number = Math.abs(val);
@@ -353,10 +353,10 @@ public class FetcherThread extends Thread {
                     html.sendKeys(Keys.chord(Keys.CONTROL, key));
                 }
             } catch ( Exception e ) {
-                LOG.warn("failed to zoom window", e);
+                LOG.warn(this.getName() + ":" +"failed to zoom window", e);
             }
         } else if ( action.command.code == Schema.CmdType.switchToMainFrame ) {
-            LOG.debug("switchToMainFrame");
+            LOG.debug(this.getName() + ":" +"switchToMainFrame");
             driver.switchTo().defaultContent();
             //driver.switchTo().frame(0);
         } else {
@@ -367,13 +367,13 @@ public class FetcherThread extends Thread {
             try {
                 element = locator.findElement(driver);
             } catch ( NoSuchElementException e ) {
-                LOG.warn("Element with " + dbgstr + " not found, return, >>> Exception: " , e);
+                LOG.warn(this.getName() + ":" +"Element with " + dbgstr + " not found, return, >>> Exception: " , e);
                 return (action.isFatal ? false : true);
             }
 
             switch (action.command.code) {
                 case Click:
-                    LOG.debug("Click " + dbgstr);
+                    LOG.debug(this.getName() + ":" +"Click " + dbgstr);
                     try {
                         //String statement = String.format("window.scrollTo(%d, %d);", element.getLocation().getX(), element.getLocation().getY());
                         //((JavascriptExecutor)driver).executeScript(statement);
@@ -389,7 +389,7 @@ public class FetcherThread extends Thread {
                         //((JavascriptExecutor) driver).executeScript("window.focus();");
 
                         //WebElement abc = driver.switchTo().activeElement();
-                        //LOG.debug(abc.getAttribute("id") + "   " + abc.getAttribute("name") + "   " + abc.getAttribute("class"));
+                        //LOG.debug(this.getName() + ":" +abc.getAttribute("id") + "   " + abc.getAttribute("name") + "   " + abc.getAttribute("class"));
 
                         //((org.openqa.selenium.internal.Locatable) element).getCoordinates().onScreen();
                         //long yOffset = (Long)((JavascriptExecutor)driver).executeScript("return arguments[0].scrollTop;", element);
@@ -397,17 +397,17 @@ public class FetcherThread extends Thread {
                         //scrolIntoView(xpath_prefix, action.element);
                         element.click();
                     } catch ( WebDriverException e ) {
-                        LOG.debug("Failed to click " + dbgstr + " reach last page?");
+                        LOG.debug(this.getName() + ":" +"Failed to click " + dbgstr + " reach last page?");
                         return (action.isFatal ? false : true);
                     }
                     break;
                 case Submit:
-                    LOG.debug("submit " + dbgstr);
+                    LOG.debug(this.getName() + ":" +"submit " + dbgstr);
                     element.submit();
                     break;
                 case selectByVisibleText:
                 case selectByValue:
-                    LOG.debug("select " + action.setvalue + " for " + dbgstr);
+                    LOG.debug(this.getName() + ":" +"select " + action.setvalue + " for " + dbgstr);
                     Select dropdown = new Select(element);
                     if ( action.command.code == Schema.CmdType.selectByVisibleText )
                         dropdown.selectByVisibleText(action.setvalue);
@@ -415,20 +415,20 @@ public class FetcherThread extends Thread {
                         dropdown.selectByValue(action.setvalue);
                     break;
                 case openInNewTab:
-                    LOG.debug("openInNewTab " + dbgstr);
+                    LOG.debug(this.getName() + ":" +"openInNewTab " + dbgstr);
                     new Actions(driver).keyDown(Keys.CONTROL).click(element).keyUp(Keys.CONTROL).build().perform();
                     break;
                 case sendKeys:
-                    LOG.debug("sendKeys " + action.setvalue + " to " + dbgstr);
+                    LOG.debug(this.getName() + ":" +"sendKeys " + action.setvalue + " to " + dbgstr);
                     element.sendKeys(action.setvalue);
                     break;
                 case setPage:
-                    LOG.debug("setPage (sendKeys) " + index + " to " + dbgstr);
+                    LOG.debug(this.getName() + ":" +"setPage (sendKeys) " + index + " to " + dbgstr);
                     //element.clear(); element.sendKeys(String.valueOf(index));
                     new Actions(driver).clickAndHold(element).sendKeys(Keys.chord(Keys.CONTROL, "a"), String.valueOf(index)).build().perform();
                     break;
                 case openInNewTab_ContextClick:
-                    LOG.debug("openInNewTab_ContextClick " + dbgstr);
+                    LOG.debug(this.getName() + ":" +"openInNewTab_ContextClick " + dbgstr);
                     /*
                     Actions a = new Actions(driver);
                     a.moveToElement(element);
@@ -447,20 +447,20 @@ public class FetcherThread extends Thread {
                         robot.keyPress(KeyEvent.VK_T);
                         robot.keyRelease(KeyEvent.VK_T);
                     } catch ( AWTException e ) {
-                        LOG.warn("failed to create Robot for openInNewTab_ContextClick ", e);
+                        LOG.warn(this.getName() + ":" +"failed to create Robot for openInNewTab_ContextClick ", e);
                         return false;
                     } catch ( InterruptedException e ) {
-                        LOG.warn("InterruptedException ", e);
+                        LOG.warn(this.getName() + ":" +"InterruptedException ", e);
                         return false;
                     }
 
                     break;
                 case executeScript:
-                    LOG.debug("executeScript " + dbgstr);
+                    LOG.debug(this.getName() + ":" +"executeScript " + dbgstr);
                     ((JavascriptExecutor)driver).executeScript(action.setvalue, element);
                     break;
                 case moveToElement:
-                    LOG.debug("moveToElement " + dbgstr);
+                    LOG.debug(this.getName() + ":" +"moveToElement " + dbgstr);
                     if( "input".equalsIgnoreCase(element.getTagName()) ){
                         element.sendKeys("");
                     } else{
@@ -474,15 +474,15 @@ public class FetcherThread extends Thread {
 
         /* Expection handling */
         if ( action.expections == null ) {
-            LOG.debug("no Expection, go on");
+            LOG.debug(this.getName() + ":" +"no Expection, go on");
         } else {
             for ( int iter = 0; iter < action.expections.expections.size(); iter++ ) {
                 Schema.Expection expection = action.expections.expections.get(iter);
                 if ( expection == null || expection.condition == null ) continue;
                 if (expection.element != null)
-                    LOG.debug("Expection: " + expection.condition + " " + expection.element.element);
+                    LOG.debug(this.getName() + ":" +"Expection: " + expection.condition + " " + expection.element.element);
                 else
-                    LOG.debug("Expection: " + expection.condition);
+                    LOG.debug(this.getName() + ":" +"Expection: " + expection.condition);
 
                 try {
                     By wait_locator = getLocator(null, 0, expection.element);
@@ -513,16 +513,16 @@ public class FetcherThread extends Thread {
                                     windows_stack.push(newwindow);
                                     driver.switchTo().window(newwindow);
                                     //String handle = driver.getWindowHandle();
-                                    LOG.debug("newWindowIsOpened: " + newwindow + " title:" + driver.getTitle());
+                                    LOG.debug(this.getName() + ":" +"newWindowIsOpened: " + newwindow + " title:" + driver.getTitle());
                                 } else {
                                     // stupid Baosteel bug which will open summary page in old window, but replace job list in new window
                                     String origwindow = (String)windows_stack.pop();
                                     windows_stack.push(newwindow);
                                     windows_stack.push(origwindow);
-                                    LOG.debug("newWindowIsOpened(but in background): " + newwindow + " title:" + driver.getTitle());
+                                    LOG.debug(this.getName() + ":" +"newWindowIsOpened(but in background): " + newwindow + " title:" + driver.getTitle());
                                 }
                             } catch (Exception e) {
-                                LOG.warn("Failed to open new window");
+                                LOG.warn(this.getName() + ":" +"Failed to open new window");
                                 return (action.isFatal ? false : true);
                             /*
                             for (int i = 0; i < 5; i++) {
@@ -535,9 +535,9 @@ public class FetcherThread extends Thread {
                             }
                             try {
                                 wait.until(alertIsPresent());
-                                LOG.debug("Yes, Alert Dialog appears");
+                                LOG.debug(this.getName() + ":" +"Yes, Alert Dialog appears");
                             } catch (Exception ee) {
-                                LOG.warn("Failed to see Alert Dialog");
+                                LOG.warn(this.getName() + ":" +"Failed to see Alert Dialog");
                             }
                             */
                             }
@@ -550,20 +550,20 @@ public class FetcherThread extends Thread {
                             try {
                                 wait.until(onlywait());
                             } catch (TimeoutException e) {
-                                LOG.debug("onlywait 5 seconds");
+                                LOG.debug(this.getName() + ":" +"onlywait 5 seconds");
                             }
                             break;
                         case "elementTextChanged":
                             String currentText = currentTexts.poll();
-                            LOG.debug("Current text: " + currentText);
+                            LOG.debug(this.getName() + ":" +"Current text: " + currentText);
                             String newtext = wait.until(elementTextChanged(wait_locator, currentText));
-                            LOG.debug("Element text changed to " + newtext);
+                            LOG.debug(this.getName() + ":" +"Element text changed to " + newtext);
                             break;
                         case "elementValueChanged":
                             String currentValue = currentTexts.poll();
-                            LOG.debug("Current value: " + currentValue);
+                            LOG.debug(this.getName() + ":" +"Current value: " + currentValue);
                             String newvalue = wait.until(elementValueChanged(wait_locator, currentValue));
-                            LOG.debug("Element value changed to " + newvalue);
+                            LOG.debug(this.getName() + ":" +"Element value changed to " + newvalue);
                             break;
                         case "elementToBeSelected":
                             wait.until(elementToBeSelected(wait_locator));
@@ -572,9 +572,9 @@ public class FetcherThread extends Thread {
                             int val = 10;
                             try {
                                 val = Integer.parseInt(expection.value);
-                                LOG.debug("wait seconds " + expection.value);
+                                LOG.debug(this.getName() + ":" +"wait seconds " + expection.value);
                             } catch ( Exception e ) {
-                                LOG.warn("wait without valid value, wait 10 seconds");
+                                LOG.warn(this.getName() + ":" +"wait without valid value, wait 10 seconds");
                             }
 
                             //implicitlyWait looks works in asynchrous mode
@@ -582,15 +582,15 @@ public class FetcherThread extends Thread {
                             try {
                                 Thread.sleep(val * 1000);
                             } catch ( Exception ee ) {}
-                            LOG.debug("waited seconds " + expection.value);
+                            LOG.debug(this.getName() + ":" +"waited seconds " + expection.value);
                             break;
                         default:
                             driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);
-                            LOG.debug("waited 10 seconds");
+                            LOG.debug(this.getName() + ":" +"waited 10 seconds");
                             break;
                     }
                 } catch ( Exception ee ) {
-                    LOG.warn("Specific expection failed, return false >>> Exception ", ee);
+                    LOG.warn(this.getName() + ":" +"Specific expection failed, return false >>> Exception ", ee);
                     return false;
                 }
             }
@@ -603,7 +603,7 @@ public class FetcherThread extends Thread {
 
     private boolean Actions(String xpath_prefix, int index, Schema.Actions actions) {
         if ( actions == null || actions.actions == null ) {
-            LOG.debug("No Actions, return");
+            LOG.debug(this.getName() + ":" +"No Actions, return");
             return true;
         }
         int original_windows = windows_stack.size();
@@ -611,7 +611,7 @@ public class FetcherThread extends Thread {
             boolean ret = Action(xpath_prefix, index, actions.actions.get(i));
             if ( !ret ) {
                 while ( windows_stack.size() > original_windows ) {
-                    LOG.info("close window opened by failed action before return false");
+                    LOG.info(this.getName() + ":" +"close window opened by failed action before return false");
                     windows_stack.pop();
                     String previousWindowHandle = (String) windows_stack.peek();
                     driver.close();
@@ -625,11 +625,11 @@ public class FetcherThread extends Thread {
 
     private boolean Extracts(String xpath_prefix, int index, Schema.Extracts extracts, Job job){
         if ( extracts == null ) {
-            LOG.debug("Nothing to be extracted, return");
+            LOG.debug(this.getName() + ":" +"Nothing to be extracted, return");
             return true;
         }
         if ( job == null) {
-            LOG.warn("Nont know where to save extracts, return");
+            LOG.warn(this.getName() + ":" +"Nont know where to save extracts, return");
             return false;
         }
         try {
@@ -637,14 +637,14 @@ public class FetcherThread extends Thread {
                 Schema.Element ele = extracts.items.get(key);
                 if ( (ele.how != null) && ele.how.equals("url") ) {
                     job.addField(Job.JOB_URL, driver.getCurrentUrl());
-                    LOG.debug("job_url" + ": " + driver.getCurrentUrl());
+                    LOG.debug(this.getName() + ":" +"job_url" + ": " + driver.getCurrentUrl());
                 } else if ( (ele.how != null) && ele.how.equals("int") ) {
                     int val = 0;
                     try {
                         val = Integer.parseInt(ele.value);
                     } catch (java.lang.Exception e) {}
                     job.addField(key, val);
-                    LOG.debug(key + " : (int)" + ele.value);
+                    LOG.debug(this.getName() + ":" +key + " : (int)" + ele.value);
                 } else {
                     By locator = getLocator(xpath_prefix, index, ele);
                     String value = "";
@@ -653,10 +653,10 @@ public class FetcherThread extends Thread {
                     List<WebElement> elements = locator.findElements(driver);
 
                     if ( elements.size() == 0 ) {
-                        LOG.warn("Failed to locate elements for extracing " + key);
+                        LOG.warn(this.getName() + ":" +"Failed to locate elements for extracing " + key);
                         return false;
                     } else {
-                        LOG.debug("Located " + elements.size() + " elements for extracing " + key);
+                        LOG.debug(this.getName() + ":" +"Located " + elements.size() + " elements for extracing " + key);
                     }
                     for ( int i = 0; i < elements.size(); i++ ) {
                         if ( ele.method != null ) {
@@ -684,7 +684,7 @@ public class FetcherThread extends Thread {
                             else
                                 value = elements.get(i).getText();
                         }
-                        LOG.debug(" raw-> " + value);
+                        LOG.debug(this.getName() + ":" +" raw-> " + value);
                         if ( ele.transforms != null ) {
                             // Firstly handle transform against single item.
                             for ( int j = 0; j < ele.transforms.size(); j++ ) {
@@ -702,7 +702,7 @@ public class FetcherThread extends Thread {
                                             Perl5Util plutil = new Perl5Util();
                                             value = plutil.substitute(transform.value, value);
                                         } catch (MalformedPerl5PatternException me) {
-                                            LOG.warn("regex faield" , me);
+                                            LOG.warn(this.getName() + ":" +"regex faield" , me);
                                         }
                                         break;
                                     case "dateFormat":
@@ -760,7 +760,7 @@ public class FetcherThread extends Thread {
                         value = StringUtils.stripNonCharCodepoints(value);
                     }
 
-                    LOG.debug(key + ":" + (value.length()>100?value.substring(0,100):value));
+                    LOG.debug(this.getName() + ":" +key + ":" + (value.length()>100?value.substring(0,100):value));
 
                     if ( !formatted ) {
                         // some default handling to avoid config item in schema
@@ -776,7 +776,7 @@ public class FetcherThread extends Thread {
             }
 
         } catch ( Exception e ) {
-            LOG.warn("Extracts failed", e);
+            LOG.warn(this.getName() + ":" +"Extracts failed", e);
             return false;
         }
         return true;
@@ -794,11 +794,11 @@ public class FetcherThread extends Thread {
                         String newurl = plutil.substitute(calc.value, (String)newjob.getField(Job.JOB_URL));
                         newjob.addField(Job.JOB_UNIQUE_ID, newurl);
                     } catch (MalformedPerl5PatternException me) {
-                        LOG.warn("Failed to generate unique id for job via regex " + calc.value);
+                        LOG.warn(this.getName() + ":" +"Failed to generate unique id for job via regex " + calc.value);
                         newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
                     }
                 } else {
-                    LOG.warn("No regex to generate unique id for job");
+                    LOG.warn(this.getName() + ":" +"No regex to generate unique id for job");
                     newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
                 }
             }
@@ -807,7 +807,7 @@ public class FetcherThread extends Thread {
         }
 
         if (!newjob.getFields().containsKey(Job.JOB_POST_DATE) ) {
-            LOG.info("No Job_date field extracted, use current time");
+            LOG.info(this.getName() + ":" +"No Job_date field extracted, use current time");
             newjob.addField(Job.JOB_POST_DATE, DateUtils.getCurrentDate());
 
             // here to check solr repository whether this item  exist already.
@@ -850,26 +850,26 @@ public class FetcherThread extends Thread {
         if ( procedure.loop_type == Schema.LOOP_TYPE.BEGIN ) {
             if ( ( procedure.loop_item_type==Schema.LOOP_ITEM_TYPE.PAGE )
                     || (procedure.loop_item_type == Schema.LOOP_ITEM_TYPE.OTHER) ) {
-                LOG.debug("Procedure: loop of BEGIN type for LOOP_ITEM_TYPE of " + (procedure.loop_item_type==Schema.LOOP_ITEM_TYPE.PAGE?"PAGE":"OTHER"));
+                LOG.debug(this.getName() + ":" +"Procedure: loop of BEGIN type for LOOP_ITEM_TYPE of " + (procedure.loop_item_type==Schema.LOOP_ITEM_TYPE.PAGE?"PAGE":"OTHER"));
                 int loop_totalpages = 0;
                 String xpath_prefix_loop = procedure.xpath_prefix_loop;
                 if (xpath_prefix_loop != null && !xpath_prefix_loop.isEmpty()) {
                     By locator = By.xpath(xpath_prefix_loop);
                     List<WebElement> elements = locator.findElements(driver);
                     loop_totalpages = elements.size();
-                    LOG.debug("Procedure: loop of BEGIN type, find " + loop_totalpages + " pages with " + xpath_prefix_loop);
+                    LOG.debug(this.getName() + ":" +"Procedure: loop of BEGIN type, find " + loop_totalpages + " pages with " + xpath_prefix_loop);
                 } else if ( procedure.loop_totalpages != null ) {
                     By locator = getLocator(null, 0, procedure.loop_totalpages);
                     try {
                         WebElement element = locator.findElement(driver);
                         loop_totalpages = Integer.parseInt(element.getText());
-                        LOG.debug("Procedure: loop of BEGIN type, find " + loop_totalpages + " with loop_totalpages");
+                        LOG.debug(this.getName() + ":" +"Procedure: loop of BEGIN type, find " + loop_totalpages + " with loop_totalpages");
                     } catch ( NoSuchElementException e ) {
-                        LOG.warn("Procedure: loop of BEGIN type, loop_totalpages defined, but failed to parse valid number from this element");
+                        LOG.warn(this.getName() + ":" +"Procedure: loop of BEGIN type, loop_totalpages defined, but failed to parse valid number from this element");
                         return PROC_RESULT_FAIL;
                     }
                 } else {
-                    LOG.warn("Procedure: loop of BEGIN type, but neither xpath_prefix nor loop_totalpages, cant continue");
+                    LOG.warn(this.getName() + ":" +"Procedure: loop of BEGIN type, but neither xpath_prefix nor loop_totalpages, cant continue");
                     return PROC_RESULT_FAIL;
                 }
 
@@ -890,24 +890,24 @@ public class FetcherThread extends Thread {
                             result = Actions(newprefix, 0, procedure.actions);
                         }
                         if ( ! result ) {
-                            LOG.info("Actions for going to next page failed, break");
+                            LOG.info(this.getName() + ":" +"Actions for going to next page failed, break");
                             break;
                         }
                     }
                     int res = Procedure(procedure.procedure, null);
                     if ( (res == PROC_RESULT_OK_NDAYS) ) {
                         if ( procedure.loop_item_type == Schema.LOOP_ITEM_TYPE.PAGE ) {
-                            LOG.info("Fetched jobs within " + fetch_n_days + " days, reach configured limit, return");
+                            LOG.info(this.getName() + ":" +"Fetched jobs within " + fetch_n_days + " days, reach configured limit, return");
                             break;
                         } else {
-                            LOG.debug("Fetched jobs within " + fetch_n_days + " days, but continue(LOOP_ITEM_TYPE.OTHER)");
+                            LOG.debug(this.getName() + ":" +"Fetched jobs within " + fetch_n_days + " days, but continue(LOOP_ITEM_TYPE.OTHER)");
                         }
                     }
                     if ( _schema.fetch_total_jobs == fetch_n_jobs ) {
-                        LOG.info("Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
+                        LOG.info(this.getName() + ":" +"Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
                         break;
                     } else if ((procedure.fetch_runtime_index-procedure.begin_from+1) >= fetch_n_pages) {
-                        LOG.info("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
+                        LOG.info(this.getName() + ":" +"Fetched " + fetch_n_pages + " pages, reach configured limit, return");
                         break;
                     }
                 }
@@ -915,16 +915,16 @@ public class FetcherThread extends Thread {
                 if ( loop_totalpages == 0 ) {
                     // Made page loop as optional, Mainly for Volkswagen case
                     // where maximum 2 levels of pages loop, but one of them maybe absent.
-                    LOG.info("Zero element found for page loop, go forward to inner procedure");
+                    LOG.info(this.getName() + ":" +"Zero element found for page loop, go forward to inner procedure");
                     Procedure(procedure.procedure, null);
                 }
             } else {
-                LOG.debug("Procedure: loop of BEGIN type for job list");
+                LOG.debug(this.getName() + ":" +"Procedure: loop of BEGIN type for job list");
                 String xpath_prefix_loop = procedure.xpath_prefix_loop;
                 if (xpath_prefix_loop != null && !xpath_prefix_loop.isEmpty()) {
                     By locator = By.xpath(xpath_prefix_loop);
                     List<WebElement> elements = locator.findElements(driver);
-                    LOG.debug("Procedure: loop of BEGIN type, find " + elements.size() + " jobs with " + xpath_prefix_loop);
+                    LOG.debug(this.getName() + ":" +"Procedure: loop of BEGIN type, find " + elements.size() + " jobs with " + xpath_prefix_loop);
                     if ( procedure.fetch_runtime_index == -1 ) procedure.fetch_runtime_index = procedure.begin_from;
                     boolean hit_outdated_jobs = false;
                     for (; procedure.fetch_runtime_index < elements.size() + procedure.end_to; procedure.fetch_runtime_index++) {
@@ -932,12 +932,12 @@ public class FetcherThread extends Thread {
                         newjob.addField(Job.JOB_COMPANY, CompanyUtils.getDisplayName(_schema.getName()));
                         String newprefix = xpath_prefix_loop + "[" + Integer.toString(procedure.fetch_runtime_index + 1) + "]/";
                         if (!Extracts(newprefix, procedure.fetch_runtime_index + 1, procedure.extracts, newjob)) {
-                            LOG.warn("Failed to extract info for this job, ignore");
+                            LOG.warn(this.getName() + ":" +"Failed to extract info for this job, ignore");
                             continue;
                         }
 
                         if (DateUtils.nDaysAgo((String)newjob.getField(Job.JOB_POST_DATE), fetch_n_days)) {
-                            LOG.debug("Job older than configured date, ignore");
+                            LOG.debug(this.getName() + ":" +"Job older than configured date, ignore");
                             // current page list already has some jobs older than configured date,
                             // but will continue fetching all the jobs in current page, because some company will use reverse order
                             // just set a tmp flag here, and will return PROC_RESULT_OK_NDAYS, wont continue try next page any more.
@@ -945,16 +945,16 @@ public class FetcherThread extends Thread {
                             continue;
                         }
                         if ( !Actions(newprefix, 0, procedure.actions) ) {
-                            LOG.warn("Action for job failed, ignore");
+                            LOG.warn(this.getName() + ":" +"Action for job failed, ignore");
                             continue;
                         }
 
                         int res = Procedure(procedure.procedure, newjob);
                         if ( res == PROC_RESULT_FAIL ) {
-                            LOG.warn("Procedure for single job failed, ignore");
+                            LOG.warn(this.getName() + ":" +"Procedure for single job failed, ignore");
                             continue;
                         } else if ( res == PROC_RESULT_OK_NDAYS ) {
-                            LOG.debug("Job older than configured date(detected in job detail page), ignore");
+                            LOG.debug(this.getName() + ":" +"Job older than configured date(detected in job detail page), ignore");
                             hit_outdated_jobs = true;
                             continue;
                         }
@@ -968,11 +968,11 @@ public class FetcherThread extends Thread {
                         if ( (_schema.fetch_total_jobs == fetch_n_jobs)
                         || ((procedure.fetch_runtime_index-procedure.begin_from+1) >= fetch_n_jobs_perpage) ) {
                             if ((procedure.fetch_runtime_index - procedure.begin_from + 1) >= fetch_n_jobs_perpage) {
-                                LOG.info("Fetched " + fetch_n_jobs_perpage + " jobs perpage, reach configured limit, return");
+                                LOG.info(this.getName() + ":" +"Fetched " + fetch_n_jobs_perpage + " jobs perpage, reach configured limit, return");
                                 procedure.fetch_runtime_index = -1;
                             }
                             if (_schema.fetch_total_jobs == fetch_n_jobs) {
-                                LOG.info("Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
+                                LOG.info(this.getName() + ":" +"Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
                             }
                             break;
                         }
@@ -985,12 +985,12 @@ public class FetcherThread extends Thread {
                     else
                         return PROC_RESULT_OK; // will continue next page.
                 } else {
-                    LOG.warn("Procedure: loop of BEGIN type, dont have xpath_prefix");
+                    LOG.warn(this.getName() + ":" +"Procedure: loop of BEGIN type, dont have xpath_prefix");
                     return PROC_RESULT_FAIL;
                 }
             }
         } else if ( procedure.loop_type == Schema.LOOP_TYPE.END ) {
-            LOG.debug("Procedure: loop of END type for page list");
+            LOG.debug(this.getName() + ":" +"Procedure: loop of END type for page list");
             boolean result = true;
             if ( procedure.fetch_runtime_index != -1 ) {
                 int tmppages = 0;
@@ -998,7 +998,7 @@ public class FetcherThread extends Thread {
                     // move forward to the pages failed last time.
                 } while ( (tmppages++ < procedure.fetch_runtime_index) && (result=Actions(null, 0, procedure.actions)) );
                 if ( !result ) {
-                    LOG.warn("Failed again during moving to the failed place last time");
+                    LOG.warn(this.getName() + ":" +"Failed again during moving to the failed place last time");
                     return PROC_RESULT_FAIL;
                 }
             } else {
@@ -1011,27 +1011,27 @@ public class FetcherThread extends Thread {
                 if ( res == PROC_RESULT_OK_NDAYS ) break;
             } while ( (++procedure.fetch_runtime_index<fetch_n_pages) && (_schema.fetch_total_jobs<fetch_n_jobs) && (result=Actions(null, 0, procedure.actions)) );
             if ( res == PROC_RESULT_OK_NDAYS ) {
-                LOG.info("Fetched jobs within configured " + fetch_n_days + " days, break");
+                LOG.info(this.getName() + ":" +"Fetched jobs within configured " + fetch_n_days + " days, break");
                 return PROC_RESULT_OK;
             } else if ( !result ) {
-                LOG.warn("Actions for going to next page failed, break");
+                LOG.warn(this.getName() + ":" +"Actions for going to next page failed, break");
                 return PROC_RESULT_FAIL;
             } else if ( _schema.fetch_total_jobs == fetch_n_jobs ) {
-                LOG.info("Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
+                LOG.info(this.getName() + ":" +"Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
                 return PROC_RESULT_OK;
             } else {
-                LOG.info("Fetched " + fetch_n_pages + " pages, reach configured limit, return");
+                LOG.info(this.getName() + ":" +"Fetched " + fetch_n_pages + " pages, reach configured limit, return");
                 return PROC_RESULT_OK;
             }
         } else {
-            LOG.debug("Procedure for single job");
+            LOG.debug(this.getName() + ":" +"Procedure for single job");
             int res = PROC_RESULT_OK;
             if ( !Extracts(null, 0, procedure.extracts, job) ) {
-                LOG.info("Failed to extract info for this job (summary page), ignore");
+                LOG.info(this.getName() + ":" +"Failed to extract info for this job (summary page), ignore");
                 res = PROC_RESULT_FAIL;
             }
             if (DateUtils.nDaysAgo((String)job.getField(Job.JOB_POST_DATE), fetch_n_days)) {
-                LOG.info("Job older than configured date (summary page), ignore");
+                LOG.info(this.getName() + ":" +"Job older than configured date (summary page), ignore");
                 res = PROC_RESULT_OK_NDAYS;
             }
             Actions(null, 0, procedure.actions);
