@@ -15,6 +15,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 
 
 import java.io.File;
+import java.lang.Integer;
 import java.lang.Thread;
 import java.util.Map;
 import java.util.HashMap;
@@ -24,9 +25,13 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
+import org.top500.utils.Configuration;
+
 public class WebDriverService {
     private static ChromeDriverService service = null;
-    public static void CreateAndStartService(String driver, int port) throws Exception {
+    public static void CreateAndStartService(Configuration _conf) throws Exception {
+        String driver = _conf.get("fetch.webdriver.dir");
+        int port = _conf.getInt("fetch.webdriver.port", 8899);
         if ( service == null ) {
             service = new ChromeDriverService.Builder()
                     .usingDriverExecutable(new File(driver))
@@ -67,7 +72,7 @@ public class WebDriverService {
             capabilities.setCapability(CapabilityType.PROXY, proxy);
         }
 
-        return new RemoteWebDriver(service.getUrl()/*new java.net.URL(url)*/, capabilities);
+        return new RemoteWebDriver(new java.net.URL(url), capabilities);
     }
 
     public static File lastFileModified(String dir) {
@@ -115,11 +120,12 @@ public class WebDriverService {
     
     public static void main(String[] args) { 
         try {
-            CreateAndStartService("/sdk/tools/jobs/webdriver/lib/chromedriver", 8899);
+            Configuration conf = Configuration.getInstance();
+            CreateAndStartService(conf);
         } catch ( Exception e ) {
             e.printStackTrace();
         }
-       
+
         try
         {
             InputStreamReader in=new InputStreamReader(new FileInputStream("/sdk/tmp/webapps/Bayer/url_list.data"));
@@ -130,7 +136,7 @@ public class WebDriverService {
                 DownloadThread dt = new DownloadThread(url);
                 dt.start();
                 Thread.sleep(10000);
-            }       
+            }
         } catch(Exception e){
 
         }

@@ -75,12 +75,10 @@ public class Fetcher extends RunListener {
 
     //////////////////////////////////////Run in Batch Mode///////////////////////////////
     public void fetch_in_batch(final RunNotifier notifier) throws Exception {
-        WebDriverService.CreateAndStartService(_conf.get("fetch.webdriver.dir"), _conf.getInt("fetch.webdriver.port", 8899));
-
-                FetcherPool fetcherPool = new FetcherPool(_conf.getInt("fetch.thread.size", 3), new Runnable() {
-                    public void run() {
-                        //System.out.println("General callback");
-                    }
+        FetcherPool fetcherPool = new FetcherPool(_conf.getInt("fetch.thread.size", 3), new Runnable() {
+            public void run() {
+                //System.out.println("General callback");
+            }
         });
 
         int i = 0;
@@ -99,8 +97,6 @@ public class Fetcher extends RunListener {
         } catch (InterruptedException e) {
             throw e;
         }
-
-        WebDriverService.StopService();
     }
 
     public void Started(Object o) {}
@@ -223,12 +219,16 @@ public class Fetcher extends RunListener {
             RunNotifier notifier = new RunNotifier();
             notifier.addListener(indexer);
             notifier.addListener(fetcher);
+
+            WebDriverService.CreateAndStartService(conf);
+
             fetcher.fetch_in_batch(notifier);
         } catch ( Exception e ) {
             LOG.warn("Exception happen", e);
         } finally {
             indexer.Stop();
             output.close();
+            WebDriverService.StopService();
         }
     }
 }
