@@ -220,7 +220,7 @@ public class Fetcher extends RunListener {
             notifier.addListener(indexer);
             notifier.addListener(fetcher);
 
-            WebDriverService.CreateAndStartService(conf);
+            WebDriverService.CreateAndStartService();
 
             fetcher.fetch_in_batch(notifier);
         } catch ( Exception e ) {

@@ -27,6 +27,7 @@
     <dependency org="com.googlecode.json-simple" name="json-simple" rev="1.1.1" conf="*->master"/>
     <dependency org="oro" name="oro" rev="2.0.8" conf="*->default"/>
     <dependency org="org.apache.solr" name="solr-solrj" rev="5.2.1" conf="*->default" />
+    <dependency org="com.github.detro" name="phantomjsdriver" rev="1.2.0" conf="*->default"/>
 
     <exclude module="ant" />
     <exclude module="slf4j-jdk14" />

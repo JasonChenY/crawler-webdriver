@@ -13,6 +13,8 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 
 import java.io.File;
 import java.lang.Integer;
@@ -21,6 +23,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.ArrayList;
 import java.io.BufferedReader; 
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -28,40 +31,78 @@ import java.io.InputStreamReader;
 import org.top500.utils.Configuration;
 
 public class WebDriverService {
-    private static ChromeDriverService service = null;
-    public static void CreateAndStartService(Configuration _conf) throws Exception {
-        String driver = _conf.get("fetch.webdriver.dir");
-        int port = _conf.getInt("fetch.webdriver.port", 8899);
-        if ( service == null ) {
-            service = new ChromeDriverService.Builder()
-                    .usingDriverExecutable(new File(driver))
+    private static ChromeDriverService chromeDriverService = null;
+    private static PhantomJSDriverService phantomJSDriverService = null;
+    public static void CreateAndStartService() throws Exception {
+        Configuration _conf = Configuration.getInstance();
+        if ( chromeDriverService == null ) {
+            chromeDriverService = new ChromeDriverService.Builder()
+                    .usingDriverExecutable(new File(_conf.get("fetch.webdriver.chrome.exec")))
                             //.usingAnyFreePort()
-                    .usingPort(port)
+                    .usingPort(_conf.getInt("fetch.webdriver.chrome.port", 8899))
                     .build();
-            service.start();
+            chromeDriverService.start();
+        }
+        if ( phantomJSDriverService == null ) {
+            phantomJSDriverService = new PhantomJSDriverService.Builder()
+                    .usingPhantomJSExecutable(new File(_conf.get("fetch.webdriver.phantomjs.exec")))
+                    //.usingGhostDriver(new File("ghostDriverfile"))
+                    .usingPort(_conf.getInt("fetch.webdriver.phantomjs.port", 8898))
+                    .build();
+            phantomJSDriverService.start();
         }
     }
 
     public static void StopService() {
-        if ( service != null ) service.stop();
+        if ( chromeDriverService != null ) chromeDriverService.stop();
+        if ( phantomJSDriverService != null ) phantomJSDriverService.stop();
     }
 
-    public static WebDriver getWebDriver(String url, String dir, String proxyIpAndPort) throws Exception {
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        capabilities.setCapability("chrome.switches", "disable-images");// to disable image showing
+    public static enum DRIVER_TYPE {CHROME, PHANTOMJS};
+    public static WebDriver getWebDriver(DRIVER_TYPE type, String dir, String proxyIpAndPort) throws Exception {
+        Configuration _conf = Configuration.getInstance();
+        DesiredCapabilities capabilities = null;
+        String url = "";
+        if ( type == DRIVER_TYPE.CHROME ) {
+            capabilities = DesiredCapabilities.chrome();
 
-        ChromeOptions options = new ChromeOptions();
-        //if specify this, all threads will share same session, quit will close all the window
-        //options.addArguments("user-data-dir=/sdk/tmp/chrome/profile");
-        options.addArguments("start-maximized");
+            capabilities.setCapability("chrome.switches", "disable-images");// to disable image showing
 
-        Map<String, Object> prefs = new HashMap<String, Object>();
-        prefs.put("profile.default_content_settings.popups", 0);
-        prefs.put("download.default_directory", dir);
-        prefs.put("savefile.type", 0);
-        options.setExperimentalOption("prefs", prefs);
+            ChromeOptions options = new ChromeOptions();
+            //if specify this, all threads will share same session, quit will close all the window
+            //options.addArguments("user-data-dir=/sdk/tmp/chrome/profile");
+            options.addArguments("start-maximized");
 
-        capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+            Map<String, Object> prefs = new HashMap<String, Object>();
+            prefs.put("profile.default_content_settings.popups", 0);
+            prefs.put("download.default_directory", dir);
+            prefs.put("savefile.type", 0);
+            options.setExperimentalOption("prefs", prefs);
+
+            capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+
+            url = _conf.get("fetch.webdriver.chrome.host", "http://localhost") + ":"
+                    + Integer.toString(_conf.getInt("fetch.webdriver.chrome.port", 8899));
+
+        } else if ( type == DRIVER_TYPE.PHANTOMJS ) {
+            capabilities = new DesiredCapabilities();
+            capabilities.setJavascriptEnabled(true);
+            capabilities.setCapability("takesScreenshot", false);
+
+            ArrayList<String> cliArgsCap = new ArrayList<String>();
+            cliArgsCap.add("--web-security=false");
+            cliArgsCap.add("--ssl-protocol=any");
+            cliArgsCap.add("--ignore-ssl-errors=true");
+            capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
+
+            // Control LogLevel for GhostDriver, via CLI arguments
+            capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS, new String[] {"--logLevel=DEBUG"});
+
+            capabilities.setBrowserName("phantomjs");
+
+            url = _conf.get("fetch.webdriver.phantomjs.host", "http://localhost") + ":"
+                    + Integer.toString(_conf.getInt("fetch.webdriver.phantomjs.port", 8898));
+        }
 
         if ( proxyIpAndPort != null ) {
             org.openqa.selenium.Proxy proxy = new org.openqa.selenium.Proxy();
@@ -104,7 +145,7 @@ public class WebDriverService {
             WebDriver driver = null;
             try {
                 subdir = Long.toString(Thread.currentThread().getId());
-                driver = getWebDriver("http://127.0.0.1:8899", download_directory + "/" + subdir, null);
+                driver = getWebDriver(DRIVER_TYPE.PHANTOMJS, download_directory + "/" + subdir, null);
                 driver.get(url);
                 System.out.println("Page Title: " +  driver.getTitle());
                 Thread.sleep(10000);
@@ -121,7 +162,7 @@ public class WebDriverService {
     public static void main(String[] args) { 
         try {
             Configuration conf = Configuration.getInstance();
-            CreateAndStartService(conf);
+            CreateAndStartService();
         } catch ( Exception e ) {
             e.printStackTrace();
         }

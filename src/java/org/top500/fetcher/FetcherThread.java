@@ -86,7 +86,6 @@ public class FetcherThread extends Thread {
     private int fetch_n_jobs_perpage;
     private int fetch_n_days;
     private int fetch_n_jobs;
-    private String driver_url;
     private String driver_download_directory;
 
     private WebDriver driver = null;
@@ -108,11 +107,7 @@ public class FetcherThread extends Thread {
 
         driver_wait = conf.getInt("fetch.webdriver.wait.default", 5);
 
-        String driver_host = conf.get("fetch.webdriver.host", "http://localhost");
-        int driver_port = conf.getInt("fetch.webdriver.port", 8899);
-        driver_url = driver_host + ":" + Integer.toString(driver_port);
-
-        driver_download_directory = conf.get("fetch.webdriver.download.dir", "/tmp");
+        driver_download_directory = conf.get("fetch.webdriver.chrome.download.dir", "/tmp");
 
         proxy_server = conf.get("fetch.proxy_server");
         use_proxy = conf.getBoolean("fetch.use_proxy", false);
@@ -153,7 +148,7 @@ public class FetcherThread extends Thread {
 
         try {
             String subdir = Long.toString(Thread.currentThread().getId());
-            driver = WebDriverService.getWebDriver(driver_url, driver_download_directory + "/" + subdir, use_proxy?proxy_server:null);
+            driver = WebDriverService.getWebDriver(WebDriverService.DRIVER_TYPE.PHANTOMJS, driver_download_directory + "/" + subdir, use_proxy?proxy_server:null);
             wait = new WebDriverWait(driver, driver_wait);
 
             fetch();
