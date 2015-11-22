@@ -85,9 +85,10 @@ public class WebDriverService {
                     + Integer.toString(_conf.getInt("fetch.webdriver.chrome.port", 8899));
 
         } else if ( type == DRIVER_TYPE.PHANTOMJS ) {
-            capabilities = new DesiredCapabilities();
+            capabilities = DesiredCapabilities.phantomjs();
             capabilities.setJavascriptEnabled(true);
             capabilities.setCapability("takesScreenshot", false);
+            capabilities.setCapability("loadImages",false);
 
             ArrayList<String> cliArgsCap = new ArrayList<String>();
             cliArgsCap.add("--web-security=false");

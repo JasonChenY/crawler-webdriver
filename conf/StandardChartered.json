@@ -1,6 +1,7 @@
 {
   "comment" : "job_url_type:2, and some problem when return back to job list page from first job detail page",
   "name": "StandardChartered",
+  "comment:driver": "chrome",
   "actions" :
   [
     {
@@ -62,9 +63,10 @@
       "loop": {
         "xpath_prefix": "//TABLE[@class='PSLEVEL1GRID']/TBODY/TR",
         "loop_type": "begin",
+        "begin_from" : 1,
         "actions": [
           {
-            "element": "TD[2]/DIV/SPAN/A",
+            "element": "TD[3]/DIV/SPAN/A",
             "cmd": "click",
             "expections": [{
               "condition": "visibilityOfElementLocated",
@@ -77,16 +79,16 @@
       },
       "extracts": {
         "job_post_date": {
-          "element": "TD[6]/DIV/SPAN",
+          "element": "TD[2]/DIV/SPAN",
           "transforms" : [
             {
               "how" : "dateFormat",
-              "value" : "yyyy/MM/dd",
+              "value" : "dd MM yyyy",
             }
           ]
         },
         "job_title": {
-          "element": "TD[2]/DIV/SPAN/A"
+          "element": "TD[3]/DIV/SPAN/A"
         },
         "job_url_type" : {
           "value" : "2",

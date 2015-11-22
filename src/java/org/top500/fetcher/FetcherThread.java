@@ -692,7 +692,7 @@ public class FetcherThread extends Thread {
                             else
                                 value = elements.get(i).getText();
                         }
-                        LOG.debug(this.getName() + ":" +" raw-> " + value);
+                        LOG.debug(this.getName() + ":" +" raw-> " + (value.length()>100?value.substring(0,100):value));
                         if ( ele.transforms != null ) {
                             // Firstly handle transform against single item.
                             for ( int j = 0; j < ele.transforms.size(); j++ ) {
@@ -768,8 +768,6 @@ public class FetcherThread extends Thread {
                         value = StringUtils.stripNonCharCodepoints(value);
                     }
 
-                    LOG.debug(this.getName() + ":" +key + ":" + (value.length()>100?value.substring(0,100):value));
-
                     if ( !formatted ) {
                         // some default handling to avoid config item in schema
                         if (key.equals(Job.JOB_POST_DATE) || key.equals(Job.JOB_EXPIRE_DATE)) {
@@ -780,6 +778,8 @@ public class FetcherThread extends Thread {
                         }
                     }
                     job.addField(key, value);
+
+                    LOG.debug(this.getName() + ":" +key + ":" + (value.length()>100?value.substring(0,100):value));
                 }
             }
 
