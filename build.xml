@@ -95,6 +95,8 @@
    </fileset>
   </pathconvert>
   <jar jarfile="${crawler-server}" basedir="${build.classes}">
+   <include name="**/WebDriverService*.class"/>
+   <include name="**/Configuration.class"/>
    <manifest>
     <attribute name="Main-Class" value="org.top500.fetcher.WebDriverService" />
     <attribute name="Class-Path" value="conf/ ${libs}"></attribute>
