@@ -58,12 +58,12 @@ public class WebDriverService {
         if ( phantomJSDriverService != null ) phantomJSDriverService.stop();
     }
 
-    public static enum DRIVER_TYPE {CHROME, PHANTOMJS};
+    public static enum DRIVER_TYPE {CHROME, PHANTOMJS, LOCAL_CHROME, LOCAL_PHANTOMJS};
     public static WebDriver getWebDriver(DRIVER_TYPE type, String dir, String proxyIpAndPort) throws Exception {
         Configuration _conf = Configuration.getInstance();
         DesiredCapabilities capabilities = null;
         String url = "";
-        if ( type == DRIVER_TYPE.CHROME ) {
+        if ( type == DRIVER_TYPE.CHROME || type == DRIVER_TYPE.LOCAL_CHROME ) {
             capabilities = DesiredCapabilities.chrome();
 
             capabilities.setCapability("chrome.switches", "disable-images");// to disable image showing
@@ -81,10 +81,10 @@ public class WebDriverService {
 
             capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 
-            url = _conf.get("fetch.webdriver.chrome.host", "http://localhost") + ":"
+            url = ((type==DRIVER_TYPE.CHROME)?_conf.get("fetch.webdriver.chrome.host", "http://localhost"):"http://localhost") + ":"
                     + Integer.toString(_conf.getInt("fetch.webdriver.chrome.port", 8899));
 
-        } else if ( type == DRIVER_TYPE.PHANTOMJS ) {
+        } else if ( type == DRIVER_TYPE.PHANTOMJS || type == DRIVER_TYPE.LOCAL_PHANTOMJS ) {
             capabilities = DesiredCapabilities.phantomjs();
             capabilities.setJavascriptEnabled(true);
             capabilities.setCapability("takesScreenshot", false);
@@ -101,7 +101,7 @@ public class WebDriverService {
 
             capabilities.setBrowserName("phantomjs");
 
-            url = _conf.get("fetch.webdriver.phantomjs.host", "http://localhost") + ":"
+            url = ((type==DRIVER_TYPE.PHANTOMJS)?_conf.get("fetch.webdriver.phantomjs.host", "http://localhost"):"http://localhost") + ":"
                     + Integer.toString(_conf.getInt("fetch.webdriver.phantomjs.port", 8898));
         }
 
@@ -113,7 +113,7 @@ public class WebDriverService {
             System.setProperty("http.nonProxyHosts", "localhost");
             capabilities.setCapability(CapabilityType.PROXY, proxy);
         }
-
+        System.out.println(url);
         return new RemoteWebDriver(new java.net.URL(url), capabilities);
     }
 

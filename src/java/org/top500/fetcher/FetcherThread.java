@@ -94,7 +94,7 @@ public class FetcherThread extends Thread {
     private Boolean use_proxy = false;
     private String proxy_server = null;
 
-    private WebDriverService.DRIVER_TYPE driver_type = WebDriverService.DRIVER_TYPE.PHANTOMJS;
+    private WebDriverService.DRIVER_TYPE driver_type = WebDriverService.DRIVER_TYPE.LOCAL_PHANTOMJS;
 
     private Stack windows_stack = new Stack();
 
@@ -124,10 +124,18 @@ public class FetcherThread extends Thread {
         }
 
         if ( schema.driver.equalsIgnoreCase("chrome") ) {
-            driver_type = WebDriverService.DRIVER_TYPE.CHROME;
-        } else if ( schema.driver.equalsIgnoreCase("phantomjs") ) {
-            driver_type = WebDriverService.DRIVER_TYPE.PHANTOMJS;
+            driver_type = WebDriverService.DRIVER_TYPE.LOCAL_CHROME;
+            if ( schema.use_proxy && !use_proxy ) {
+                //schema need proxy, but we dont have usable proxy server, try use remote driver
+                driver_type = WebDriverService.DRIVER_TYPE.CHROME;
+            }
+        } else /* if ( schema.driver.equalsIgnoreCase("phantomjs") ) */ {
+            driver_type = WebDriverService.DRIVER_TYPE.LOCAL_PHANTOMJS;
+            if ( schema.use_proxy && !use_proxy ) {
+                driver_type = WebDriverService.DRIVER_TYPE.PHANTOMJS;
+            }
         }
+        LOG.info(this.getName() + ":" +"driver_type:" + driver_type);
 
         if ( schema.fetch_n_days != -1 ) {
             // local fetch_n_days specified, jobs are sorted by post date, ignore other criterias.

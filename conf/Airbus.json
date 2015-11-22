@@ -1,5 +1,6 @@
 {
   "name" : "Airbus",
+  "use_proxy": true,
   "actions" :
   [
     {
