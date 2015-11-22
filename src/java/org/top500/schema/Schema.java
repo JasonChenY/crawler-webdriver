@@ -40,6 +40,9 @@ public class Schema {
     // local configurations take high priority than global configurations
     public Boolean use_proxy_specified = false;
     public Boolean use_proxy = false;
+
+    public String driver = "";
+
     public int fetch_n_pages = -1;
     public int fetch_n_days = -1;
     public int fetch_n_jobs = -1;
@@ -76,6 +79,11 @@ public class Schema {
             use_proxy = (Boolean)obj.get("use_proxy");
             use_proxy_specified = true;
         }
+
+        if ( obj.get("driver") != null ) {
+            driver = (String)obj.get("driver");
+        }
+
         if ( obj.get("fetch.n.pages") != null ) {
             fetch_n_pages = Integer.valueOf(((Long) obj.get("fetch.n.pages")).intValue());
         }

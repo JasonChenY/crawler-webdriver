@@ -94,6 +94,8 @@ public class FetcherThread extends Thread {
     private Boolean use_proxy = false;
     private String proxy_server = null;
 
+    private WebDriverService.DRIVER_TYPE driver_type = WebDriverService.DRIVER_TYPE.PHANTOMJS;
+
     private Stack windows_stack = new Stack();
 
     public FetcherThread(String name, Schema schema) {
@@ -119,6 +121,12 @@ public class FetcherThread extends Thread {
         if ( (proxy_server == null || proxy_server.isEmpty()) && use_proxy ) {
             LOG.warn(this.getName() + ":" +"no valid proxy specified");
             use_proxy = false;
+        }
+
+        if ( schema.driver.equalsIgnoreCase("chrome") ) {
+            driver_type = WebDriverService.DRIVER_TYPE.CHROME;
+        } else if ( schema.driver.equalsIgnoreCase("phantomjs") ) {
+            driver_type = WebDriverService.DRIVER_TYPE.PHANTOMJS;
         }
 
         if ( schema.fetch_n_days != -1 ) {
@@ -148,7 +156,7 @@ public class FetcherThread extends Thread {
 
         try {
             String subdir = Long.toString(Thread.currentThread().getId());
-            driver = WebDriverService.getWebDriver(WebDriverService.DRIVER_TYPE.PHANTOMJS, driver_download_directory + "/" + subdir, use_proxy?proxy_server:null);
+            driver = WebDriverService.getWebDriver(driver_type, driver_download_directory + "/" + subdir, use_proxy?proxy_server:null);
             wait = new WebDriverWait(driver, driver_wait);
 
             fetch();

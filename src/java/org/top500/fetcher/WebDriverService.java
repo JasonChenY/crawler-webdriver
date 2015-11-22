@@ -35,7 +35,7 @@ public class WebDriverService {
     private static PhantomJSDriverService phantomJSDriverService = null;
     public static void CreateAndStartService() throws Exception {
         Configuration _conf = Configuration.getInstance();
-        if ( chromeDriverService == null ) {
+        if ( (chromeDriverService == null) && (_conf.get("fetch.webdriver.chrome.exec") != null) ) {
             chromeDriverService = new ChromeDriverService.Builder()
                     .usingDriverExecutable(new File(_conf.get("fetch.webdriver.chrome.exec")))
                             //.usingAnyFreePort()
@@ -43,7 +43,7 @@ public class WebDriverService {
                     .build();
             chromeDriverService.start();
         }
-        if ( phantomJSDriverService == null ) {
+        if ( (phantomJSDriverService == null) && (_conf.get("fetch.webdriver.phantomjs.exec") != null) ) {
             phantomJSDriverService = new PhantomJSDriverService.Builder()
                     .usingPhantomJSExecutable(new File(_conf.get("fetch.webdriver.phantomjs.exec")))
                     //.usingGhostDriver(new File("ghostDriverfile"))
@@ -166,7 +166,7 @@ public class WebDriverService {
         } catch ( Exception e ) {
             e.printStackTrace();
         }
-
+/*
         try
         {
             InputStreamReader in=new InputStreamReader(new FileInputStream("/sdk/tmp/webapps/Bayer/url_list.data"));
@@ -181,9 +181,9 @@ public class WebDriverService {
         } catch(Exception e){
 
         }
-
+*/
         try {
-             Thread.sleep(1000000); 
+             Thread.sleep(1000000000);
         } catch ( Exception ee ) {
              ee.printStackTrace();
         }
