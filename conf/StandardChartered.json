@@ -21,7 +21,7 @@
       "cmd" : "click",
       "expections" : [{
         "condition" : "visibilityOfElementLocated",
-        "element" : "//DIV/SPAN[text()='China - SCB']",
+        "element" : "//TD/DIV/SPAN[text()='China - SCB']/parent::DIV/parent::TD/preceding-sibling::TD/DIV/INPUT[@type='checkbox']",
       }],
       "debug" : false,
     },
@@ -34,7 +34,7 @@
           "value" : "5",
         }
       ],
-      "debug" : true,
+      "debug" : false,
     },
     {
       "element" : "PSFT_CLOSE_MODAL",
@@ -55,6 +55,7 @@
         "element" : "PSGRIDCOUNTER",
         "how" : "CLASS_NAME"
       }],
+      "debug" : true,
     }
   ],
 
@@ -66,7 +67,7 @@
         "begin_from" : 1,
         "actions": [
           {
-            "element": "TD[3]/DIV/SPAN/A",
+            "element": "TD/DIV[contains(@id,'SCH_JOB_TITLE_LINK')]/SPAN/A",
             "cmd": "click",
             "expections": [{
               "condition": "visibilityOfElementLocated",
@@ -79,7 +80,7 @@
       },
       "extracts": {
         "job_post_date": {
-          "element": "TD[2]/DIV/SPAN",
+          "element": "TD/DIV[contains(@id,'SCH_OPENED')]/SPAN",
           "transforms" : [
             {
               "how" : "dateFormat",
@@ -88,7 +89,7 @@
           ]
         },
         "job_title": {
-          "element": "TD[3]/DIV/SPAN/A"
+          "element": "TD/DIV[contains(@id,'SCH_JOB_TITLE_LINK')]/SPAN/A"
         },
         "job_url_type" : {
           "value" : "2",
