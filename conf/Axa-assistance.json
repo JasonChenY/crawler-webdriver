@@ -1,5 +1,6 @@
 {
   "name" : "Axa-assistance",
+  "driver": "chrome",
   "actions" :
   [
     {

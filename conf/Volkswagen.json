@@ -1,6 +1,7 @@
 {
   "name": "Volkswagen",
   "use_proxy": true,
+  "driver": "chrome",
   "actions" :
   [
     {

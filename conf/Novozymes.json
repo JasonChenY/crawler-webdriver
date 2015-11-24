@@ -1,6 +1,7 @@
 {
   "name" : "Novozymes",
   "use_proxy": true,
+  "driver": "chrome",
   "actions" :
   [
     {

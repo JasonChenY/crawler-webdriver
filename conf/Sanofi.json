@@ -60,10 +60,7 @@
           "how": "XPATH",
           "transforms" : [
             {
-              "how" : "regex_matcher",
-              "value" : "/([^-]*)市/",
-              "which" : 1,
-              "group" : 1,
+              "how" : "tokenize"
             }
           ]
         },

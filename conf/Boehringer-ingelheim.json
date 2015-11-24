@@ -1,5 +1,6 @@
 {
   "name": "Boehringer-ingelheim",
+  "use_proxy": true,
   "actions" :
   [
     {

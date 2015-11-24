@@ -1,5 +1,6 @@
 {
   "name": "Lilly",
+  "driver": "chrome",
   "actions" :
   [
     {

@@ -1,6 +1,8 @@
 {
   "name": "Nike",
-  "actions" :
+  "use_proxy": true,
+  "driver": "chrome",
+  "comment:actions" :
   [
     {
       "element": "http://jobs.nike.com/article/corporate",
@@ -42,9 +44,20 @@
         "element" : "tableSearchResults",
         "how" : "CLASS_NAME",
       }],
+    }
+  ],
+  "actions": [
+    {
+      "element" : "http://jobs.nike.com/search/china",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "tableSearchResults",
+        "how" : "CLASS_NAME",
+      }],
     },
   ],
-
   "procedure" : {
     "procedure": {
       "loop": {
@@ -130,7 +143,6 @@
         },
       ],
     }
-  },
-  "use_proxy":true,
+  }
 }
 

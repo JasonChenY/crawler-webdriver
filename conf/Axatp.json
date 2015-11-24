@@ -1,6 +1,7 @@
 {
   "name": "Axatp",
   "use_proxy": true,
+  "driver": "chrome",
   "actions" :
   [
     {

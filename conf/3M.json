@@ -1,6 +1,7 @@
 {
   "name" : "3M",
   "use_proxy": true,
+  "driver": "chrome",
   "limitation": "maximum 10 pages, otherwise need fallback to enhance loop_totalpages",
   "actions" :
   [

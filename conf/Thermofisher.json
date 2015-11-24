@@ -1,6 +1,7 @@
 {
   "name": "Thermofisher",
   "use_proxy": true,
+  "driver": "chrome",
   "comment" : "stupid design: click A, back on 2nd page will revert back to 1st page, ctrl + click, orig and new page both navigate to job detail page, solution via contextclick plus Robot",
   "actions" :
   [

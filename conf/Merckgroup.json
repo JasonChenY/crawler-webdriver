@@ -1,5 +1,6 @@
 {
   "name": "Merckgroup",
+  "driver": "chrome",
   "actions" :
   [
     {

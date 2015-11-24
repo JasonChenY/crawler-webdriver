@@ -1,5 +1,6 @@
 {
   "name": "Sinochem",
+  "driver": "chrome",
   "actions" :
   [
     {
@@ -29,7 +30,7 @@
       "loop": {
         "xpath_prefix": "//TABLE[@class='search_result']/TBODY/TR",
         "loop_type": "begin",
-        "begin_from" : 2,
+        "begin_from" : 1,
         "actions": [
           {
             "element": "TD[1]/A",
@@ -49,17 +50,17 @@
         ],
       },
       "extracts": {
-        "job_category_domain":{
+        "comment:job_category_domain":{
           "element": "TD[2]/FONT",
           "method" : "getAttribute",
           "value" : "title",
         },
         "job_sub_company":{
-          "element": "TD[3]",
+          "element": "TD[2]",
           "method" : "getAttribute",
           "value" : "title",
         },
-        "job_location": {
+        "comment:job_location": {
           "element": "TD[5]/FONT",
           "method" : "getAttribute",
           "value" : "title",
@@ -75,16 +76,21 @@
           ]
         },
         "job_title": {
-          "element": "TD[1]/A/FONT",
+          "element": "TD[1]/A",
           "method" : "getAttribute",
           "value" : "title",
         },
         "job_post_date": {
-          "element": "TD[6]",
+          "element": "TD[4]",
         }
       },
       "procedure": {
         "extracts": {
+          "job_location": {
+            "element":"//span[@class='position_basic_title' and contains(text(),'工作地点')]/following-sibling::span/span",
+            "method" : "getAttribute",
+            "value" : "title",
+          },
           "job_description": {
             "element": "//DIV[@class='position_content']/P",
           },

@@ -1,6 +1,7 @@
 {
   "name" : "Abbott",
   "use_proxy" : true,
+  "driver": "chrome",
   "actions" :
   [
     {

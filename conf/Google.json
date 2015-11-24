@@ -1,6 +1,7 @@
 {
   "name": "Google",
   "use_proxy": true,
+  "driver": "chrome",
   "actions" :
   [
     {

@@ -1,5 +1,7 @@
 {
   "name": "Audi",
+  "driver": "chrome",
+  "comment" : "check whether job exist in db already later",
   "actions" :
   [
     {

@@ -1,5 +1,6 @@
 {
   "name" : "Baosteel",
+  "driver": "chrome",
   "actions" :
   [
     {

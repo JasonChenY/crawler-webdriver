@@ -1,6 +1,7 @@
 {
   "name": "BankOfAmerica",
   "use_proxy": true,
+  "driver": "chrome",
   "actions" :
   [
     {

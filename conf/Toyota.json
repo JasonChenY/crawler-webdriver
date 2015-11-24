@@ -1,5 +1,6 @@
 {
   "name": "Toyota",
+  "driver": "chrome",
   "actions" :
   [
     {

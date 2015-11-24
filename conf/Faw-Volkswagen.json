@@ -1,5 +1,6 @@
 {
   "name": "Faw-Volkswagen",
+  "driver": "chrome",
   "actions" :
   [
     {

@@ -1,5 +1,6 @@
 {
   "name" : "Honeywell",
+  "driver": "chrome",
   "actions" :
   [
     {

@@ -1,6 +1,7 @@
 {
   "name" : "Disney",
   "use_proxy": true,
+  "driver": "chrome",
   "actions" :
   [
     {
