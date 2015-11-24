@@ -79,6 +79,7 @@ public class LocationUtils {
                     CITIES_MAP.put(values[i].trim().toLowerCase(), new String(key.getBytes(), "UTF-8"));
                     if (LOG.isDebugEnabled()) LOG.debug("Adding " + values[i] + "  " + key);
                 }
+                CITIES_MAP.put(key+"市", new String(key.getBytes(), "UTF-8"));
             }
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {

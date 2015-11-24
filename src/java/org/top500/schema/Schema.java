@@ -248,6 +248,7 @@ public class Schema {
             Iterator iter = output.entrySet().iterator();
             while(iter.hasNext()){
                 Map.Entry entry = (Map.Entry)iter.next();
+                if ( ((String)entry.getKey()).startsWith("comment:") ) continue;
                 items.put((String)entry.getKey(), new Element(entry.getValue()));
             }
         }

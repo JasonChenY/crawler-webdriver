@@ -44,10 +44,18 @@ public class WebDriverService {
             chromeDriverService.start();
         }
         if ( (phantomJSDriverService == null) && (_conf.get("fetch.webdriver.phantomjs.exec") != null) ) {
+            String args[] = {
+                "--web-security=false",
+                "--ssl-protocol=any",
+                "--ignore-ssl-errors=true",
+                "--local-to-remote-url-access=true",
+                "--disk-cache=true"
+            };
             phantomJSDriverService = new PhantomJSDriverService.Builder()
                     .usingPhantomJSExecutable(new File(_conf.get("fetch.webdriver.phantomjs.exec")))
                     //.usingGhostDriver(new File("ghostDriverfile"))
                     .usingPort(_conf.getInt("fetch.webdriver.phantomjs.port", 8898))
+                    .usingCommandLineArguments(args)
                     .build();
             phantomJSDriverService.start();
         }
@@ -87,13 +95,25 @@ public class WebDriverService {
         } else if ( type == DRIVER_TYPE.PHANTOMJS || type == DRIVER_TYPE.LOCAL_PHANTOMJS ) {
             capabilities = DesiredCapabilities.phantomjs();
             capabilities.setJavascriptEnabled(true);
-            capabilities.setCapability("takesScreenshot", false);
+            capabilities.setCapability("takesScreenshot", true);
             capabilities.setCapability("loadImages",false);
 
             ArrayList<String> cliArgsCap = new ArrayList<String>();
             cliArgsCap.add("--web-security=false");
             cliArgsCap.add("--ssl-protocol=any");
             cliArgsCap.add("--ignore-ssl-errors=true");
+            cliArgsCap.add("--local-to-remote-url-access=true");
+            cliArgsCap.add("--disk-cache=true");
+/*
+            cliArgsCap.add("--handlesAlerts=true");
+            cliArgsCap.add("--databaseEnabled=true");
+            cliArgsCap.add("--locationContextEnabled=true");
+            cliArgsCap.add("--applicationCacheEnabled=true");
+            cliArgsCap.add("--browserConnectionEnabled=true");
+            cliArgsCap.add("--cssSelectorsEnabled=true");
+            cliArgsCap.add("--webStorageEnabled=true");
+            cliArgsCap.add("--rotatable=true");
+*/
             capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
 
             // Control LogLevel for GhostDriver, via CLI arguments

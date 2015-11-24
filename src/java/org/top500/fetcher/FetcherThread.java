@@ -76,6 +76,11 @@ import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
 
+import java.io.File;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 
 public class FetcherThread extends Thread {
     public static final Logger LOG = LoggerFactory.getLogger(FetcherThread.class);
@@ -136,6 +141,9 @@ public class FetcherThread extends Thread {
             }
         }
         LOG.info(this.getName() + ":" +"driver_type:" + driver_type);
+
+        /* workaround: https://github.com/detro/ghostdriver/issues/358 to use chromedriver if any Actions used, e.g. openInNewTab*/
+                                                                     
 
         if ( schema.fetch_n_days != -1 ) {
             // local fetch_n_days specified, jobs are sorted by post date, ignore other criterias.
@@ -209,17 +217,27 @@ public class FetcherThread extends Thread {
     public void save_page_content(String content) {
         try {
             String date = DateUtils.getThreadLocalDateFormat().format(new Date());
-            String suffix = ".html";
-            String fname = "/tmp/" + date + suffix;
-            FileWriter fw = new FileWriter(fname, true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(content);
-            bw.flush();
-            bw.close();
-            fw.close();
-            LOG.debug(this.getName() + ":" +"Content saved to " + fname);
+            if ( content != null ) {
+                String suffix = ".html";
+                String fname = "/tmp/" + date + suffix;
+                FileWriter fw = new FileWriter(fname, true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                bw.write(content);
+                bw.flush();
+                bw.close();
+                fw.close();
+                LOG.debug(this.getName() + ":" + "Content saved to " + fname);
+            }
         } catch (Exception ee) {
             LOG.warn(this.getName() + ":" +"Failed to save content to file " + ee.getMessage());
+        };
+    }
+    public void screenshot() {
+        try {
+            String date = DateUtils.getThreadLocalDateFormat().format(new Date());
+            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            FileUtils.copyFile(srcFile, new File("/tmp/" + date + ".screenshots.png"));
+        } catch (Exception ee) {
         };
     }
     private String formatXpath(String prefix, int index, String tgt) {
@@ -433,6 +451,7 @@ public class FetcherThread extends Thread {
                 case openInNewTab:
                     LOG.debug(this.getName() + ":" +"openInNewTab " + dbgstr);
                     new Actions(driver).keyDown(Keys.CONTROL).click(element).keyUp(Keys.CONTROL).build().perform();
+                    screenshot();
                     break;
                 case sendKeys:
                     LOG.debug(this.getName() + ":" +"sendKeys " + action.setvalue + " to " + dbgstr);
@@ -613,6 +632,7 @@ public class FetcherThread extends Thread {
         }
         if ( action.debug ) {
             save_page_content(driver.getPageSource());
+            screenshot();
         }
         return true;
     }
@@ -782,7 +802,8 @@ public class FetcherThread extends Thread {
                             value = DateUtils.formatDate(value);
                         }
                         if (key.equals(Job.JOB_LOCATION)) {
-                            value = LocationUtils.format(value);
+                            //value = LocationUtils.format(value);
+                            value = LocationUtils.tokenize(value);
                         }
                     }
                     job.addField(key, value);
