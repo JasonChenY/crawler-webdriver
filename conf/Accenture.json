@@ -1,0 +1,109 @@
+{
+  "name" : "Accenture",
+  "use_proxy": false,
+  "driver": "chrome",
+  "actions" :
+  [
+    {
+      "element": "https://www.accenture.com/cn-en/careers/jobsearch",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "job-seach-results",
+        "how" : "ID",
+      }]
+    },
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//div[@id='job-seach-results']/div[contains(@class,'job')]",
+        "loop_type": "begin",
+        "loop_item_type": "job_addon",
+        "actions": [
+          {
+            "element": "descendant::a[@class='job-title']",
+            "cmd": "openInNewTab",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "//section[contains(@class,'joblisting-container')]",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "descendant::a[@class='job-title']",
+        },
+        "job_location": {
+          "element": "descendant::a[contains(@class,'locations')]",
+        },
+        "job_category_domain": {
+          "element": "descendant::a[contains(@href,'resultFilterSkill')]",
+        },
+        "job_post_date": {
+          "element" : "descendant::p[@class='job-post-date']",
+          "transforms" : [
+            {
+              "comment:sample":"Posted - 28 hours ago; Posted - 4 days ago; Posted - 2 months ago",
+              "how" : "executeScript",
+              "value" : "var val = arguments[0];
+              var regex= /Posted - (\d+) (hours|days|months) ago/g;
+              var nowDate = new Date();
+              var delta = 0;
+              if( regex.exec(val) ) {
+                  var num=RegExp.$1;
+                  var unit=RegExp.$2;
+                  switch (unit) {
+                      case 'hours': delta = num*60*60*1000; break;
+                      case 'days': delta = num*24*60*60*1000; break;
+                      case 'months': delta = num*30*24*60*60*1000;break;
+                  }
+              };
+              var postDate = new Date(nowDate.getTime()-delta);
+              return postDate.getFullYear()+'-'+(postDate.getMonth()+1)+'-'+postDate.getDate();
+              "
+            }
+          ]
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "events",
+            "how" : "CLASS_NAME",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "load-more",
+          "how": "ID",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementsNumChanged",
+            "element": "//div[@id='job-seach-results']/div[contains(@class,'job')]",
+          }]
+        },
+      ],
+    }
+  }
+}
+

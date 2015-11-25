@@ -65,6 +65,7 @@ import static org.top500.fetcher.WaitingConditions.onlywait;
 import static org.top500.fetcher.WaitingConditions.newWindowIsOpened;
 import static org.top500.fetcher.WaitingConditions.elementTextChanged;
 import static org.top500.fetcher.WaitingConditions.elementValueChanged;
+import static org.top500.fetcher.WaitingConditions.elementsNumChanged;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -335,6 +336,16 @@ public class FetcherThread extends Thread {
                             currentTexts.add(currentElement.getText());
                         else if ( expection.condition.equals("elementValueChanged" ) )
                             currentTexts.add(currentElement.getAttribute("value"));
+                    } catch ( NoSuchElementException e ) {
+                        LOG.warn(this.getName() + ":" +"Expected element with " + expection.element.element + " not found, return " , e);
+                        return (action.isFatal ? false : true);
+                    }
+                } else if ( expection.condition.equals("elementsNumChanged") ) {
+                    By expect_locator = getLocator(null, 0, expection.element);
+                    try {
+                        List<WebElement> currentElements = expect_locator.findElements(driver);
+                        int origNum = currentElements.size();
+                        currentTexts.add(Integer.toString(origNum));
                     } catch ( NoSuchElementException e ) {
                         LOG.warn(this.getName() + ":" +"Expected element with " + expection.element.element + " not found, return " , e);
                         return (action.isFatal ? false : true);
@@ -619,6 +630,15 @@ public class FetcherThread extends Thread {
                             } catch ( Exception ee ) {}
                             LOG.debug(this.getName() + ":" +"waited seconds " + expection.value);
                             break;
+                        case "elementsNumChanged":
+                            String currentNum = currentTexts.poll();
+                            LOG.debug(this.getName() + ":" +"Current num: " + currentNum);
+                            int origNum = 0;
+                            try {
+                                origNum = Integer.parseInt(currentNum);
+                            } catch ( Exception e ) {};
+                            Integer newNum = wait.until(elementsNumChanged(wait_locator, origNum));
+                            LOG.debug(this.getName() + ":" +"Elements num changed to " + newNum);
                         default:
                             driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);
                             LOG.debug(this.getName() + ":" +"waited 10 seconds");
@@ -757,6 +777,11 @@ public class FetcherThread extends Thread {
                                     case "tokenize":
                                         value = LocationUtils.tokenize(value);
                                         formatted = true;
+                                        break;
+                                    case "executeScript":
+                                        LOG.debug(this.getName() + ":" + "executeScript on " + value);
+                                        value = (String)((JavascriptExecutor)driver).executeScript(transform.value, value);
+                                        LOG.debug(this.getName() + ":" + "executeScript result " + value);
                                         break;
                                     default: break;
                                 }
@@ -1015,7 +1040,10 @@ public class FetcherThread extends Thread {
                         }
                     }
                     if ( procedure.fetch_runtime_index == elements.size() + procedure.end_to ) {
-                        procedure.fetch_runtime_index = -1;
+                        if ( procedure.loop_item_type != Schema.LOOP_ITEM_TYPE.JOB_ADDON ) {
+                            // for JOB_ADDON type of loop, job list will be incremented when click 'load more' button, e.g accenture.
+                            procedure.fetch_runtime_index = -1;
+                        }
                     }
                     if ( hit_outdated_jobs )
                         return PROC_RESULT_OK_NDAYS; // won't continue next page.

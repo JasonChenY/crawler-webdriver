@@ -483,7 +483,7 @@ public class Schema {
         }
     }
     public enum LOOP_TYPE {NONE, BEGIN, END}
-    public enum LOOP_ITEM_TYPE {JOB,PAGE,OTHER}
+    public enum LOOP_ITEM_TYPE {JOB,JOB_ADDON,PAGE,OTHER}
     public class Procedure {
         public String xpath_prefix_loop = "";
         public LOOP_TYPE loop_type = LOOP_TYPE.NONE;
@@ -521,6 +521,7 @@ public class Schema {
                             String item_type = (String)loop.get("loop_item_type");
                             switch (item_type) {
                                 case "job": loop_item_type = LOOP_ITEM_TYPE.JOB; break;
+                                case "job_addon": loop_item_type = LOOP_ITEM_TYPE.JOB_ADDON; break;
                                 case "page": loop_item_type = LOOP_ITEM_TYPE.PAGE; break;
                                 case "other": loop_item_type = LOOP_ITEM_TYPE.OTHER; break;
                                 default: throw new Exception("unknow loop_item_type" + item_type);

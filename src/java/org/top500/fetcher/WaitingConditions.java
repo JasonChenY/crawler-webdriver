@@ -7,6 +7,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.Point;
 
 import java.util.Set;
+import java.util.List;
 
 public class WaitingConditions {
 
@@ -252,6 +253,25 @@ public class WaitingConditions {
             @Override
             public String toString() {
                 return "element value changed from: " + value;
+            }
+        };
+    }
+
+    public static ExpectedCondition<Integer> elementsNumChanged(final By locator, final int origNum) {
+        return new ExpectedCondition<Integer>() {
+            @Override
+            public Integer apply(WebDriver driver) {
+                List<WebElement> elements = locator.findElements(driver);
+                int num = elements.size();
+                if ( num != origNum )
+                    return new Integer(num);
+                else
+                    return null;
+            }
+
+            @Override
+            public String toString() {
+                return "element value changed from: " + origNum;
             }
         };
     }
