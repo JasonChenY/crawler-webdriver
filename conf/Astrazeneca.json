@@ -1,0 +1,87 @@
+{
+  "name" : "Astrazeneca",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://astrazeneca.51job.com/index.php?begin=begin",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "//TABLE[@class='unnamed2']/TBODY/TR[3]/TD[1]/TABLE/TBODY/TR",
+      }]
+    }
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//TABLE[@class='unnamed2']/TBODY/TR[3]/TD[1]/TABLE/TBODY/TR[count(descendant::a)>0]",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "TD[1]/A",
+            "cmd": "click",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "//TABLE[@class='unnamed2']/TBODY/TR[2]/TD[1]/TABLE/TBODY/TR[5]",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[1]/a",
+        },
+        "job_location": {
+          "element": "td[2]",
+        },
+        "job_post_date": {
+          "element" : "td[5]",
+        },
+        "job_url": {
+          "element": "td[1]/a",
+          "method" : "getAttribute",
+          "value" : "href",
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//TABLE[@class='unnamed2']/TBODY/TR[2]/TD[1]/TABLE/TBODY/TR[5]",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//form[@name='freshlist']/descendant::a/u[text()='下一页']",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementInnerHTMLChanged",
+            "element": "//form[@name='freshlist']/descendant::b",
+          }]
+        },
+      ],
+    }
+  }
+}
+

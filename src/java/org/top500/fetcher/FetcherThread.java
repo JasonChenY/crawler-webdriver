@@ -66,6 +66,7 @@ import static org.top500.fetcher.WaitingConditions.newWindowIsOpened;
 import static org.top500.fetcher.WaitingConditions.elementTextChanged;
 import static org.top500.fetcher.WaitingConditions.elementValueChanged;
 import static org.top500.fetcher.WaitingConditions.elementsNumChanged;
+import static org.top500.fetcher.WaitingConditions.elementInnerHTMLChanged;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -328,7 +329,8 @@ public class FetcherThread extends Thread {
                 Schema.Expection expection = action.expections.expections.get(iter);
                 if (expection == null || expection.condition == null) continue;
                 if (expection.condition.equals("elementTextChanged") ||
-                    expection.condition.equals("elementValueChanged") ) {
+                    expection.condition.equals("elementValueChanged") ||
+                    expection.condition.equals("elementInnerHTMLChanged") ) {
                     By expect_locator = getLocator(null, 0, expection.element);
                     try {
                         WebElement currentElement = expect_locator.findElement(driver);
@@ -336,6 +338,8 @@ public class FetcherThread extends Thread {
                             currentTexts.add(currentElement.getText());
                         else if ( expection.condition.equals("elementValueChanged" ) )
                             currentTexts.add(currentElement.getAttribute("value"));
+                        else if ( expection.condition.equals("elementInnerHTMLChanged") )
+                            currentTexts.add(currentElement.getAttribute("innerHTML"));
                     } catch ( NoSuchElementException e ) {
                         LOG.warn(this.getName() + ":" +"Expected element with " + expection.element.element + " not found, return " , e);
                         return (action.isFatal ? false : true);
@@ -600,16 +604,23 @@ public class FetcherThread extends Thread {
                             }
                             break;
                         case "elementTextChanged":
-                            String currentText = currentTexts.poll();
-                            LOG.debug(this.getName() + ":" +"Current text: " + currentText);
-                            String newtext = wait.until(elementTextChanged(wait_locator, currentText));
-                            LOG.debug(this.getName() + ":" +"Element text changed to " + newtext);
-                            break;
                         case "elementValueChanged":
-                            String currentValue = currentTexts.poll();
-                            LOG.debug(this.getName() + ":" +"Current value: " + currentValue);
-                            String newvalue = wait.until(elementValueChanged(wait_locator, currentValue));
-                            LOG.debug(this.getName() + ":" +"Element value changed to " + newvalue);
+                        case "elementInnerHTMLChanged":
+                            String current = currentTexts.poll();
+                            String changed = null;
+                            LOG.debug(this.getName() + ":" + expection.condition + " from: " + current);
+                            switch ( expection.condition ) {
+                                case "elementTextChanged":
+                                    changed = wait.until(elementTextChanged(wait_locator, current));
+                                    break;
+                                case "elementValueChanged":
+                                    changed = wait.until(elementValueChanged(wait_locator, current));
+                                    break;
+                                case "elementInnerHTMLChanged":
+                                    changed = wait.until(elementInnerHTMLChanged(wait_locator, current));
+                                    break;
+                            }
+                            LOG.debug(this.getName() + ":" + expection.condition + " from: " + current + " to: " + changed);
                             break;
                         case "elementToBeSelected":
                             wait.until(elementToBeSelected(wait_locator));
@@ -639,6 +650,7 @@ public class FetcherThread extends Thread {
                             } catch ( Exception e ) {};
                             Integer newNum = wait.until(elementsNumChanged(wait_locator, origNum));
                             LOG.debug(this.getName() + ":" +"Elements num changed to " + newNum);
+                            break;
                         default:
                             driver.manage().timeouts().implicitlyWait(10000, MILLISECONDS);
                             LOG.debug(this.getName() + ":" +"waited 10 seconds");

@@ -275,4 +275,23 @@ public class WaitingConditions {
             }
         };
     }
+
+    public static ExpectedCondition<String> elementInnerHTMLChanged(final By locator, final String value) {
+        return new ExpectedCondition<String>() {
+
+            @Override
+            public String apply(WebDriver driver) {
+                String newvalue = driver.findElement(locator).getAttribute("innerHTML");
+                if (!value.equals(newvalue)) {
+                    return newvalue;
+                }
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "element value changed from: " + value;
+            }
+        };
+    }
 }

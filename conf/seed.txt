@@ -39,3 +39,4 @@ Axa-assistance
 Py-axa
 Accenture
 Alibaba
+Astrazeneca
