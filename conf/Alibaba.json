@@ -15,6 +15,14 @@
         "how" : "ID",
       }]
     },
+    {
+      "element": "//div[@class='pagination']/descendant::a[last()-1]",
+      "cmd": "click",
+      "expections": [{
+        "condition": "elementsTextChanged",
+        "element": "//div[@class='pagination']/descendant::li[@class='active']/a",
+      }]
+    }
   ],
   "procedure" : {
     "procedure": {
@@ -80,7 +88,7 @@
       "loop_type": "end",
       "actions": [
         {
-          "element": "//div[@class='pagination']/descendant::a[@title='下一页']",
+          "element": "//div[@class='pagination']/descendant::a[@title='上一页']",
           "cmd": "click",
           "expections": [{
             "condition": "elementsTextChanged",
