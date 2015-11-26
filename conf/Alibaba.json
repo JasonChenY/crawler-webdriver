@@ -1,0 +1,94 @@
+{
+  "name" : "Alibaba",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "comment:fetch.n.days":2,
+  "actions" :
+  [
+    {
+      "element": "https://job.alibaba.com/zhaopin/positionList.htm",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "J-list-box",
+        "how" : "ID",
+      }]
+    },
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//tbody[@id='J-list-box']/tr[not(@*)]",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "td[1]/span/a",
+            "cmd": "click",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "detail-box",
+                "how": "CLASS_NAME"
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[1]/span/a",
+        },
+        "job_location": {
+          "element": "td[3]/span",
+        },
+        "job_category_domain": {
+          "element": "td[2]/span",
+        },
+        "comment:job_post_date": {
+          "element" : "td[5]/span",
+        },
+        "job_description": {
+          "element": "following-sibling::tr/descendant::div[@class='tb-li-detail']/p[*]"
+        },
+        "job_url": {
+          "element": "td[1]/span/a",
+          "method" : "getAttribute",
+          "value" : "href",
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_post_date": {
+            "element": "//div[@class='detail-box']/table[contains(@class,'detail-table')]/descendant::td[text()='发布时间：']/following-sibling::td[1]",
+          },
+          "job_sub_company": {
+            "element": "//div[@class='detail-box']/table[contains(@class,'detail-table')]/descendant::td[text()='所属部门：']/following-sibling::td[1]",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//div[@class='pagination']/descendant::a[@title='下一页']",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementsTextChanged",
+            "element": "//div[@class='pagination']/descendant::li[@class='active']/a",
+          }]
+        },
+      ],
+    }
+  }
+}
+

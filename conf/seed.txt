@@ -37,3 +37,5 @@ Axatp
 Icbc-axa
 Axa-assistance
 Py-axa
+Accenture
+Alibaba
