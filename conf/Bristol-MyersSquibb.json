@@ -1,0 +1,78 @@
+{
+  "name" : "Bristol-MyersSquibb",
+  "comment" : "check whether job exist in db already later",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://careers.bms.com.cn/cn/job-list.html?doAction=search",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementsLocated",
+        "element" : "//div[@class='search-result']",
+      }]
+    }
+  ],
+  "procedure" : {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//div[@class='search-result']/table/tbody/tr[@class='color1']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": ".",
+            "cmd": "click",
+            "expections" : [
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "//div[@class='content-apply-wrap']",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[1]",
+        },
+        "job_category_domain": {
+          "element": "td[2]"
+        },
+        "job_location": {
+          "element": "td[3]",
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@class='content-apply-wrap']/h6 | //div[@class='content-apply-wrap']/div[@class='content-jd'] ",
+          },
+          "job_url": {
+            "how": "url"
+          }
+        },
+        "actions": [
+          {
+            "cmd": "back",
+          },
+        ]
+      },
+    }
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element": "//div[@class='paging']/span[@class='next']/a",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//div[@class='paging']/span/a[@class='current']",
+          }]
+        },
+      ],
+    }
+  }
+}
+
