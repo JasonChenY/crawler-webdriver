@@ -1,0 +1,96 @@
+{
+  "name" : "Boeing",
+  "use_proxy": true,
+  "driver": "chrome",
+  "actions" :
+  [
+    {
+      "element": "https://jobs.boeing.com",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "elementToBeClickable",
+        "element" : "//div[@class='job-location']/descendant::a[text()='Browse By Location']",
+      }]
+    },
+    {
+      "element" : "//div[@class='job-location']/descendant::a[text()='Browse By Location']",
+      "cmd": "click",
+      "expections": [{
+        "condition": "visibilityOfElementLocated",
+        "element": "//div[@class='job-location']/descendant::a[text()='Browse by Country']"
+      }]
+    },
+    {
+      "element" : "//div[@class='job-location']/descendant::a[text()='Browse by Country']",
+      "cmd": "click",
+      "expections": [{
+        "condition": "visibilityOfElementLocated",
+        "element": "//div[@class='job-location']/descendant::a[text()='China Jobs']"
+      }]
+    },
+    {
+      "element" : "//div[@class='job-location']/descendant::a[text()='China Jobs']",
+      "cmd": "click",
+      "expections": [{
+        "condition": "visibilityOfElementLocated",
+        "element": "search-results-list"
+        "how": "ID"
+      }]
+    },
+  ],
+
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//section[@id='search-results-list']/ul/li",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "a",
+            "cmd": "click",
+            "expections" : [
+              {
+                "condition":"newWindowIsOpened"
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element" : "//div[@class='job-description']",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "a/h2",
+        },
+        "job_location": {
+          "element": "a/span[@class='job-location']",
+        },
+        "job_post_date": {
+          "element": "a/span[@class='job-date-posted']"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@class='job-description']",
+          },
+          "job_url": {
+            "how": "url"
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+}
+
