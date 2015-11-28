@@ -1,0 +1,88 @@
+{
+  "name" : "Daimler",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://www.daimlercareer.cn/job/search?mode=EXPERIENCED_HIRE",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementLocated",
+        "element" : "search_list_result",
+        "how": "ID"
+      }]
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//tbody[@id='search_list_result']/tr",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "td[@class='js_cell_job']/a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened"
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "jobdetail_info_content",
+                "how": "ID"
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[@class='js_cell_job']/a",
+        },
+        "job_sub_company": {
+          "element": "td[@class='js_cell_company']/div",
+          "method" : "getAttribute",
+          "value" : "title"
+        },
+        "job_location": {
+          "element": "td[3]/div"
+        },
+        "job_post_date": {
+          "element": "td[@class='js_cell_date']"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "jobdetail_info_content",
+            "how": "ID"
+          },
+          "job_url": {
+            "how": "url"
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "//div[@class='pager']/a[@class='nextLink']"
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//div[@class='pager']/span[@class='currentStep']"
+          }]
+        },
+      ],
+    }
+  }
+}
+
