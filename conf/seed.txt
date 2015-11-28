@@ -43,3 +43,4 @@ Astrazeneca
 Bristol-MyersSquibb
 Boeing
 Cocacola
+Cofco

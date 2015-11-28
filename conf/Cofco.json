@@ -1,0 +1,82 @@
+{
+  "name" : "Cofco",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://special.zhaopin.com/bj/2013/cofco060502/search.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementLocated",
+        "element" : "JobSearchShow",
+        "how": "ID"
+      }]
+    }
+  ],
+
+    "procedure": {
+      "loop": {
+        "comment":"cofco include all jobs in single page, but some are hidden, and not sort in time",
+        "xpath_prefix": "//table[@id='JobSearchShow']/tbody/tr",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": ".",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('style', 'display: table-row;');"
+          },
+          {
+            "element": "descendant::a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened"
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "terminalpage-left",
+                "how": "CLASS_NAME"
+              }
+            ]
+          }
+        ]
+      },
+      "extracts": {
+        "job_post_date": {
+          "element": ".",
+          "method" : "getAttribute",
+          "value" : "issuedate"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_title": {
+            "element": "//div[@class='top-fixed-box']/div[@class='fixed-inner-box']/div[@class='inner-left fl']/h1",
+          },
+          "job_sub_company": {
+            "element": "//div[@class='top-fixed-box']/div[@class='fixed-inner-box']/div[@class='inner-left fl']/h2/a",
+          },
+          "job_description": {
+            "element": "//div[@class='tab-cont-box']/div[@class='tab-inner-cont' and not(@style)]",
+          },
+          "job_url": {
+            "how": "url"
+          },
+          "job_location": {
+            "element": "//div[@class='terminalpage-left']/ul/li/span[contains(text(),'工作地点：')]/following-sibling::strong/a",
+          },
+          "job_category_domain": {
+            "element": "//div[@class='terminalpage-left']/ul/li/span[contains(text(),'职位类别：')]/following-sibling::strong/a",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          }
+        ]
+      }
+    }
+}
+
