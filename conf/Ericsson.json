@@ -1,0 +1,120 @@
+{
+  "name" : "Ericsson",
+  "use_proxy": true,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "https://jobs.ericsson.com/search/?q=&locationsearch=CN",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "searchresults",
+        "how": "ID"
+      }],
+      "debug" : true,
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//table[@id='searchresults']/tbody/tr",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "descendant::a[@class='jobTitle-link']",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "descendant::a[@class='jobTitle-link']",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened"
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "joqReqDescription",
+                "how": "CLASS_NAME"
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "descendant::a[@class='jobTitle-link']",
+        },
+        "comment:job_post_date": {
+          "comment": "layout changed for different window size, failed to extract",
+          "element": "descendant::span[@class='jobDate'][2]",
+          "transforms" : [
+            {
+              "how" : "dateFormat",
+              "value" : "MMM dd yyyy"
+            }
+          ]
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_location": {
+            "element": "//p[@id='job-location']/span[@itemprop='jobLocation']"
+          },
+          "job_post_date": {
+            "element": "//p[@id='job-date']/span[@itemprop='datePosted']",
+            "transforms" : [
+              {
+                "how" : "dateFormat",
+                "value" : "MMM dd yyyy"
+              }
+            ]
+          },
+          "job_description": {
+            "element": "joqReqDescription",
+            "how": "CLASS_NAME"
+          },
+          "job_url": {
+            "how": "url"
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type":  "page",
+      "loop_totalpages": {
+        "element" : "//DIV[@class='pagination-bottom']/descendant::span[@class='paginationLabel']",
+        "transforms": [{
+          "how": "executeScript",
+          "value": "var val=arguments[0];
+            var regex= /Results (\d+) – (\d+) of (\d+)/g;
+            if( regex.exec(val) ) {
+              var start=RegExp.$1;
+              var end=RegExp.$2;
+              var total=RegExp.$3;
+              return Math.ceil(total/(end-start+1)).toString();
+            } else return '';"
+        }]
+      },
+      "actions": [
+        {
+          "element" : "//div[@class='pagination-bottom']/descendant::ul[@class='pagination-links']/li/a[text()=%d]",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//div[@class='pagination-bottom']/descendant::ul[@class='pagination-links']/li[@class='active']/a"
+          }]
+        },
+      ],
+    }
+  }
+}
+

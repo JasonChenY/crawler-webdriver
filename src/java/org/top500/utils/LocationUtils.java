@@ -268,7 +268,12 @@ public class LocationUtils {
         String test5[] = {
                 "Africa, Asia, Australasia-CN-Jiangsu-Taizhou",
                 "Africa, Asia, Australasia-China",
-                "Africa, Asia, Australasia-CN-Shanghai-Shanghai, Africa, Asia, Australasia-CN-Jiangsu-Taizhou"
+                "Africa, Asia, Australasia-CN-Shanghai-Shanghai, Africa, Asia, Australasia-CN-Jiangsu-Taizhou",
+                "Lanzhou, Gansu, CN",
+                "Guangzhou (Canton), Guangdong, CN",
+                "Xi'an, Shanxi, CN",
+                "Nanjing, Jiangsu, CN",
+                "Tai Uyan, Shanxi, CN"
         };
         try {
             for ( int i = 0; i < test5.length; i++ ) {

@@ -272,7 +272,7 @@
 泰安=TAIAN
 太仓=TAICANG
 泰兴=TAIXING
-太原=TAIYUAN
+太原=TAIYUAN,Tai Uyan
 泰州=TAIZHOU
 台州=TAIZHOU1
 唐山=TANGSHAN
@@ -305,7 +305,7 @@
 武威=WUWEI
 无锡=WUXI
 梧州=WUZHOU
-西安=XIAN, Xi an
+西安=XIAN, Xi an,Xi'an
 项城=XIANGCHENG
 襄樊=XIANGFAN
 香格里拉=XIANGGELILA

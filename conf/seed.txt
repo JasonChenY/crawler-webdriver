@@ -46,3 +46,4 @@ Cocacola
 Cofco
 Daimler
 Dupont
+Ericsson

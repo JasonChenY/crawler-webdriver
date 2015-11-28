@@ -246,8 +246,7 @@ public class DateUtils {
         return cal;
     }
 
-    public static final Logger LOG = LoggerFactory
-            .getLogger("org.apache.nutch.parse.company");
+    public static final Logger LOG = LoggerFactory.getLogger(DateUtils.class);
 
     private static List<NameValuePair> months = initialize_months();
     private static List<NameValuePair> initialize_months() {

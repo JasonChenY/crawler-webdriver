@@ -691,167 +691,179 @@ public class FetcherThread extends Thread {
         return true;
     }
 
+    private Object Extract(String xpath_prefix, int index, Schema.Element ele, String key) {
+        try {
+            if ((ele.how != null) && ele.how.equals("url")) {
+                String result = driver.getCurrentUrl();
+                LOG.debug(this.getName() + ":" + key + " : " + driver.getCurrentUrl());
+                return result;
+            } else if ((ele.how != null) && ele.how.equals("int")) {
+                int val = 0;
+                try {
+                    val = Integer.parseInt(ele.value);
+                    LOG.debug(this.getName() + ":" + key + " : (int)" + val);
+                    return new Integer(val);
+                } catch (java.lang.Exception e) {
+                    LOG.warn(this.getName() + ":" + key + " failed to parseInt");
+                    return null;
+                }
+            } else {
+                String value = "";
+                By locator = getLocator(xpath_prefix, index, ele);
+                Boolean formatted = false;
+                List<String> values = new ArrayList<String>();
+                List<WebElement> elements = locator.findElements(driver);
+
+                if (elements.size() == 0) {
+                    LOG.warn(this.getName() + ":" + key + " : failed to locate elements for extracing");
+                    return null;
+                } else {
+                    LOG.debug(this.getName() + ":" + key + " : located " + elements.size() + " elements for extracing");
+                }
+                for (int i = 0; i < elements.size(); i++) {
+                    if (ele.method != null) {
+                        switch (ele.method) {
+                            case "getAttribute":
+                                if (ele.value != null) {
+                                    value = elements.get(i).getAttribute(ele.value);
+                                } else {
+                                    value = elements.get(i).getAttribute("value");
+                                }
+                                break;
+                            case "getValue":
+                                value = elements.get(i).getAttribute("value");
+                                break;
+                            case "innerHTML":
+                                value = elements.get(i).getAttribute("innerHTML");
+                                break;
+                            case "getText":
+                            default:
+                                value = elements.get(i).getText();
+                        }
+                    } else {
+                        if (key.equals(Job.JOB_DESCRIPTION))
+                            value = elements.get(i).getAttribute("innerHTML");
+                        else
+                            value = elements.get(i).getText();
+                    }
+                    LOG.debug(this.getName() + ":" + " raw-> " + (value.length() > 100 ? value.substring(0, 100) : value));
+                    if (ele.transforms != null) {
+                        // Firstly handle transform against single item.
+                        for (int j = 0; j < ele.transforms.size(); j++) {
+                            Schema.Transform transform = ele.transforms.get(j);
+                            if (transform == null || transform.how == null) continue;
+                            switch (transform.how) {
+                                case "insertBefore":
+                                    value = transform.value + value;
+                                    break;
+                                case "appendAfter":
+                                    value = value + transform.value;
+                                    break;
+                                case "regex":
+                                    try {
+                                        Perl5Util plutil = new Perl5Util();
+                                        value = plutil.substitute(transform.value, value);
+                                    } catch (MalformedPerl5PatternException me) {
+                                        LOG.warn(this.getName() + ":" + "regex faield", me);
+                                    }
+                                    break;
+                                case "dateFormat":
+                                    value = DateUtils.formatDate(value, transform.value, key.equals(Job.JOB_POST_DATE));
+                                    formatted = true;
+                                    break;
+                                case "location_regex":
+                                    value = LocationUtils.format(value, transform.value);
+                                    formatted = true;
+                                    break;
+                                case "regex_matcher":
+                                    value = LocationUtils.match(value, transform.value, transform.which, transform.group);
+                                    value = LocationUtils.format(value);
+                                    formatted = true;
+                                    break;
+                                case "tokenize":
+                                    value = LocationUtils.tokenize(value);
+                                    formatted = true;
+                                    break;
+                                case "executeScript":
+                                    LOG.debug(this.getName() + ":" + "executeScript on " + value);
+                                    value = (String) ((JavascriptExecutor) driver).executeScript(transform.value, value);
+                                    LOG.debug(this.getName() + ":" + "executeScript result " + value);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    values.add(value);
+                }
+                // handle Transform again all the elements, for exampe to concatenate them (default), or regex to form a new string
+                boolean joined = false;
+                if (ele.transforms != null) {
+                    for (int j = 0; j < ele.transforms.size(); j++) {
+                        Schema.Transform transform = ele.transforms.get(j);
+                        if (transform == null || transform.how == null) continue;
+                        switch (transform.how) {
+                            case "regex_on_all":
+                                // TODO
+                                joined = true;
+                                break;
+                            case "join":
+                                if (transform.value == null || transform.value.isEmpty())
+                                    value = org.apache.commons.lang3.StringUtils.join(values.toArray(), ",");
+                                else
+                                    value = org.apache.commons.lang3.StringUtils.join(values.toArray(), transform.value);
+                                joined = true;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                if (!joined) {
+                    // default cases for job description.
+                    value = org.apache.commons.lang3.StringUtils.join(values.toArray(), "<BR/>");
+                }
+
+                if (key.equals(Job.JOB_DESCRIPTION) || key.equals(Job.JOB_TITLE)) {
+                    value = StringUtils.stripNonCharCodepoints(value);
+                }
+
+                if (!formatted) {
+                    // some default handling to avoid config item in schema
+                    if (key.equals(Job.JOB_POST_DATE) || key.equals(Job.JOB_EXPIRE_DATE)) {
+                        value = DateUtils.formatDate(value, key.equals(Job.JOB_POST_DATE));
+                    }
+                    if (key.equals(Job.JOB_LOCATION)) {
+                        //value = LocationUtils.format(value);
+                        LOG.debug(this.getName() + ":" + key + ":(before tokenize)" + value);
+                        value = LocationUtils.tokenize(value);
+                    }
+                }
+                LOG.debug(this.getName() + ":" + key + ":" + (value.length() > 100 ? value.substring(0, 100) : value));
+                return value;
+            }
+        } catch ( Exception e ) {
+            LOG.warn(this.getName() + ":" + key + " extracts failed", e);
+            return null;
+        }
+    }
     private boolean Extracts(String xpath_prefix, int index, Schema.Extracts extracts, Job job){
         if ( extracts == null ) {
             LOG.debug(this.getName() + ":" +"Nothing to be extracted, return");
             return true;
         }
         if ( job == null) {
-            LOG.warn(this.getName() + ":" +"Nont know where to save extracts, return");
+            LOG.warn(this.getName() + ":" +"Dont know where to save extracts, return");
             return false;
         }
-        try {
-            for (String key : extracts.items.keySet()) {
-                Schema.Element ele = extracts.items.get(key);
-                if ( (ele.how != null) && ele.how.equals("url") ) {
-                    job.addField(Job.JOB_URL, driver.getCurrentUrl());
-                    LOG.debug(this.getName() + ":" +"job_url" + ": " + driver.getCurrentUrl());
-                } else if ( (ele.how != null) && ele.how.equals("int") ) {
-                    int val = 0;
-                    try {
-                        val = Integer.parseInt(ele.value);
-                    } catch (java.lang.Exception e) {}
-                    job.addField(key, val);
-                    LOG.debug(this.getName() + ":" +key + " : (int)" + ele.value);
-                } else {
-                    By locator = getLocator(xpath_prefix, index, ele);
-                    String value = "";
-                    Boolean formatted = false;
-                    List<String> values = new ArrayList<String>();
-                    List<WebElement> elements = locator.findElements(driver);
-
-                    if ( elements.size() == 0 ) {
-                        LOG.warn(this.getName() + ":" +"Failed to locate elements for extracing " + key);
-                        return false;
-                    } else {
-                        LOG.debug(this.getName() + ":" +"Located " + elements.size() + " elements for extracing " + key);
-                    }
-                    for ( int i = 0; i < elements.size(); i++ ) {
-                        if ( ele.method != null ) {
-                            switch ( ele.method ) {
-                                case "getAttribute":
-                                    if ( ele.value != null ) {
-                                        value = elements.get(i).getAttribute(ele.value);
-                                    } else {
-                                        value = elements.get(i).getAttribute("value");
-                                    }
-                                    break;
-                                case "getValue":
-                                    value = elements.get(i).getAttribute("value");
-                                    break;
-                                case "innerHTML":
-                                    value = elements.get(i).getAttribute("innerHTML");
-                                    break;
-                                case "getText":
-                                default:
-                                    value = elements.get(i).getText();
-                            }
-                        } else {
-                            if (key.equals(Job.JOB_DESCRIPTION))
-                                value = elements.get(i).getAttribute("innerHTML");
-                            else
-                                value = elements.get(i).getText();
-                        }
-                        LOG.debug(this.getName() + ":" +" raw-> " + (value.length()>100?value.substring(0,100):value));
-                        if ( ele.transforms != null ) {
-                            // Firstly handle transform against single item.
-                            for ( int j = 0; j < ele.transforms.size(); j++ ) {
-                                Schema.Transform transform = ele.transforms.get(j);
-                                if ( transform == null || transform.how == null ) continue;
-                                switch ( transform.how ) {
-                                    case "insertBefore":
-                                        value = transform.value + value;
-                                        break;
-                                    case "appendAfter":
-                                        value = value + transform.value;
-                                        break;
-                                    case "regex":
-                                        try {
-                                            Perl5Util plutil = new Perl5Util();
-                                            value = plutil.substitute(transform.value, value);
-                                        } catch (MalformedPerl5PatternException me) {
-                                            LOG.warn(this.getName() + ":" +"regex faield" , me);
-                                        }
-                                        break;
-                                    case "dateFormat":
-                                        value = DateUtils.formatDate(value, transform.value, key.equals(Job.JOB_POST_DATE));
-                                        formatted = true;
-                                        break;
-                                    case "location_regex":
-                                        value = LocationUtils.format(value, transform.value);
-                                        formatted = true;
-                                        break;
-                                    case "regex_matcher":
-                                        value = LocationUtils.match(value, transform.value, transform.which, transform.group);
-                                        value = LocationUtils.format(value);
-                                        formatted = true;
-                                        break;
-                                    case "tokenize":
-                                        value = LocationUtils.tokenize(value);
-                                        formatted = true;
-                                        break;
-                                    case "executeScript":
-                                        LOG.debug(this.getName() + ":" + "executeScript on " + value);
-                                        value = (String)((JavascriptExecutor)driver).executeScript(transform.value, value);
-                                        LOG.debug(this.getName() + ":" + "executeScript result " + value);
-                                        break;
-                                    default: break;
-                                }
-                            }
-                        }
-                        values.add(value);
-                    }
-                    // handle Transform again all the elements, for exampe to concatenate them (default), or regex to form a new string
-                    boolean joined = false;
-                    if ( ele.transforms != null ) {
-                        for (int j = 0; j < ele.transforms.size(); j++) {
-                            Schema.Transform transform = ele.transforms.get(j);
-                            if (transform == null || transform.how == null) continue;
-                            switch (transform.how) {
-                                case "regex_on_all":
-                                    // TODO
-                                    joined = true;
-                                    break;
-                                case "join":
-                                    if (transform.value == null || transform.value.isEmpty())
-                                        value = org.apache.commons.lang3.StringUtils.join(values.toArray(), ",");
-                                    else
-                                        value = org.apache.commons.lang3.StringUtils.join(values.toArray(), transform.value);
-                                    joined = true;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                    if ( !joined ) {
-                        // default cases for job description.
-                        value = org.apache.commons.lang3.StringUtils.join(values.toArray(),"<BR/>");
-                    }
-
-                    if (key.equals(Job.JOB_DESCRIPTION) || key.equals(Job.JOB_TITLE)) {
-                        value = StringUtils.stripNonCharCodepoints(value);
-                    }
-
-                    if ( !formatted ) {
-                        // some default handling to avoid config item in schema
-                        if (key.equals(Job.JOB_POST_DATE) || key.equals(Job.JOB_EXPIRE_DATE)) {
-                            value = DateUtils.formatDate(value, key.equals(Job.JOB_POST_DATE));
-                        }
-                        if (key.equals(Job.JOB_LOCATION)) {
-                            //value = LocationUtils.format(value);
-                            value = LocationUtils.tokenize(value);
-                        }
-                    }
-                    job.addField(key, value);
-
-                    LOG.debug(this.getName() + ":" +key + ":" + (value.length()>100?value.substring(0,100):value));
-                }
+        for (String key : extracts.items.keySet()) {
+            Schema.Element ele = extracts.items.get(key);
+            Object result = Extract(xpath_prefix, index, ele, key);
+            if ( result != null ) {
+                job.addField(key, result);
+            } else {
+                return false;
             }
-
-        } catch ( Exception e ) {
-            LOG.warn(this.getName() + ":" +"Extracts failed", e);
-            return false;
         }
         return true;
     }
@@ -938,6 +950,20 @@ public class FetcherThread extends Thread {
                     loop_totalpages = elements.size();
                     LOG.debug(this.getName() + ":" +"Procedure: loop of BEGIN type, find " + loop_totalpages + " pages with " + xpath_prefix_loop);
                 } else if ( procedure.loop_totalpages != null ) {
+                    String pagecount = (String)Extract(null, 0, procedure.loop_totalpages, "pagecount");
+                    if ( pagecount == null ) {
+                        LOG.warn(this.getName() + ":" +"Procedure: loop of BEGIN type, loop_totalpages defined, but failed to extract valid value");
+                        return PROC_RESULT_FAIL;
+                    } else {
+                        try {
+                            loop_totalpages = Integer.parseInt(pagecount);
+                            LOG.debug(this.getName() + ":" +"Procedure: loop of BEGIN type, find " + loop_totalpages + " with loop_totalpages");
+                        } catch ( Exception e ) {
+                            LOG.warn(this.getName() + ":" +"Procedure: loop of BEGIN type, loop_totalpages defined, but failed to extract valid value");
+                            return PROC_RESULT_FAIL;
+                        }
+                    }
+                    /*
                     By locator = getLocator(null, 0, procedure.loop_totalpages);
                     try {
                         WebElement element = locator.findElement(driver);
@@ -946,9 +972,9 @@ public class FetcherThread extends Thread {
                     } catch ( NoSuchElementException e ) {
                         LOG.warn(this.getName() + ":" +"Procedure: loop of BEGIN type, loop_totalpages defined, but failed to parse valid number from this element");
                         return PROC_RESULT_FAIL;
-                    }
+                    }*/
                 } else {
-                    LOG.warn(this.getName() + ":" +"Procedure: loop of BEGIN type, but neither xpath_prefix nor loop_totalpages, cant continue");
+                    LOG.warn(this.getName() + ":" + "Procedure: loop of BEGIN type, but neither xpath_prefix nor loop_totalpages, cant continue");
                     return PROC_RESULT_FAIL;
                 }
 
