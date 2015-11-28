@@ -60,7 +60,7 @@
           "element" : "td[5]/span",
         },
         "job_description": {
-          "element": "following-sibling::tr/descendant::div[@class='tb-li-detail']/p[*]"
+          "element": "following-sibling::tr[1]/descendant::div[@class='tb-li-detail']/p[*]"
         },
         "job_url": {
           "element": "td[1]/span/a",
