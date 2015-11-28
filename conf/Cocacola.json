@@ -1,0 +1,118 @@
+{
+  "name" : "COCA-COLA",
+  "use_proxy": true,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://careers.peopleclick.com/careerscp/client_cocacola/external/zh-cn/search.do",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementLocated",
+        "element" : "com.peopleclick.cp.formdata.FLD_JPM_COUNTRY",
+        "how": "ID"
+      }]
+    },
+    {
+      "element" : "com.peopleclick.cp.formdata.FLD_JPM_COUNTRY",
+      "how": "ID",
+      "comment:cmd": "selectByVisibleText",
+      "comment:value": "中国 (29)",
+      "cmd": "selectByValue",
+      "value": "61",
+      "expections": [{
+        "condition": "presenceOfElementLocated",
+        "element": "com.peopleclick.cp.formdata.FLD_JPM_COUNTRY",
+        "how": "ID",
+      }]
+    },
+    {
+      "element" : "searchButton",
+      "how": "ID",
+      "cmd": "click",
+      "expections": [{
+        "condition": "visibilityOfElementLocated",
+        "element": "searchResultsTable",
+        "how": "ID"
+      }]
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//table[@id='searchResultsTable']/tbody/tr[@class='pc-rtg-evenRow' or @class='pc-rtg-oddRow']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "td[contains(@id,'JPM_TITLE')]/a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "td[contains(@id,'JPM_TITLE')]/a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened"
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "//form[@name='jobDetails']",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[contains(@id,'JPM_TITLE')]/a",
+        },
+        "job_post_date": {
+          "element": "td[contains(@id,'JP_POSTEDON')]"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//form[@name='jobDetails']/p[1]/following-sibling::*",
+          },
+          "job_url": {
+            "how": "url"
+          },
+          "job_location": {
+            "element": "//td[contains(text(),'CITY/CITIES')]/following-sibling::td[1]"
+          },
+          "job_expire_date": {
+            "element": "//td[contains(text(),'JOB POSTING END DATE')]/following-sibling::td/font",
+            "transforms" : [
+              {
+                "how" : "dateFormat",
+                "value" : "MMM dd yyyy"
+              }
+            ]
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "//input[@class='pc-rtg-navButton' and @alt='下一页']"
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementTextChanged",
+            "element": "//table[@id='searchResultsHeaderTable']/descendant::span[@class='pc-rtg-tableCaption']"
+          }]
+        },
+      ],
+    }
+  }
+}
+

@@ -774,7 +774,7 @@ public class FetcherThread extends Thread {
                                         }
                                         break;
                                     case "dateFormat":
-                                        value = DateUtils.formatDate(value, transform.value);
+                                        value = DateUtils.formatDate(value, transform.value, key.equals(Job.JOB_POST_DATE));
                                         formatted = true;
                                         break;
                                     case "location_regex":
@@ -836,7 +836,7 @@ public class FetcherThread extends Thread {
                     if ( !formatted ) {
                         // some default handling to avoid config item in schema
                         if (key.equals(Job.JOB_POST_DATE) || key.equals(Job.JOB_EXPIRE_DATE)) {
-                            value = DateUtils.formatDate(value);
+                            value = DateUtils.formatDate(value, key.equals(Job.JOB_POST_DATE));
                         }
                         if (key.equals(Job.JOB_LOCATION)) {
                             //value = LocationUtils.format(value);
@@ -885,6 +885,11 @@ public class FetcherThread extends Thread {
             newjob.addField(Job.JOB_POST_DATE, DateUtils.getCurrentDate());
 
             // here to check solr repository whether this item  exist already.
+        }
+
+        if (newjob.getFields().containsKey(Job.JOB_EXPIRE_DATE)
+                && ((String)newjob.getField(Job.JOB_EXPIRE_DATE)).isEmpty() ) {
+            newjob.removeField(Job.JOB_EXPIRE_DATE);
         }
     /*
         if ( newjob.getFields().containsKey(Job.JOB_SUB_COMPANY) ) {

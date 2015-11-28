@@ -42,3 +42,4 @@ Alibaba
 Astrazeneca
 Bristol-MyersSquibb
 Boeing
+Cocacola

@@ -271,8 +271,10 @@ public class DateUtils {
         }
         return months;
     }
-
     public static String formatDate(String str) {
+        return formatDate(str, true);
+    }
+    public static String formatDate(String str, boolean fix) {
         str = str.trim();
         /* Microsoft use some chinese word */
         for ( int i = 0; i < months.size(); i++ ) {
@@ -290,13 +292,19 @@ public class DateUtils {
                 str = getThreadLocalDateFormat().format(d);
             } catch ( java.lang.NumberFormatException npe ) {
                 LOG.warn(" invalid date format(need extend our schema): " + str);
-                str = getThreadLocalDateFormat().format(new Date());
+                if ( fix )
+                    str = getThreadLocalDateFormat().format(new Date());
+                else
+                    return "";
             }
         }
         return str;
     }
 
     public static String formatDate(String d, String format) {
+        return formatDate(d, format, true);
+    }
+    public static String formatDate(String d, String format, boolean fix) {
         if ( format != null && !format.isEmpty() ){
             try {
                 Perl5Util plutil = new Perl5Util();
@@ -321,7 +329,7 @@ public class DateUtils {
                 LOG.warn("datestring " + d + " cant be matched with " + format);
             }
         }
-        return formatDate(d);
+        return formatDate(d, fix);
     }
     public static String getCurrentDate() {
         Calendar calendar = Calendar.getInstance();
