@@ -835,7 +835,6 @@ public class FetcherThread extends Thread {
                     }
                     if (key.equals(Job.JOB_LOCATION)) {
                         //value = LocationUtils.format(value);
-                        LOG.debug(this.getName() + ":" + key + ":(before tokenize)" + value);
                         value = LocationUtils.tokenize(value);
                     }
                 }

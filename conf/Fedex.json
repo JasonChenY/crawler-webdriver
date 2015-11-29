@@ -1,0 +1,112 @@
+{
+  "name" : "Fedex",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://search.51job.com/list/co,c,2442420,000000,10,1.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "joblistdata",
+        "how": "ID"
+      }],
+      "debug" : false,
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//tbody[@id='joblistdata']/tr",
+        "loop_type": "begin",
+        "end_to": -1,
+        "actions": [
+          {
+            "element": "td[1]/a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "td[1]/a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened"
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "tCompany_text",
+                "how": "CLASS_NAME"
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[1]/a",
+        },
+        "job_location": {
+          "element": "td[2]"
+        },
+        "job_post_date": {
+          "element": "td[3]"
+        },
+        "job_expire_date": {
+          "element": "td[4]"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "tCompany_text",
+            "how": "CLASS_NAME"
+          },
+          "job_category_domain": {
+            "element": "//div[@class='tCompany_basic_job']/descendant::dt[text()='职能类别：']/following-sibling::dd/a",
+            "transforms" : [
+              {
+                "how" : "join",
+                "value" : ",",
+              }
+            ]
+          },
+          "job_url": {
+            "how": "url"
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type":  "page",
+      "loop_totalpages": {
+        "element" : "//li[@class='resultbotNav-pageNumble']/a[last()]",
+      },
+      "actions": [
+        {
+          "element" : "//li[@class='resultbotNav-pageNumble']/a[%d]",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "presenceOfElementLocated",
+              "element": "//li[@class='resultbotNav-pageNumble']/a[@class='active']"
+            },
+            {
+              "condition": "elementTextChanged",
+              "element": "//li[@class='resultbotNav-pageNumble']/a[@class='active']"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+
