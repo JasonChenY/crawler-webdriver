@@ -47,9 +47,9 @@
         "job_title": {
           "element": "descendant::a[@class='jobTitle-link']",
         },
-        "comment:job_post_date": {
-          "comment": "layout changed for different window size, failed to extract",
-          "element": "descendant::span[@class='jobDate'][2]",
+        "job_post_date": {
+          "element": "descendant::span[@class='jobDate'][1]",
+          "method": "innerHTML",
           "transforms" : [
             {
               "how" : "dateFormat",
@@ -63,7 +63,7 @@
           "job_location": {
             "element": "//p[@id='job-location']/span[@itemprop='jobLocation']"
           },
-          "job_post_date": {
+          "comment:job_post_date": {
             "element": "//p[@id='job-date']/span[@itemprop='datePosted']",
             "transforms" : [
               {
