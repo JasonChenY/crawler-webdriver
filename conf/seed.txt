@@ -48,3 +48,4 @@ Daimler
 Dupont
 Ericsson
 Fedex
+Goldmansachs

@@ -794,7 +794,7 @@ public class FetcherThread extends Thread {
                             }
                         }
                     }
-                    values.add(value);
+                    if ( !value.isEmpty() ) values.add(value);
                 }
                 // handle Transform again all the elements, for exampe to concatenate them (default), or regex to form a new string
                 boolean joined = false;
@@ -1140,6 +1140,10 @@ public class FetcherThread extends Thread {
             if (DateUtils.nDaysAgo((String)job.getField(Job.JOB_POST_DATE), fetch_n_days)) {
                 LOG.info(this.getName() + ":" +"Job older than configured date (summary page), ignore");
                 res = PROC_RESULT_OK_NDAYS;
+            }
+            if ( !job.getFields().containsKey(Job.JOB_URL) ) {
+                LOG.info(this.getName() + ":" + "job_url not configured, default " + driver.getCurrentUrl());
+                job.addField(Job.JOB_URL, driver.getCurrentUrl());
             }
             Actions(null, 0, procedure.actions);
             // can't return false directly, there will be 'restore/close window' action

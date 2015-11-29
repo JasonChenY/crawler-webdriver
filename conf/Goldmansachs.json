@@ -1,0 +1,76 @@
+{
+  "name" : "Goldmansachs",
+  "use_proxy": true,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://www.goldmansachs.com/a/data/jobs/asia_except_japan.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "presenceOfElementLocated",
+        "element" : "jobs",
+        "how": "ID"
+      }]
+    }
+  ],
+
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//div[@id='jobs']/table/tbody/tr[@class='filter_associate filter_full-time']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "descendant::a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "descendant::a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened"
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "content",
+                "how": "ID"
+              }
+            ]
+          }
+        ]
+      },
+      "extracts": {
+        "job_title": {
+          "element": "descendant::a",
+        },
+        "job_category_domain": {
+          "element": "td[1]"
+        },
+        "job_location": {
+          "element": "td[2]"
+        },
+        "job_post_date": {
+          "element": "td[3]"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@id='content']/section[@class='grid2-padded']/article",
+          },
+          "comment:job_url": {
+            "how": "url"
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          }
+        ]
+      }
+    }
+}
+

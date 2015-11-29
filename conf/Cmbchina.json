@@ -109,7 +109,7 @@
         },
       ]
     },
-  }
+  },
   "loop": {
       "loop_type": "end",
       "actions": [
