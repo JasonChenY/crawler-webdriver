@@ -1,0 +1,113 @@
+{
+  "name" : "Huawei",
+  "use_proxy": false,
+  "driver": "chrome",
+  "actions" :
+  [
+    {
+      "element": "http://career.huawei.com/recruitment/joinUs.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//span[@class='langueTarget']/descendant::a[@val='zh_CN']"
+      }]
+    },
+    {
+      "element": "//span[@class='langueTarget']/descendant::a[@val='zh_CN']",
+      "cmd": "click",
+      "isFatal" : true,
+      "expections": [
+        {
+          "condition": "elementToBeClickable",
+          "element": "pageTarget",
+          "how": "CLASS_NAME"
+        }
+      ]
+    },
+    {
+      "element": "pageTarget",
+      "how": "CLASS_NAME",
+      "cmd": "click",
+      "expections": [
+        {
+          "condition": "visibilityOfElementLocated",
+          "element": "joblistdiv",
+          "how": "ID"
+        },
+        {
+          "condition": "visibilityOfAllElementsLocatedBy",
+          "element": "//div[@id='pagediv']/div[@class='pagesCon']/a",
+        }
+      ]
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//div[@id='joblistdiv']/table/tbody/tr",
+        "loop_type": "begin",
+        "begin_from": 1,
+        "actions": [
+          {
+            "element": "td[@class='nameth']/a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "//div[@id='diag']/descendant::div[@class='zwmain']",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[@class='nameth']/a",
+        },
+        "job_category_domain": {
+          "element": "td[@class='classth']"
+        },
+        "job_location": {
+          "element": "td[@class='locth']"
+        },
+        "job_post_date": {
+          "element": "td[@class='timeth']"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@id='diag']/descendant::div[@class='zwmain']",
+          }
+        },
+        "actions": [
+          {
+            "element": "//div[@id='diag']/descendant::div[@class='diagclosediv']",
+            "cmd": "click",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type":  "page",
+      "loop_totalpages": {
+        "element" : "//div[@id='pagediv']/div[@class='pagesCon']/a[last()-1]",
+      },
+      "actions": [
+        {
+          "element" : "//div[@id='pagediv']/div[@class='pagesCon']/a/span[text()=%d]",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//div[@id='pagediv']/div[@class='pagesCon']/a[@class='on']/span"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+

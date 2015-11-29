@@ -49,3 +49,4 @@ Dupont
 Ericsson
 Fedex
 Goldmansachs
+Huawei
