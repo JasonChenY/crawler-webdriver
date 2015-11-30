@@ -51,3 +51,4 @@ Fedex
 Goldmansachs
 Huawei
 IBM
+Intel

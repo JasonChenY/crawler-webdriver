@@ -1,0 +1,182 @@
+{
+  "name" : "Intel",
+  "use_proxy": true,
+  "driver": "chrome",
+  "actions" :
+  [
+    {
+      "element": "http://www.intel.cn/content/www/cn/zh/jobs/jobs-at-intel.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "Job Search",
+        "how":"LINK_TEXT"
+      }]
+    },
+    {
+      "element" : "Job Search",
+      "how":"LINK_TEXT",
+      "cmd": "click",
+      "expections": [
+        {
+          "condition": "visibilityOfElementLocated",
+          "element": "POSTING_DATE-select",
+          "how": "ID"
+        }
+      ]
+    },
+    {
+      "element": "POSTING_DATE-select",
+      "how": "ID",
+      "cmd": "selectByVisibleText",
+      "value": "Last 14 Days"
+    },
+    {
+      "element" : "LOCATION-seeallolf",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//DIV[@id='dataTable_filter']/LABEL/SPAN/INPUT",
+        }
+      ]
+    },
+    {
+      "element" : "//DIV[@id='dataTable_filter']/LABEL/SPAN/INPUT",
+      "cmd" : "sendKeys",
+      "value" : "China"
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']",
+        }
+      ]
+    },
+    {
+      "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']/following-sibling::*",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "elementToBeSelected",
+          "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']",
+        }
+      ]
+    },
+    {
+      "element" : "addAction",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "elementTextChanged",
+          "element" : "currentPageInfo",
+          "how" : "ID",
+        },
+      ],
+    },
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//table[@id='jobs']/tbody/tr",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "th/descendant::a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "th/descendant::a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "editablesection",
+                "how": "CLASS_NAME"
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "th/descendant::a",
+        },
+        "job_location": {
+          "element": "td[2]/descendant::span",
+        },
+        "job_post_date": {
+          "element": "td[3]/descendant::span",
+          "transforms" : [
+            {
+              "how" : "dateFormat",
+              "value" : "MMM dd yyyy"
+            }
+          ]
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "editablesection",
+            "how": "CLASS_NAME"
+          },
+          "job_expire_date": {
+            "element": "requisitionDescriptionInterface.reqUnpostingDate.row1",
+            "how": "ID",
+            "isFatal": false,
+            "transforms" : [
+              {
+                "how" : "dateFormat",
+                "value" : "MMM dd yyyy"
+              }
+            ]
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type":  "page",
+      "loop_totalpages": {
+        "element": "currentPageInfo",
+        "how": "ID"
+        "transforms": [{
+          "how": "executeScript",
+          "value": "var val=arguments[0];
+          var regex= /(\d+)\D+(\d+) of (\d+)/g;
+          if( regex.exec(val) ) {
+            var start=RegExp.$1;
+            var end=RegExp.$2;
+            var total=RegExp.$3;
+            return Math.ceil(total/(end-start+1)).toString();
+          } else return '';"
+        }]
+      },
+      "actions": [
+        {
+          "element" : "//div[@id='jobPager']/descendant::a[text()=%d]",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//div[@id='jobPager']/descendant::li[@class='navigation-link-disabled']"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+

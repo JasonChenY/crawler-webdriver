@@ -179,6 +179,7 @@ public class Schema {
     public class Element {
         public String element;
         public String how;
+        public Boolean isFatal = true; // whether return false when failed to locate element for extracting.
         public String method;
         public String value; /* optional, to specify which attr to extract with method 'getAttribute' */
         public List<Transform> transforms;
@@ -193,12 +194,14 @@ public class Schema {
                 if ( name.equals("transforms")) {
                     transforms = new ArrayList<Transform>();
                     //JSONArray array = (JSONArray)entry.getValue();
-                    List<Object> array = (List<Object>)entry.getValue();
+                    List<Object> array = (List<Object>) entry.getValue();
 
-                    for ( int i = 0; i < array.size(); i++ ) {
+                    for (int i = 0; i < array.size(); i++) {
                         Transform transform = new Transform(array.get(i));
                         transforms.add(transform);
                     }
+                } else if ( name.equals("isFatal") ) {
+                    isFatal = (Boolean)entry.getValue();
                 } else {
                     String val = (String) entry.getValue();
                     if (name.equals("element")) element = val;

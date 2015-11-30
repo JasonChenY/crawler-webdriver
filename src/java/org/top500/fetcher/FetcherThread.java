@@ -704,7 +704,7 @@ public class FetcherThread extends Thread {
                     LOG.debug(this.getName() + ":" + key + " : (int)" + val);
                     return new Integer(val);
                 } catch (java.lang.Exception e) {
-                    LOG.warn(this.getName() + ":" + key + " failed to parseInt");
+                    LOG.warn(this.getName() + ":" + key + (ele.isFatal?" fatal ":" non-fatal ") + "failed to parseInt");
                     return null;
                 }
             } else {
@@ -715,7 +715,7 @@ public class FetcherThread extends Thread {
                 List<WebElement> elements = locator.findElements(driver);
 
                 if (elements.size() == 0) {
-                    LOG.warn(this.getName() + ":" + key + " : failed to locate elements for extracing");
+                    LOG.warn(this.getName() + ":" + key +  (ele.isFatal?" fatal ":" non-fatal ") + " : failed to locate elements for extracing");
                     return null;
                 } else {
                     LOG.debug(this.getName() + ":" + key + " : located " + elements.size() + " elements for extracing");
@@ -842,7 +842,7 @@ public class FetcherThread extends Thread {
                 return value;
             }
         } catch ( Exception e ) {
-            LOG.warn(this.getName() + ":" + key + " extracts failed", e);
+            LOG.warn(this.getName() + ":" + key +  (ele.isFatal?" fatal ":" non-fatal ") + " extracts failed", e);
             return null;
         }
     }
@@ -861,7 +861,10 @@ public class FetcherThread extends Thread {
             if ( result != null ) {
                 job.addField(key, result);
             } else {
-                return false;
+                if ( ele.isFatal )
+                    return false;
+                else
+                    continue;
             }
         }
         return true;
