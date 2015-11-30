@@ -341,7 +341,7 @@ public class FetcherThread extends Thread {
                         else if ( expection.condition.equals("elementInnerHTMLChanged") )
                             currentTexts.add(currentElement.getAttribute("innerHTML"));
                     } catch ( NoSuchElementException e ) {
-                        LOG.warn(this.getName() + ":" +"Expected element with " + expection.element.element + " not found, return " , e);
+                        LOG.warn(this.getName() + ":" + (action.isFatal?"fatal":"non-fatal") + " Expected element with " + expection.element.element + " not found, return " , e);
                         return (action.isFatal ? false : true);
                     }
                 } else if ( expection.condition.equals("elementsNumChanged") ) {
@@ -351,7 +351,7 @@ public class FetcherThread extends Thread {
                         int origNum = currentElements.size();
                         currentTexts.add(Integer.toString(origNum));
                     } catch ( NoSuchElementException e ) {
-                        LOG.warn(this.getName() + ":" +"Expected element with " + expection.element.element + " not found, return " , e);
+                        LOG.warn(this.getName() + ":" +(action.isFatal?"fatal":"non-fatal") + " Expected element with " + expection.element.element + " not found, return " , e);
                         return (action.isFatal ? false : true);
                     }
                 }
@@ -376,7 +376,7 @@ public class FetcherThread extends Thread {
         } else if ( action.command.code == Schema.CmdType.Restore ) {
             String topWindowHandle = (String) windows_stack.peek();
             if (!driver.getWindowHandle().equals(topWindowHandle)) {
-                LOG.warn(this.getName() + ":" +"Action restore, but something wrong, current window not equal topwindow");
+                LOG.warn(this.getName() + ":" + (action.isFatal?"fatal":"non-fatal") + " Action restore, but something wrong, current window not equal topwindow");
                 return (action.isFatal ? false : true);
             } else {
                 windows_stack.pop();
@@ -416,7 +416,7 @@ public class FetcherThread extends Thread {
             try {
                 element = locator.findElement(driver);
             } catch ( NoSuchElementException e ) {
-                LOG.warn(this.getName() + ":" +"Element with " + dbgstr + " not found, return, >>> Exception: " , e);
+                LOG.warn(this.getName() + ":" + (action.isFatal?"fatal":"non-fatal")+" Element with " + dbgstr + " not found, return, >>> Exception: " , e);
                 return (action.isFatal ? false : true);
             }
 
@@ -572,7 +572,7 @@ public class FetcherThread extends Thread {
                                     LOG.debug(this.getName() + ":" +"newWindowIsOpened(but in background): " + newwindow + " title:" + driver.getTitle());
                                 }
                             } catch (Exception e) {
-                                LOG.warn(this.getName() + ":" +"Failed to open new window");
+                                LOG.warn(this.getName() + ":" + (action.isFatal?"fatal":"non-fatal") + " Failed to open new window");
                                 return (action.isFatal ? false : true);
                             /*
                             for (int i = 0; i < 5; i++) {

@@ -1,0 +1,161 @@
+{
+  "name" : "IBM",
+  "use_proxy": true,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://www-31.ibm.com/employment/cn/experienced_jobs/job_search.shtml",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//a[@class='ibm-external-link-alternate']",
+      }]
+    },
+    {
+      "element": "//a[@class='ibm-external-link-alternate']",
+      "cmd": "click",
+    },
+    {
+      "element" : "//a[@class='ibm-external-link-alternate']",
+      "cmd": "click",
+      "isFatal": false,
+      "comment": "why not fatal? sometimes onetime click ok, sometimes need click two times",
+      "expections": [
+        {
+          "condition": "visibilityOfElementLocated",
+          "element": "Search openings",
+          "how": "LINK_TEXT"
+        }
+      ]
+    },
+    {
+      "element": "Search openings",
+      "how": "LINK_TEXT",
+      "cmd": "click",
+      "expections": [
+        {
+          "condition": "visibilityOfElementLocated",
+          "element": "//select[@title='Posting Country']",
+        }
+      ]
+    },
+    {
+      "element": "//select[@title='Posting Country']",
+      "cmd": "executeScript",
+      "value": "arguments[0].removeAttribute('multiple');",
+      "comment": "problem with multiple select component in selenium"
+    },
+    {
+      "element": "//select[@title='Posting Country']",
+      "cmd": "selectByVisibleText",
+      "value": "China"
+    },
+    {
+      "element": "GTGLanguageList",
+      "how": "ID",
+      "cmd": "executeScript",
+      "value": "arguments[0].removeAttribute('multiple');"
+    },
+    {
+      "element": "GTGLanguageList",
+      "how": "ID",
+      "cmd": "selectByValue",
+      "value": "All"
+    },
+    {
+      "element": "//button[text()='Search']",
+      "cmd": "click",
+      "expections": [
+        {
+          "condition": "visibilityOfElementLocated",
+          "element": "idSearchresults",
+          "how": "ID"
+        }
+      ]
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//table[@id='idSearchresults']/tbody[@class='yui-dt-data']/tr",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "descendant::a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "descendant::a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "//span[@id='Job Description']"
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[contains(@class,'yui-dt-col-JobTitle')]/div",
+        },
+        "job_post_date": {
+          "element": "td[contains(@class,'yui-dt-col-LastUpdated')]/div"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@id='PrimaryContentBlock']/following-sibling::table[1]/tbody/tr[2]/td[1]/table[4]",
+          },
+          "job_location": {
+            "element": "//span[@id='City / Township / Village']",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type":  "page",
+      "loop_totalpages": {
+        "element" : "//span[@id='BottomPaginationBlock']/span[@class='yui-pg-current']",
+        "transforms": [{
+          "how": "executeScript",
+          "value": "var val=arguments[0];
+          var regex= /Results (\d+) – (\d+) of (\d+)/g;
+          if( regex.exec(val) ) {
+            var start=RegExp.$1;
+            var end=RegExp.$2;
+            var total=RegExp.$3;
+            return Math.ceil(total/(end-start+1)).toString();
+          } else return '';"
+        }]
+      },
+      "actions": [
+        {
+          "element" : "//span[@id='BottomPaginationBlock']/div[@class='yui-pg-pages']/a[text()=%d]",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//span[@id='BottomPaginationBlock']/div[@class='yui-pg-pages']/span[contains(@class,'yui-pg-current-page')]"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+
