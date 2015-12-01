@@ -1,0 +1,76 @@
+{
+  "name" : "Michelin",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://job.michelin.com.cn/chi/apply-now",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//ul[contains(@class,'job-offers-results')]",
+      }]
+    }
+  ],
+
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//ul[contains(@class,'job-offers-results')]/li",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "a[@class='pas']",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "a[@class='pas']",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//div[@class='job-ad-detail']",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "descendant::div[@class='job-offer-title']",
+        },
+        "job_location": {
+          "element": "descendant::div[@class='job-offer-location']",
+        },
+        "job_post_date": {
+          "element": "descendant::div[@class='job-offer-age']",
+          "method" : "getAttribute",
+          "value" : "title",
+          "transforms" : [
+            {
+              "how" : "dateFormat",
+              "value" : "dd MM yyyy"
+            }
+          ]
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@class='job-ad-detail']/div[contains(@class,'offer-description') or @class='rte']",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+}
+

@@ -53,3 +53,5 @@ Huawei
 IBM
 Intel
 Lenovo
+Msd
+Michelin
