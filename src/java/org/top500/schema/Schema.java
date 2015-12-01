@@ -331,7 +331,8 @@ public class Schema {
 
     public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore,
                          ScrollIntoView, selectByVisibleText, selectByValue, zoom,
-                         openInNewTab, sendKeys, switchToMainFrame, setPage, openInNewTab_ContextClick, executeScript, moveToElement};
+                         openInNewTab, sendKeys, switchToMainFrame, setPage, openInNewTab_ContextClick,
+                         executeScript, moveToElement, executeScriptPostDate};
     public class Command {
         /* 'click':  if not configured ( default value ) ----> changed to None if not configured
            'None':   if unknown cmd configured.
@@ -405,6 +406,9 @@ public class Schema {
                             break;
                         case "moveToElement":
                             code = CmdType.moveToElement;
+                            break;
+                        case "executeScriptPostDate":
+                            code = CmdType.executeScriptPostDate;
                             break;
                         default:
                             code = CmdType.None;

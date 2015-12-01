@@ -509,6 +509,10 @@ public class FetcherThread extends Thread {
                     LOG.debug(this.getName() + ":" +"executeScript " + dbgstr);
                     ((JavascriptExecutor)driver).executeScript(action.setvalue, element);
                     break;
+                case executeScriptPostDate:
+                    LOG.debug(this.getName() + ":" +"executeScriptPostDate " + dbgstr + " fetch_n_days: " + fetch_n_days);
+                    ((JavascriptExecutor)driver).executeScript(action.setvalue, element, fetch_n_days);
+                    break;
                 case moveToElement:
                     LOG.debug(this.getName() + ":" +"moveToElement " + dbgstr);
                     if( "input".equalsIgnoreCase(element.getTagName()) ){
@@ -895,7 +899,7 @@ public class FetcherThread extends Thread {
         }
 
         if (!newjob.getFields().containsKey(Job.JOB_POST_DATE) ) {
-            LOG.info(this.getName() + ":" +"No Job_date field extracted, use current time");
+            LOG.info(this.getName() + ":" +"job_post_date : not configured, use current time");
             newjob.addField(Job.JOB_POST_DATE, DateUtils.getCurrentDate());
 
             // here to check solr repository whether this item  exist already.

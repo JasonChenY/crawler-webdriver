@@ -1,0 +1,136 @@
+{
+  "name" : "Lenovo",
+  "use_proxy": true,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://www.lenovocareers.com/en/?cntry=china",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "Advanced Job Search",
+        "how":"LINK_TEXT"
+      }]
+    },
+    {
+      "element" : "Advanced Job Search",
+      "how":"LINK_TEXT",
+      "cmd": "click",
+      "expections": [
+        {
+          "condition": "visibilityOfElementLocated",
+          "element": "datepost",
+          "how": "CLASS_NAME"
+        }
+      ]
+    },
+    {
+      "element": "//div[@class='datepost']/select",
+      "cmd": "executeScriptPostDate",
+      "value": "var ele=arguments[0]; var ndays=arguments[1]; var val=-1;
+      if ( ndays<=1 )
+        val=1;
+      else if ( ndays <=3 )
+        val=3;
+      else if ( ndays <=7 )
+        val=7;
+      else if ( ndays <=14 )
+        val=14;
+      else if ( ndays <=30 )
+        val=30;
+      else
+        val=-1;
+      for (var i = 0; i < ele.options.length; i++) {
+        if (ele.options[i].value == val) {
+          ele.options[i].selected = true;
+          break;
+        }
+      };"
+    },
+    {
+      "element" : "//div[@class='sbu_con']/input[@type='submit']",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//DIV[@class='search_result']/descendant::table",
+        }
+      ]
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@class='search_result']/descendant::table/tbody/tr",
+        "loop_type": "begin",
+        "begin_from": 1,
+        "actions": [
+          {
+            "element": "descendant::a[@class='JobTitle']",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "descendant::a[@class='JobTitle']",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//div[@class='jl_content']",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "descendant::a[@class='JobTitle']",
+        },
+        "job_location": {
+          "element": "descendant::td[@class='locationText']",
+        },
+        "job_category_domain": {
+          "element": "td[2]",
+          "isFatal": false
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@class='jl_number' or @class='jl_content']",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type":  "page",
+      "loop_totalpages": {
+        "element": "//div[@class='JobListPagingContainer']/div[@class='JobListPagingLinks']/div[@class='paging']/a[last()]",
+      },
+      "actions": [
+        {
+          "element" : "//div[@class='JobListPagingContainer']/div[@class='JobListPagingLinks']/div[@class='paging']/a[text()=%d]",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//div[@class='search_talent']"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+
