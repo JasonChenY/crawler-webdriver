@@ -1,7 +1,8 @@
 {
   "name" : "Lenovo",
   "use_proxy": true,
-  "driver": "phantomjs",
+  "driver": "chrome",
+  "comment": "phantomjs is ok, but sometimes hangs there for long time, need check behavior with proxy",
   "actions" :
   [
     {
