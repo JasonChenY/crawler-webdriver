@@ -1,0 +1,135 @@
+{
+  "name" : "Microsoft",
+  "use_proxy": true,
+  "driver": "chrome",
+  "actions" :
+  [
+    {
+      "element": "http://careers.microsoft.com/search.aspx",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "multiselect_Country",
+        "how":"ID"
+      }]
+    },
+    {
+      "element": "search_closewhatsthis",
+      "how": "ID",
+      "cmd": "click",
+      "isFatal": false
+    },
+    {
+      "element" : "multiselect_Country",
+      "how":"ID"
+      "cmd": "click",
+      "expections": [
+        {
+          "condition": "visibilityOfElementLocated",
+          "element": "ContentPlaceHolder1_srSearch_search_msdRegion_pnlMultiSelector",
+          "how": "ID"
+        }
+      ]
+    },
+    {
+      "element": "//div[@id='selectList']/input[@id='ContentPlaceHolder1_srSearch_search_msdRegion_chkSelectAll']",
+      "cmd": "click"
+    },
+    {
+      "element": "//div[@id='selectList']/div[@id='ContentPlaceHolder1_srSearch_search_msdRegion_divChklistMultiselect']/input[@title='China']",
+      "cmd": "click",
+    },
+    {
+      "element": "multiselect_Country",
+      "how": "ID"
+      "cmd": "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//input[@title='View results']",
+        }
+      ]
+    }
+    {
+      "element" : "//input[@title='View results']",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//table[@id='tblSearchResults']",
+        }
+      ]
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//table[@id='tblSearchResults']/tbody/tr[@class='Result' or @class='Result Alternate']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "td[@class='jobtitle']/a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "td[@class='jobtitle']/a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//div[@class='jobDetails_jobDesc']",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[@class='jobtitle']/a",
+        },
+        "job_location": {
+          "element": "td[5]",
+        },
+        "job_category_domain": {
+          "element": "td[4]",
+        },
+        "job_post_date": {
+          "element": "td[6]"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@class='jobDetails_jobDesc']",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "//span[@id='ContentPlaceHolder1_srSearchResults_dpJobPostingPagerBottom']/a[@class='commandNext']",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//span[@id='ContentPlaceHolder1_srSearchResults_dpJobPostingPagerBottom']/span[@class='current']"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+
