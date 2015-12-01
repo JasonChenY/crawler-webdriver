@@ -1,0 +1,136 @@
+{
+  "name" : "Msd",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://msdchina.51job.com/sc/job_list.php?begin=begin",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "select3",
+        "how":"ID"
+      }]
+    },
+    {
+      "element" : "select3",
+      "how":"ID"
+      "cmd": "executeScriptPostDate",
+      "value": "var ele=arguments[0]; var ndays=arguments[1]; var val='0000';
+      if ( ndays<=1 )
+        val='01';
+      else if ( ndays <=2 )
+        val='02';
+      else if ( ndays <=3 )
+        val='03';
+      else if ( ndays <=7 )
+        val='07';
+      else if ( ndays <=14 )
+        val='14';
+      else if ( ndays <=30 )
+        val='30';
+      else if ( ndays <=42 )
+        val='42';
+      else if ( ndays <=60 )
+        val='60';
+      for (var i = 0; i < ele.options.length; i++) {
+        if (ele.options[i].value == val) {
+          ele.options[i].selected = true;
+          break;
+        }
+      };"
+    },
+    {
+      "element" : "//input[@class='schb']",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//DIV[@class='job_con']",
+        }
+      ]
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@class='job_con']/table/tbody/tr",
+        "loop_type": "begin",
+        "begin_from": 1,
+        "actions": [
+          {
+            "element": "descendant::a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "descendant::a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//table[@class='job_info']",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "descendant::a",
+        },
+        "job_location": {
+          "element": "td[2]",
+        },
+        "job_post_date": {
+          "element": "td[4]"
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_category_domain": {
+            "element": "//table[@class='job_info']/descendant::td[text()='职能类别']/following-sibling::td[1]"
+          },
+          "job_description": {
+            "element": "//table[@class='job_info']/tbody/tr[last()]",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type":  "page",
+      "loop_totalpages": {
+        "element": "//input[@name='pages']",
+        "method": "getValue",
+      },
+      "actions": [
+        {
+          "element": "//input[@name='page']",
+          "cmd": "setPage",
+        },
+        {
+          "element": "//input[@name='gono']"
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//div[@class='page']"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+
