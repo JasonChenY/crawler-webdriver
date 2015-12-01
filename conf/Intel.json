@@ -50,17 +50,17 @@
       "expections" : [
         {
           "condition" : "visibilityOfElementLocated",
-          "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']",
+          "element" : "//TABLE[@id='dataTable']/descendant::INPUT[@value='China']",
         }
       ]
     },
     {
-      "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']/following-sibling::*",
+      "element" : "//TABLE[@id='dataTable']/descendant::INPUT[@value='China']/following-sibling::div",
       "cmd" : "click",
       "expections" : [
         {
-          "condition" : "elementToBeSelected",
-          "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']",
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//TABLE[@id='dataTable']/descendant::INPUT[@value='China']/following-sibling::div[contains(@class,'checkbox-checked')]",
         }
       ]
     },
@@ -96,7 +96,7 @@
                 "condition": "newWindowIsOpened",
               },
               {
-                "condition": "visibilityOfElementLocated",
+                "condition": "presenceOfElementLocated",
                 "element": "editablesection",
                 "how": "CLASS_NAME"
               }
@@ -108,7 +108,7 @@
         "job_title": {
           "element": "th/descendant::a",
         },
-        "job_location": {
+        "comment:job_location": {
           "element": "td[2]/descendant::span",
         },
         "job_post_date": {
@@ -123,10 +123,6 @@
       },
       "procedure": {
         "extracts": {
-          "job_description": {
-            "element": "editablesection",
-            "how": "CLASS_NAME"
-          },
           "job_expire_date": {
             "element": "requisitionDescriptionInterface.reqUnpostingDate.row1",
             "how": "ID",
@@ -135,6 +131,19 @@
               {
                 "how" : "dateFormat",
                 "value" : "MMM dd yyyy"
+              }
+            ]
+          },
+          "job_description": {
+            "element": "editablesection",
+            "how": "CLASS_NAME"
+          },
+          "job_location": {
+            "element": "//div[@class='editablesection']/descendant::div/h2/span[text()='Primary Location' or text()='Other Locations']/parent::h2/following-sibling::span[3]",
+            "transforms" : [
+              {
+                "how" : "join",
+                "value" : ",",
               }
             ]
           }
