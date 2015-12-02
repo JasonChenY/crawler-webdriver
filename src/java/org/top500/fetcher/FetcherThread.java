@@ -207,7 +207,7 @@ public class FetcherThread extends Thread {
             windows_stack.push(window);
 
             Actions(null, 0, _schema.actions);
-            Procedure(_schema.procedure, null);
+            Procedures(_schema.procedures, null);
         } catch ( Exception e ) {
             LOG.warn(this.getName() + ":" +"Exception: ", e);
             _schema.fetch_result = false;
@@ -446,7 +446,7 @@ public class FetcherThread extends Thread {
                         //scrolIntoView(xpath_prefix, action.element);
                         element.click();
                     } catch ( WebDriverException e ) {
-                        LOG.debug(this.getName() + ":" +"Failed to click " + dbgstr + " reach last page?");
+                        LOG.debug(this.getName() + ":" +"Failed to click " + dbgstr + " reach last page?", e);
                         return (action.isFatal ? false : true);
                     }
                     break;
@@ -942,6 +942,19 @@ public class FetcherThread extends Thread {
     private static int PROC_RESULT_FAIL = 0;
     private static int PROC_RESULT_OK = 1;
     private static int PROC_RESULT_OK_NDAYS = 2;
+    private int Procedures(List<Schema.Procedure> procedures, Job job) {
+        int ret = PROC_RESULT_OK;
+        for ( int i = 0; i < procedures.size(); i++ ) {
+            ret = Procedure(procedures.get(i), job);
+            if ( ret == PROC_RESULT_FAIL ) {
+                if ( i < procedures.size() - 1 ) {
+                    LOG.warn(this.getName() + ":" + "Procedures[" + i + "]: failed, skip the next sibling procedure");
+                }
+                break;
+            }
+        }
+        return ret;
+    }
     private int Procedure(Schema.Procedure procedure, Job job) {
         if ( procedure == null ) return PROC_RESULT_OK;
         if ( procedure.loop_type == Schema.LOOP_TYPE.BEGIN ) {
@@ -1005,7 +1018,7 @@ public class FetcherThread extends Thread {
                             break;
                         }
                     }
-                    int res = Procedure(procedure.procedure, null);
+                    int res = Procedures(procedure.procedures, null);
                     if ( (res == PROC_RESULT_OK_NDAYS) ) {
                         if ( procedure.loop_item_type == Schema.LOOP_ITEM_TYPE.PAGE ) {
                             LOG.info(this.getName() + ":" +"Fetched jobs within " + fetch_n_days + " days, reach configured limit, return");
@@ -1027,7 +1040,7 @@ public class FetcherThread extends Thread {
                     // Made page loop as optional, Mainly for Volkswagen case
                     // where maximum 2 levels of pages loop, but one of them maybe absent.
                     LOG.info(this.getName() + ":" +"Zero element found for page loop, go forward to inner procedure");
-                    Procedure(procedure.procedure, null);
+                    Procedures(procedure.procedures, null);
                 }
             } else {
                 LOG.debug(this.getName() + ":" +"Procedure: loop of BEGIN type for job list");
@@ -1060,7 +1073,7 @@ public class FetcherThread extends Thread {
                             continue;
                         }
 
-                        int res = Procedure(procedure.procedure, newjob);
+                        int res = Procedures(procedure.procedures, newjob);
                         if ( res == PROC_RESULT_FAIL ) {
                             LOG.warn(this.getName() + ":" +"Procedure for single job failed, ignore");
                             continue;
@@ -1121,7 +1134,7 @@ public class FetcherThread extends Thread {
 
             int res;
             do {
-                res = Procedure(procedure.procedure, null);
+                res = Procedures(procedure.procedures, null);
                 if ( res == PROC_RESULT_OK_NDAYS ) break;
             } while ( (++procedure.fetch_runtime_index<fetch_n_pages) && (_schema.fetch_total_jobs<fetch_n_jobs) && (result=Actions(null, 0, procedure.actions)) );
             if ( res == PROC_RESULT_OK_NDAYS ) {

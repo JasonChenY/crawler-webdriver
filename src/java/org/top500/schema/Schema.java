@@ -30,7 +30,7 @@ import java.util.StringTokenizer;
 public class Schema {
     private String name;
     public Actions actions;
-    public Procedure procedure;
+    public List<Procedure> procedures = new ArrayList<Procedure>();
     public JobUniqueIdCalc job_unique_id_calc;
 
     // fields for resuming fetcher
@@ -58,7 +58,9 @@ public class Schema {
     }
     public void print() {
         actions.print("");
-        procedure.print("");
+        for ( int i = 0; i < procedures.size(); i++ ) {
+            if ( procedures.get(i) != null ) procedures.get(i).print("");
+        }
         if ( job_unique_id_calc!= null ) {
             job_unique_id_calc.print("");
         }
@@ -68,7 +70,14 @@ public class Schema {
         JSONObject obj = (JSONObject) parser.parse(input);
         name = (String) obj.get("name");
         actions = new Actions(obj.get("actions"));
-        procedure = new Procedure(obj.get("procedure"));
+        if ( obj.get("procedure") != null ) {
+            procedures.add(new Procedure(obj.get("procedure")));
+        } else if ( obj.get("procedures") != null ) {
+            JSONArray array = (JSONArray)(obj.get("procedures"));
+            for ( int i = 0; i < array.size(); i++ ) {
+                procedures.add(new Procedure(array.get(i)));
+            }
+        }
         if ( obj.get("job_unique_id_calc") != null ) {
             job_unique_id_calc = new JobUniqueIdCalc(obj.get("job_unique_id_calc"));
         } else {
@@ -109,7 +118,7 @@ public class Schema {
 
     public void setFetchRuntimeIndex(String idxstr) {
         StringTokenizer tokenizer = new StringTokenizer(idxstr, ".");
-        Procedure proc = procedure;
+        Procedure proc = procedures.get(0);
         while (tokenizer.hasMoreTokens() && (proc!=null) ) {
             String token = tokenizer.nextToken();
             try {
@@ -118,16 +127,16 @@ public class Schema {
             } catch ( Exception e ) {
                 return;
             }
-            proc = proc.procedure;
+            proc = proc.procedures.get(0);
         }
     }
 
     public String getFetchRuntimeIndex() {
         StringBuffer buffer = new StringBuffer();
-        Procedure proc = procedure;
+        Procedure proc = procedures.get(0);
         while ( proc != null ) {
             buffer.append(proc.fetch_runtime_index);
-            proc = proc.procedure;
+            proc = proc.procedures.get(0);
             if ( proc != null ) buffer.append(".");
         }
         return buffer.toString();
@@ -501,7 +510,7 @@ public class Schema {
         public Element loop_totalpages = null;
         public Extracts extracts = null;
         public Actions actions = null;
-        public Procedure procedure = null;
+        public List<Procedure> procedures = new ArrayList<Procedure>();
         public int fetch_runtime_index = -1;
 
         public Procedure(Object o) throws Exception {
@@ -556,11 +565,16 @@ public class Schema {
                 extracts = new Extracts(obj.get("extracts"));
             }
             if ( obj.get("procedure") != null ) {
-                procedure = new Procedure(obj.get("procedure"));
+                procedures.add(new Procedure(obj.get("procedure")));
+            } else if ( obj.get("procedures") != null ) {
+                JSONArray array = (JSONArray)(obj.get("procedures"));
+                for ( int i = 0; i < array.size(); i++ ) {
+                    procedures.add(new Procedure(array.get(i)));
+                }
             }
         }
         public void print(String ident) {
-            if ( extracts == null && actions == null && procedure == null ) return;
+            if ( extracts == null && actions == null ) return;
             System.out.println(ident + "'Procedure':{");
             System.out.println(ident + "  'xpath_prefix_loop':'" + xpath_prefix_loop + "'");
             System.out.println(ident + "  'loop_type':'" + loop_type + "'");
@@ -573,7 +587,9 @@ public class Schema {
             }
             if ( extracts != null ) extracts.print(ident+"  ");
             if ( actions != null ) actions.print(ident+"  ");
-            if ( procedure != null ) procedure.print(ident+"  ");
+            for ( int i = 0; i < procedures.size(); i++ ) {
+                procedures.get(i).print(ident + "  ");
+            }
             System.out.println(ident + "}");
         }
     }

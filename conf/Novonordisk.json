@@ -1,0 +1,153 @@
+{
+  "name" : "Novonordisk",
+  "use_proxy": true,
+  "driver": "chrome",
+  "actions" :
+  [
+    {
+      "element": "http://www.novonordisk.com.cn/content/Denmark/HQ/www-novonordisk-com/en_gb/home/careers/working-at-novo-nordisk/available-jobs-results.China.External.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//td[@class='szc_third']/a[@title='Accept']",
+        }
+      ]
+    },
+    {
+      "element": "//td[@class='szc_third']/a[@title='Accept']",
+      "cmd": "click",
+      "isFatal": false,
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//table[@id='joblist-search-table']",
+        }
+      ]
+    }
+  ],
+  "procedures": [
+    {
+      "loop": {
+        "xpath_prefix": "//table[@id='joblist-search-table']/tbody/tr",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "td[1]/a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "td[1]/a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//div[@class='joblist']/div[contains(@class,'joblist-content')]",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[1]/a"
+        },
+        "job_location": {
+          "element": "td[2]"
+        },
+        "job_category_domain": {
+          "element": "td[3]"
+        },
+        "job_post_date": {
+          "element": "td[4]",
+          "method": "getAttribute",
+          "value": "data-order",
+          "transforms" : [
+            {
+              "how" : "dateFormat",
+              "value" : "yyyyMMdd"
+            }
+          ]
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@class='joblist']/div[contains(@class,'joblist-content')]"
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    {
+      "loop": {
+        "xpath_prefix": "//table[@id='joblist-search-table_1']/tbody/tr",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "td[1]/a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "td[1]/a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//div[contains(@class,'joblist-content')]",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[1]/a"
+        },
+        "job_location": {
+          "element": "td[2]"
+        },
+        "job_category_domain": {
+          "element": "td[3]"
+        },
+        "job_post_date": {
+          "element": "td[4]",
+          "method": "getAttribute",
+          "value": "data-order",
+          "transforms" : [
+            {
+              "how" : "dateFormat",
+              "value" : "yyyyMMdd"
+            }
+          ]
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[contains(@class,'joblist-content')]"
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+  ]
+}
+
