@@ -56,3 +56,4 @@ Lenovo
 Msd
 Michelin
 Microsoft
+Nokia

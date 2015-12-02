@@ -1,0 +1,148 @@
+{
+  "name" : "Nokia",
+  "use_proxy": true,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://careers.peopleclick.eu.com/careerscp/client_nokiasolutionsandnetworks/external/search.do",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "idcom.peopleclick.cp.formdata.FLD_JP_COUNTRY",
+        "how":"ID"
+      }]
+    },
+    {
+      "element": "idcom.peopleclick.cp.formdata.FLD_JP_COUNTRY",
+      "how": "ID",
+      "cmd": "selectByValue",
+      "value": "23",
+      "expections": [
+        {
+          "condition": "elementNumChanged",
+          "element": "//select[@id='idcom.peopleclick.cp.formdata.JPM_LOCATION']/option"
+        }
+      ]
+    },
+    {
+      "element" : "com.peopleclick.cp.formdata.SEARCHCRITERIA_JOBPOSTAGE",
+      "how":"ID"
+      "cmd": "executeScriptPostDate",
+      "value": "var ele=arguments[0]; var ndays=arguments[1]; var val='-1';
+      if ( ndays<=1 )
+        val='HOUR_24';
+      else if ( ndays <=2 )
+        val='DAY_2';
+      else if ( ndays <=7 )
+        val='WEEK_1';
+      else if ( ndays <=14 )
+        val='14';
+      else if ( ndays <=30 )
+        val='MONTH_1';
+      for (var i = 0; i < ele.options.length; i++) {
+        if (ele.options[i].value == val) {
+          ele.options[i].selected = true;
+          break;
+        }
+      };"
+    },
+    {
+      "element": "searchButton",
+      "how": "ID",
+      "cmd": "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//table[@id='searchResultsTable']",
+        }
+      ]
+    },
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//table[@id='searchResultsTable']/tbody/tr[@class='pc-rtg-evenRow' or @class='pc-rtg-oddRow']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "td[@class='pc-rtg-tableItem'][1]/a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "td[@class='pc-rtg-tableItem'][1]/a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//form[@name='jobDetails']",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[@class='pc-rtg-tableItem'][1]/a",
+        },
+        "job_location": {
+          "element": "td[@class='pc-rtg-tableItem'][4]",
+        },
+        "job_category_domain": {
+          "element": "td[@class='pc-rtg-tableItem'][6]",
+        },
+        "job_post_date": {
+          "element": "td[@class='pc-rtg-tableItem'][7]"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//form[@name='jobDetails']",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type":  "page",
+      "loop_totalpages": {
+        "element": "//table[@id='searchResultsHeaderTable']/descendant::span[@class='pc-rtg-tableCaption']",
+        "transforms": [{
+          "how": "executeScript",
+          "value": "var val=arguments[0];
+          var regex= /jobs (\d+) - (\d+) of (\d+)/g;
+          if( regex.exec(val) ) {
+            var start=RegExp.$1;
+            var end=RegExp.$2;
+            var total=RegExp.$3;
+            return Math.ceil(total/(end-start+1)).toString();
+          } else return '';"
+        }]
+      },
+      "actions": [
+        {
+          "element": "//span[@class='pc-rtg-pagination']/input[@class='pc-rtg-navButton' and @value=%d]",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//table[@id='searchResultsHeaderTable']/descendant::span[@class='pc-rtg-tableCaption']"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+
