@@ -1,70 +1,104 @@
 {
   "name" : "Novozymes",
   "use_proxy": true,
-  "driver": "chrome",
-  "actions" :
-  [
+  "driver": "phantomjs",
+  "actions": [
     {
       "element": "http://www.novozymes.com/en/careers/jobs/Pages/default.aspx?country=China&countryId=733&",
       "how" : "url",
       "cmd" : "load",
       "expections" : [{
-        "condition" : "presenceOfElementsLocated",
-        "element": "//DIV[@class='DotComStepStoneResults TotalHits']",
-      }],
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//div[@class='DotComStepStoneResults']",
+      }]
     },
   ],
-  "procedure": {
-    "loop": {
-      "xpath_prefix": "//DIV[@class='DotComStepStoneResultsBox' and contains(@style,'block')]",
-      "loop_type": "begin",
-      "actions": [
-        {
-          "element": "DIV[1]/A",
-          "cmd": "openInNewTab",
-          "expections" : [
+  "comment:actions" :
+  [
+    {
+      "element": "http://www.novozymes.com/en/careers/jobs/Pages/default.aspx",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//div[@class='DotComVacantSearchDropDown DotComVacantJobCountries']/select",
+      }]
+    },
+    {
+      "element" : "//div[@class='DotComVacantSearchDropDown DotComVacantJobCountries']/select",
+      "cmd": "selectByVisibleText",
+      "value": "China"
+    },
+    {
+      "element": "//div[@class='DotComVacantJobButtonSearch']",
+      "cmd": "click",
+      "expections": [{
+        "condition": "elementTextChanged",
+        "element": "//div[@class='DotComStepStoneResults TotalHits']"
+      }]
+    }
+  ],
+
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//div[@class='DotComStepStoneResults']/div[@class='DotComStepStoneResultsBox' and @style='display: block;']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "div[contains(@class,'Url')]/a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "div[contains(@class,'Url')]/a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//div[@id='text']",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "div[contains(@class,'Url')]/a"
+        },
+        "job_category_domain": {
+          "element": "div[contains(@class,'Area')]",
+          "transforms": [
             {
-              "condition": "newWindowIsOpened",
-            },
-            {
-              "condition": "visibilityOfElementLocated",
-              "element" : "ctl00_PlaceHolderMain_ctl00_ContentEditReader__ControlWrapper_RichHtmlField",
-              "how" : "ID",
+              "how" : "regex",
+              "value" : "s/Job area: //g"
             }
           ]
-        },
-      ],
-    },
-    "extracts": {
-      "job_title": {
-        "element": "DIV[1]/A",
+        }
       },
-      "job_location": {
-        "element": "DIV[4]",
-        "transforms" : [
-            {
-                "how" : "location_regex",
-                "value" : "s/City: ([^(]*).*/$1/g", 
-            }
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@id='text']",
+          },
+          "job_location": {
+            "element": "//div[@id='job-info']/descendant::label[text()='City']/parent::li",
+            "transforms": [
+              {
+                "how" : "regex",
+                "value" : "s/City//g"
+              }
+            ]
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
         ]
       },
     },
-    "procedure": {
-      "extracts": {
-        "job_description": {
-          "element" : "ctl00_PlaceHolderMain_ctl00_ContentEditReader__ControlWrapper_RichHtmlField",
-          "how" : "ID",
-        },
-        "job_url": {
-          "how": "url",
-        },
-      },
-      "actions": [
-        {
-          "cmd": "restore",
-        },
-      ]
-    },
-  }
 }
 

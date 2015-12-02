@@ -58,3 +58,4 @@ Michelin
 Microsoft
 Nokia
 Novonordisk
+Novozymes
