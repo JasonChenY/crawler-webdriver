@@ -61,3 +61,8 @@ Novonordisk
 Novozymes
 Shell
 Tencent
+#Danone
+#Oracle
+#Philips
+#Pfizer
+Apple

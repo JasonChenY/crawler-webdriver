@@ -1,0 +1,102 @@
+{
+  "name" : "Apple",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "https://jobs.apple.com/us/search",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//a[text()='Clear all filters']",
+      }]
+    },
+    {
+      "element" : "//a[text()='Clear all filters']",
+      "cmd": "click"
+    },
+    {
+      "element": "//a[text()='Location']",
+      "cmd": "click",
+      "expections": [
+        {
+          "condition": "presenceOfElementLocated",
+          "element": "//input[@id='country-CHN']"
+        }
+      ]
+    },
+    {
+      "element": "//input[@id='country-CHN']",
+      "cmd": "executeScript",
+      "value": "arguments[0].click();"
+      "expections": [
+        {
+          "condition": "elementTextChanged",
+          "element": "//span[@id='showing_jobs']"
+        }
+      ]
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//table[@id='jobs_list']/tbody/tr[@class='searchresult']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "td[@class='title']/descendant::a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "elementsNumChanged",
+                "element": "//div[@id='job_description']/descendant::div[@class='requisition']"
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "td[@class='title']/descendant::a",
+        },
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//div[@class='requisition' and contains(@style,'display: block;')]/div[@id='job']",
+          },
+          "job_location": {
+            "element": "//div[@class='requisition' and contains(@style,'display: block;')]/div[@id='job']/ul[@class='sosumi']/li[2]",
+          },
+          "job_post_date": {
+            "element": "//div[@class='requisition' and contains(@style,'display: block;')]/div[@id='job']/ul[@class='sosumi']/li[3]",
+            "transforms": [
+              {
+                "how": "regex",
+                "value": "s/(Posted: |发布日期： )([a-zA-Z]{3})\\D*(\\d{1,})\\D+(\\d{4})/$3-$2-$4/g"
+              },
+            ]
+          }
+        },
+      },
+    },
+    "loop": {
+      "loop_type": "end",
+      "actions": [
+        {
+          "element" : "//div[@id='resultsDiv']/descendant::a[@name='nextLink']",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//span[@id='showing_jobs']"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+
