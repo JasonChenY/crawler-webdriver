@@ -1,5 +1,5 @@
 北京=BEIJING
-上海=SHANGHAI,浦东新区
+上海=SHANGHAI,浦东新区,Shang Hai
 天津=TIANJIN,滨海新区
 重庆=CHONGQING
 阿克苏=AKESU

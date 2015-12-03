@@ -59,3 +59,4 @@ Microsoft
 Nokia
 Novonordisk
 Novozymes
+Shell

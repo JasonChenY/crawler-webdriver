@@ -1,0 +1,117 @@
+{
+  "name" : "Shell",
+  "use_proxy": true,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://www.shell.com/global/aboutshell/careers/professionals/job-search2.html",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//select[@name='region']",
+      }]
+    },
+    {
+      "element": "//div[@id='cookie_info']/descendant::span[@class='button']",
+      "cmd": "click"
+    },
+    {
+      "element" : "//select[@name='region']",
+      "cmd": "selectByValue",
+      "value": "Asia Pacific",
+      "expections": [
+        {
+          "condition": "elementToBeClickable",
+          "element": "//select[@name='country']"
+        }
+      ]
+    },
+    {
+      "element": "//select[@name='country']",
+      "cmd": "selectByValue",
+      "value": "China"
+    }
+    {
+      "element": "job_search_button",
+      "how": "ID",
+      "cmd": "click",
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//DIV[@class='results']/div[@class='result']",
+        }
+      ]
+    }
+  ],
+
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//DIV[@class='results']/div[@class='result']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "descendant::a[contains(text(),'opens in new window')]",
+            "cmd": "executeScript",
+            "value": "arguments[0].click();"
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//span[@id='Job Title']",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_post_date": {
+          "element": "div[@class='details']/p[1]",
+          "method": "executeScript",
+          "value": "
+          var childs=arguments[0].childNodes;
+          for (var i = 0; i < childs.length; i++) {
+             if ( childs[i].nodeType === Node.ELEMENT_NODE && childs[i].tagName==='SPAN' && childs[i].textContent==='Updated: ')
+             {
+               for ( var j = i+1; j < childs.length; j++ ) {
+                 if ( childs[j].nodeType == Node.TEXT_NODE ) {
+                   return childs[j].nodeValue;
+                 }
+               }
+             }
+          }
+          return '';
+          "
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_title": {
+            "element": "//span[@id='Job Title']"
+          },
+          "job_location": {
+            "element": "//span[@id='Work Location']",
+            "transforms": [{
+               "how": "regex",
+               "value": "s/preferred//g"
+            }]
+          },
+          "job_description": {
+            "element": "//span[@id='Company Description' or @id='Job Description' or @id='Requirements']",
+          },
+          "job_expire_date": {
+            "element": "//span[@id='Removal Date']"
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    }
+}
+

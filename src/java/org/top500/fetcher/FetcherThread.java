@@ -740,6 +740,9 @@ public class FetcherThread extends Thread {
                             case "innerHTML":
                                 value = elements.get(i).getAttribute("innerHTML");
                                 break;
+                            case "executeScript":
+                                value = (String) ((JavascriptExecutor) driver).executeScript(ele.value, elements.get(i));
+                                break;
                             case "getText":
                             default:
                                 value = elements.get(i).getText();
