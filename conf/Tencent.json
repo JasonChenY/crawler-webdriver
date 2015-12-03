@@ -1,0 +1,87 @@
+{
+  "name" : "Tencent",
+  "use_proxy": false,
+  "driver": "phantomjs",
+  "actions" :
+  [
+    {
+      "element": "http://hr.tencent.com/position.php",
+      "how" : "url",
+      "cmd" : "load",
+      "expections" : [{
+        "condition" : "visibilityOfElementLocated",
+        "element" : "//table[@class='tablelist']",
+      }]
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix": "//table[@class='tablelist']/tbody/tr[@class='odd' or @class='even']",
+        "loop_type": "begin",
+        "actions": [
+          {
+            "element": "descendant::a",
+            "cmd": "click",
+            "expections": [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "//table[contains(@class,'tablelist')]/tbody",
+              }
+            ]
+          }
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "descendant::a",
+        },
+        "job_location": {
+          "element": "td[4]",
+        },
+        "job_category_domain": {
+          "element": "td[2]",
+          "isFatal": false
+        },
+        "job_post_date": {
+          "element": "td[5]"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element": "//table[contains(@class,'tablelist')]/tbody/tr[@class='c']/td[@class='l2']",
+          }
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "begin",
+      "loop_item_type":  "page",
+      "loop_totalpages": {
+        "element": "//div[@class='pagenav']/a[last()-1]",
+      },
+      "actions": [
+        {
+          "element" : "//div[@class='pagenav']/a[text()=%d]",
+          "cmd": "click",
+          "expections": [
+            {
+              "condition": "elementTextChanged",
+              "element": "//div[@class='pagenav']/a[@class='active']"
+            }
+          ]
+        },
+      ],
+    }
+  }
+}
+

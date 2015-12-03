@@ -60,3 +60,4 @@ Nokia
 Novonordisk
 Novozymes
 Shell
+Tencent
