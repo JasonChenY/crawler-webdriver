@@ -1,8 +1,7 @@
 {
   "name" : "Lenovo",
   "use_proxy": true,
-  "driver": "chrome",
-  "comment": "phantomjs is ok, but sometimes hangs there for long time, need check behavior with proxy",
+  "driver": "phantomjs",
   "actions" :
   [
     {
@@ -11,9 +10,13 @@
       "cmd" : "load",
       "expections" : [{
         "condition" : "visibilityOfElementLocated",
-        "element" : "Advanced Job Search",
-        "how":"LINK_TEXT"
+        "element" : "//div[@class='jobsearch_in']/descendant::select[contains(@id,'ddlCountry')]",
       }]
+    },
+    {
+      "element" : "//div[@class='jobsearch_in']/descendant::select[contains(@id,'ddlCountry')]",
+      "cmd": "selectByVisibleText",
+      "value": "China"
     },
     {
       "element" : "Advanced Job Search",

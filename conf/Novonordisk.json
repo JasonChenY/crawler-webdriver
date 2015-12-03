@@ -1,7 +1,7 @@
 {
   "name" : "Novonordisk",
   "use_proxy": true,
-  "driver": "chrome",
+  "driver": "phantomjs",
   "actions" :
   [
     {
