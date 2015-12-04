@@ -162,18 +162,20 @@ public class LocationUtils {
         return result.toString();
     }
     public static String tokenize(String d) {
+        if (LOG.isDebugEnabled()) LOG.debug("before tokenize:" + d);
         StringBuilder result = new StringBuilder();
         try {
             Perl5Util plutil = new Perl5Util();
+            d = plutil.substitute("s#<BR/>#,#g", d);
             d = plutil.substitute("s/\\s*\\/\\s*/,/g", d);
-            d = plutil.substitute("s/\\s*or\\s*/,/g", d);
+            d = plutil.substitute("s/\\s+or\\s+/,/g", d);
             d = plutil.substitute("s/\\s*\\(\\s*/,/g", d);
             d = plutil.substitute("s/\\s*\\)\\s*/,/g", d);
             d = plutil.substitute("s/\\s*;\\s*/,/g", d);
             d = plutil.substitute("s/\\s*-\\s*/,/g", d);
             //d = plutil.substitute("s/\\s+/,/g", d);
         } catch ( Exception e ) {}
-
+        if (LOG.isDebugEnabled()) LOG.debug("after substitue:" + d);
         boolean first = true;
         Map<String,Object> tmpmap = new HashMap<String,Object>();
         StringTokenizer tokenizer = new StringTokenizer(d, ",");

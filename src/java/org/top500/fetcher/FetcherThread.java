@@ -318,9 +318,11 @@ public class FetcherThread extends Thread {
         // save some necessary inforamtion before action
         String currentWindowHandle = driver.getWindowHandle();
         Set<String> currentWindowHandles = driver.getWindowHandles();
+        String winHandleStr="";
         for(String handle : currentWindowHandles) {
-            LOG.debug(this.getName() + ":" +"existing window handle: " + handle);
+            winHandleStr += " > " + handle;
         }
+        LOG.debug(this.getName() + ":" + "existing windows: " + winHandleStr);
 
         // current text value or value for expected elements
         Queue<String> currentTexts =new LinkedList<String>();

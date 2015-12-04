@@ -86,17 +86,7 @@
           "job_location" : {
             "element" : "//UL[@itemprop='jobLocation']/*|//SPAN[@itemprop='jobLocation']", ,
             "how" : "XPATH",
-            "method" : "getText",
-            "transforms" : [
-              {
-                "how" : "location_regex",
-                "value" : "s/([^,]*).*/$1/g",
-              },
-              {
-                "how" : "join",
-                "value" : ",",
-              }
-            ]
+            "method" : "getText"
           }
         },
         "actions": [
