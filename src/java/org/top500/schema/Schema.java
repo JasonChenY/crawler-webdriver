@@ -118,7 +118,7 @@ public class Schema {
 
     public void setFetchRuntimeIndex(String idxstr) {
         StringTokenizer tokenizer = new StringTokenizer(idxstr, ".");
-        Procedure proc = procedures.get(0);
+        Procedure proc = procedures.size()>0?procedures.get(0):null;
         while (tokenizer.hasMoreTokens() && (proc!=null) ) {
             String token = tokenizer.nextToken();
             try {
@@ -127,16 +127,16 @@ public class Schema {
             } catch ( Exception e ) {
                 return;
             }
-            proc = proc.procedures.get(0);
+            proc = proc.procedures.size()>0?proc.procedures.get(0):null;
         }
     }
 
     public String getFetchRuntimeIndex() {
         StringBuffer buffer = new StringBuffer();
-        Procedure proc = procedures.get(0);
+        Procedure proc = procedures.size()>0?procedures.get(0):null;
         while ( proc != null ) {
             buffer.append(proc.fetch_runtime_index);
-            proc = proc.procedures.get(0);
+            proc = proc.procedures.size()>0?proc.procedures.get(0):null;
             if ( proc != null ) buffer.append(".");
         }
         return buffer.toString();
@@ -475,7 +475,7 @@ public class Schema {
                 expections.print(ident+"    ");
             else
                 System.out.println(ident + "     no expection");
-            System.out.println(ident + "    'debug:'" + debug + "'");
+            System.out.println(ident + "    'debug':" + debug);
             System.out.println(ident+"},");
         }
     }

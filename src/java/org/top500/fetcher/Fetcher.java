@@ -129,7 +129,7 @@ public class Fetcher extends RunListener {
         String date = DateUtils.getThreadLocalDateFormat().format(new Date());
         PrintWriter output = null;
         try {
-            output = new PrintWriter("fetchstatus-" + date + ".data");
+            output = new PrintWriter("/tmp/fetchstatus-" + date + ".data");
         } catch ( Exception e ) {
             LOG.warn("Failed to create output file");
             System.exit(0);
@@ -165,6 +165,7 @@ public class Fetcher extends RunListener {
                     }
 
                     Schema schema = new Schema(company+".json");
+                    if (LOG.isDebugEnabled()) schema.print();
 
                     if ( (args.length > 1) && args[1].equalsIgnoreCase("regular") ) {
                         int fetch_n_days = conf.getInt("fetch.n.days", 180);
