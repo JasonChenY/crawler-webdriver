@@ -2,6 +2,8 @@
   "name" : "Abbott",
   "use_proxy" : true,
   "driver": "chrome",
+  "limitation": "only chrome, need action to type country for filting, cant use executeScriptPostDate, not refreshed.",
+  "comment" : "check whether job exist in db already later",
   "actions" :
   [
     {
@@ -34,12 +36,6 @@
           "how" : "ID",
         },
       ],
-    },
-    {
-      "element" : "POSTING_DATE-select",
-      "how" : "ID",
-      "cmd" : "selectByVisibleText",
-      "value" : "Last 28 Days",
     },
     {
       "element" : "LOCATION-seeallolf",
@@ -85,6 +81,18 @@
         },
       ],
     },
+    {
+      "element": "//select[@id='POSTING_DATE-select']",
+      "cmd": "selectByVisibleText",
+      "value": "Last 14 Days",
+      "expections" : [
+        {
+          "condition" : "elementTextChanged",
+          "element" : "currentPageInfo",
+          "how" : "ID",
+        },
+      ],
+    }
   ],
 
   "procedure" : {
@@ -95,7 +103,12 @@
         "actions": [
           {
             "element": "DIV[@class='multiline-data-container']/descendant::A",
-            "cmd": "openInNewTab",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "DIV[@class='multiline-data-container']/descendant::A",
+            "cmd": "click",
             "expections": [
               {
                 "condition": "newWindowIsOpened",
@@ -154,15 +167,30 @@
       },
     }
     "loop": {
-      "loop_type": "end",
+      "loop_type": "begin",
+      "loop_item_type": "page",
+      "loop_totalpages": {
+        "element": "//span[@id='currentPageInfo']",
+        "transforms": [{
+          "how": "executeScript",
+          "value": "var val=arguments[0];
+          var regex= /(\d+) - (\d+) of (\d+)/g;
+          if( regex.exec(val) ) {
+            var start=RegExp.$1;
+            var end=RegExp.$2;
+            var total=RegExp.$3;
+            return Math.ceil(total/(end-start+1)).toString();
+          } else return '';"
+        }]
+      },
       "actions": [
         {
-          "element": "//SPAN[@class='pagersectionpanel']/SPAN[@class='pagerlink']/A[@id='next']",
+          "element": "//div[@id='jobPager']/descendant::ul[@class='pager']/descendant::a[text()=%d]",
           "cmd": "click",
           "expections" : [
             {
               "condition" : "elementTextChanged",
-              "element" : "//SPAN[@class='pagersectionpanel']/UL[@class='pager']/LI[@class='navigation-link-disabled']",
+              "element" : "//span[@id='currentPageInfo']",
             },
           ],
         },
