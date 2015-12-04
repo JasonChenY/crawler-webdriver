@@ -1,6 +1,7 @@
 {
   "name": "Deloitte",
-  "driver": "chrome",
+  "use_proxy": true,
+  "driver": "phantomjs",
   "actions" :
   [
     {
@@ -54,8 +55,13 @@
         "end_to" : -1,
         "actions": [
           {
-            "element": "TD[1]/A",
-            "cmd": "openInNewTab",
+            "element": "TD[@class='job-title']/A",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "TD[@class='job-title']/A",
+            "cmd": "click",
             "expections" : [
               {
                 "condition": "newWindowIsOpened",
@@ -66,7 +72,7 @@
                 "how" : "ID",
               }
             ],
-            "debug" : true,
+            "debug" : false,
           },
         ],
       },
