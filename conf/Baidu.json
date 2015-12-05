@@ -1,6 +1,6 @@
 {
   "name" : "Baidu",
-  "driver": "chrome",
+  "driver": "phantomjs",
   "actions" :
   [
     {
@@ -28,7 +28,7 @@
             "cmd": "moveToElement",
             "expections" : [
               {
-                "condition": "presenceOfElementsLocated",
+                "condition": "presenceOfElementLocated",
                 "element" : "//ul[@class='filter-container']/li[@iconclass='coordinate-icon' and contains(@class,'active')]",
               }
             ]
@@ -37,6 +37,14 @@
             {
               "condition": "elementTextChanged",
               "element": "//ul[@class='filter-container']/li[@iconclass='coordinate-icon']/label[@class='show-text active']",
+            },
+            {
+              "condition": "visibilityOfElementLocated",
+              "element": "//div[@class='job-list']/div[@class='list-body']/div[@class='list-row'][1]/div[1]/A"
+            },
+            {
+              "condition": "elementToBeClickable",
+              "element": "//div[@class='job-list']/div[@class='list-body']/div[@class='list-row'][1]/div[1]/A"
             }
           ]
         },
@@ -50,6 +58,10 @@
             "element": "//DIV[@class='pagination']/descendant::A[@class='next']",
             "cmd": "click",
             "expections": [
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "//div[@class='job-list']/div[@class='list-body']/div[@class='list-row'][1]/div[1]/A"
+              },
               {
                 "condition": "elementTextChanged",
                 "comment:element": "//DIV[@class='pagination']/descendant::A[@class='active']",
@@ -66,7 +78,7 @@
           "actions": [
             {
               "element": "div[1]/A",
-              "cmd": "openInNewTab",
+              "cmd": "click",
               "expections": [
                 {
                   "condition": "newWindowIsOpened",
@@ -85,7 +97,7 @@
             "element": "div[1]/A",
           },
           "job_location": {
-            "element": "div[3]",
+            "element": "div[3] | //ul[@class='filter-container']/li[@iconclass='coordinate-icon']/label[@class='show-text active']",
           }
         },
         "procedure": {

@@ -253,8 +253,13 @@ public class FetcherThread extends Thread {
             // Normal case, array of elements, and share same parent
             StringTokenizer tokenizer = new StringTokenizer(tgt, "|");
             while ( tokenizer.hasMoreTokens() ) {
-                String token = tokenizer.nextToken();
-                xpath += prefix + token;
+                String token = tokenizer.nextToken().trim();
+                if ( token.startsWith("//") ) {
+                    //support mix of relative and absolute elements(baidu)
+                    xpath += token;
+                } else {
+                    xpath += prefix + token;
+                }
                 if ( tokenizer.hasMoreTokens()) xpath += "|";
             }
         } else {
@@ -1035,9 +1040,13 @@ public class FetcherThread extends Thread {
                     if ( _schema.fetch_total_jobs == fetch_n_jobs ) {
                         LOG.info(this.getName() + ":" +"Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
                         break;
-                    } else if ((procedure.fetch_runtime_index-procedure.begin_from+1) >= fetch_n_pages) {
-                        LOG.info(this.getName() + ":" +"Fetched " + fetch_n_pages + " pages, reach configured limit, return");
-                        break;
+                    }
+
+                    if ( procedure.loop_item_type == Schema.LOOP_ITEM_TYPE.PAGE ) {
+                        if ((procedure.fetch_runtime_index-procedure.begin_from+1) >= fetch_n_pages) {
+                            LOG.info(this.getName() + ":" + "Fetched " + fetch_n_pages + " pages, reach configured limit, return");
+                            break;
+                        }
                     }
                 }
 
@@ -1142,6 +1151,8 @@ public class FetcherThread extends Thread {
                 res = Procedures(procedure.procedures, null);
                 if ( res == PROC_RESULT_OK_NDAYS ) break;
             } while ( (++procedure.fetch_runtime_index<fetch_n_pages) && (_schema.fetch_total_jobs<fetch_n_jobs) && (result=Actions(null, 0, procedure.actions)) );
+            // need reset the fetch_runtime_index, otherwise, if there is a outside loop, will break(Baidu).
+            procedure.fetch_runtime_index = -1;
             if ( res == PROC_RESULT_OK_NDAYS ) {
                 LOG.info(this.getName() + ":" +"Fetched jobs within configured " + fetch_n_days + " days, break");
                 return PROC_RESULT_OK;
