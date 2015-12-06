@@ -1,5 +1,7 @@
 {
   "name": "Henkel",
+  "driver": "phantomjs",
+  "check_solr": true,
   "actions" :
   [
     {
@@ -9,85 +11,76 @@
       "expections": [
         {
           "condition": "presenceOfElementLocated",
-          "element" : "joblist",
-          "how": "ID",
+          "element" : "//div[@class='results forcedHeight']",
         },
       ],
     },
     {
-      "cmd" : "switchToMainFrame",
-      "expections": [
+      "element": "//input[@class='cookies_accept']",
+      "cmd": "click"
+    }
+  ],
+  "procedure": {
+    "procedure": {
+      "loop": {
+        "xpath_prefix" : "//div[@class='results forcedHeight']/div",
+        "loop_type" : "begin",
+        "loop_item_type": "job_addon",
+        "actions": [
+          {
+            "element": "a",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "a",
+            "cmd": "click",
+            "expections" : [
+              {
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "//div[@class='standardContent']",
+              }
+            ]
+          },
+        ],
+      },
+      "extracts": {
+        "job_title": {
+          "element": "a/span[@class='linkTitle']"
+        }
+      },
+      "procedure": {
+        "extracts": {
+          "job_description": {
+            "element" : "//div[@class='standardContent']",
+          },
+          "job_url": {
+            "how": "url",
+          },
+        },
+        "actions": [
+          {
+            "cmd": "restore",
+          },
+        ]
+      },
+    },
+    "loop": {
+      "loop_type": "end",
+      "actions": [
         {
-          "condition": "presenceOfAllElementsLocated",
-          "element" : "//TABLE[@id='jobOfferList']/TBODY[@id='joblist']/TR",
+          "element": "//a[text()='加载更多']",
+          "cmd": "click",
+          "expections": [{
+            "condition": "elementsNumChanged",
+            "element": "//div[@class='results forcedHeight']/div",
+          }]
         },
       ],
     }
-  ],
-
-  "procedure": {
-    "loop": {
-      "xpath_prefix" : "//TABLE[@id='jobOfferList']/TBODY[@id='joblist']/TR",
-      "loop_type" : "begin",
-      "actions": [
-        {
-          "element": ".",
-          "cmd": "click",
-          "expections" : [
-            {
-              "condition": "newWindowIsOpened",
-            },
-            {
-              "condition": "visibilityOfElementLocated",
-              "element": "mainContent",
-              "how" : "ID",
-            }
-          ]
-        },
-      ],
-    },
-    "extracts": {
-      "job_location": {
-        "element": "TD[3]/DIV",
-        "transforms" : [
-          {
-            "how" : "location_regex",
-            "value" : "s/([^-]*).*/$1/g",
-          }
-        ]
-      },
-      "job_post_date": {
-        "element": "TD[1]/DIV",
-        "transforms" : [
-          {
-            "how" : "dateFormat",
-            "value" : "dd MM yyyy",
-          }
-        ]
-      },
-      "job_title": {
-        "element": "TD[2]/DIV"
-      }
-    },
-    "procedure": {
-      "extracts": {
-        "job_description": {
-          "element" : "//DIV[@class='detail']/FONT",
-        },
-        "job_url": {
-          "how": "url",
-        },
-      },
-      "actions": [
-        {
-          "cmd": "restore",
-        },
-      ]
-    },
   }
-  "job_unique_id_calc" : {
-    "how" : "regex_on_url",
-    "value" : "s/([^#]*).*/$1/g",
-  },
 }
 
