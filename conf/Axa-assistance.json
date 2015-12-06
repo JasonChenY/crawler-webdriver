@@ -1,6 +1,6 @@
 {
   "name" : "Axa-assistance",
-  "driver": "chrome",
+  "driver": "phantomjs",
   "actions" :
   [
     {
@@ -41,7 +41,12 @@
         "actions": [
           {
             "element": "A[1]",
-            "cmd": "openInNewTab",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "A[1]",
+            "cmd": "click",
             "expections": [
               {
                 "condition": "newWindowIsOpened",
