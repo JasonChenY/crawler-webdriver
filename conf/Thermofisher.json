@@ -1,7 +1,7 @@
 {
   "name": "Thermofisher",
   "use_proxy": true,
-  "driver": "chrome",
+  "driver": "phantomjs",
   "comment" : "stupid design: click A, back on 2nd page will revert back to 1st page, ctrl + click, orig and new page both navigate to job detail page, solution via contextclick plus Robot",
   "actions" :
   [
@@ -28,12 +28,28 @@
       "cmd": "click",
       "expections" : [
         {
-          "condition" : "presenceOfElementLocated",
+          "condition" : "visibilityOfElementLocated",
           "element" : "search-results-list",
           "how" : "ID",
         }
       ]
     },
+    {
+      "element": "//input[@class='pagination-current']",
+      "cmd": "executeScript",
+      "value": "arguments[0].value=arguments[0].getAttribute('max');"
+    },
+    {
+      "element": "//button[@class='pagination-page-jump']",
+      "cmd": "click",
+      "expections": [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "search-results-list",
+          "how" : "ID",
+        }
+      ]
+    }
   ],
 
   "procedure" : {
@@ -45,7 +61,12 @@
         "actions": [
           {
             "element": "A",
-            "cmd": "openInNewTab_ContextClick",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "A",
+            "cmd": "click",
             "expections" : [
               {
                 "condition": "newWindowIsOpened",
@@ -100,10 +121,20 @@
       },
     }
     "loop": {
-      "loop_type": "end",
+      "loop_type": "begin",
+      "loop_item_type": "page",
+      "loop_totalpages": {
+        "element": "//span[@class='pagination-total-pages']",
+        "transforms" : [
+          {
+            "how" : "regex",
+            "value" : "s/of //g",
+          }
+        ]
+      },
       "actions": [
         {
-          "element": "next",
+          "element": "prev",
           "how" : "CLASS_NAME",
           "cmd": "click",
           "expections": [{
