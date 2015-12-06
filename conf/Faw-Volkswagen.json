@@ -1,6 +1,6 @@
 {
   "name": "Faw-Volkswagen",
-  "driver": "chrome",
+  "driver": "phantomjs",
   "actions" :
   [
     {
@@ -25,7 +25,12 @@
       "actions": [
         {
           "element": "TD[1]/A",
-          "cmd": "openInNewTab",
+          "cmd": "executeScript",
+          "value": "arguments[0].setAttribute('target', '_blank');"
+        },
+        {
+          "element": "TD[1]/A",
+          "cmd": "click",
           "expections" : [
             {
               "condition": "newWindowIsOpened",
