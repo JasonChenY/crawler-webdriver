@@ -21,6 +21,7 @@ import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrDocument;
 
 public class SolrIndexWriter {
 
@@ -39,7 +40,18 @@ public class SolrIndexWriter {
 
     protected static long documentCount = 0;
 
-    public SolrIndexWriter(Configuration conf) throws Exception {
+    private static SolrIndexWriter instance = null;
+    public static SolrIndexWriter getInstance(Configuration conf) throws Exception {
+        if ( instance == null ) {
+            instance = new SolrIndexWriter(conf);
+        }
+        return instance;
+    }
+    public static SolrIndexWriter getInstance() {
+        return instance;
+    }
+
+    private SolrIndexWriter(Configuration conf) throws Exception {
         solr = SolrUtils.getHttpSolrServer(conf);
         batchSize = conf.getInt(SolrConstants.COMMIT_SIZE, 1000);
         solrMapping = SolrMappingReader.getInstance(conf);
@@ -125,6 +137,10 @@ public class SolrIndexWriter {
         } catch (SolrServerException e) {
             throw makeIOException(e);
         }
+    }
+
+    public SolrDocument getById(String id) throws SolrServerException, IOException {
+        return solr.getById(null, id, null);
     }
 
     public static IOException makeIOException(SolrServerException e) {

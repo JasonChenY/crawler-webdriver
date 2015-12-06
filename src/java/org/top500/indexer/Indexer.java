@@ -89,7 +89,7 @@ public class Indexer extends RunListener {
 
     public boolean Start(Configuration conf) {
         try {
-            writer = new SolrIndexWriter(conf);
+            writer = SolrIndexWriter.getInstance(conf);
         } catch ( Exception e ) {
             LOG.warn("Failed to create SolrIndexWriter");
             return false;

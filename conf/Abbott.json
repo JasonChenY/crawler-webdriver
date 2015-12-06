@@ -3,7 +3,7 @@
   "use_proxy" : true,
   "driver": "chrome",
   "limitation": "only chrome, need action to type country for filting, cant use executeScriptPostDate, not refreshed.",
-  "comment" : "check whether job exist in db already later",
+  "check_solr": true,
   "actions" :
   [
     {

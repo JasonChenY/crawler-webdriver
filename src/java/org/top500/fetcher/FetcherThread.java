@@ -85,6 +85,7 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.top500.indexer.SolrIndexWriter;
 
 public class FetcherThread extends Thread {
     public static final Logger LOG = LoggerFactory.getLogger(FetcherThread.class);
@@ -906,13 +907,12 @@ public class FetcherThread extends Thread {
             }
         }
 
-        newjob.addField(Job.JOB_UNIQUE_ID, DigestUtils.md5Hex(id));
+        String md5id = DigestUtils.md5Hex(id);
+        newjob.addField(Job.JOB_UNIQUE_ID, md5id);
 
         if (!newjob.getFields().containsKey(Job.JOB_POST_DATE) ) {
             LOG.info(this.getName() + ":" +"job_post_date : not configured, use current time");
             newjob.addField(Job.JOB_POST_DATE, DateUtils.getCurrentDate());
-
-            // here to check solr repository whether this item  exist already.
         }
 
         if (newjob.getFields().containsKey(Job.JOB_EXPIRE_DATE)
@@ -1113,6 +1113,19 @@ public class FetcherThread extends Thread {
                                 LOG.info(this.getName() + ":" +"Fetched " + fetch_n_jobs + " jobs, reach configured limit, return");
                             }
                             break;
+                        }
+
+                        if ( _schema.check_solr ) {
+                            // here to check solr repository whether this item  exist already.
+                            try {
+                                if (SolrIndexWriter.getInstance().getById((String) newjob.getField(Job.JOB_UNIQUE_ID)) != null) {
+                                    LOG.info(this.getName() + ":" + "job already existing in solr, continue till end of page");
+                                    hit_outdated_jobs = true;
+                                    continue;
+                                }
+                            } catch ( Exception e ) {
+                                LOG.info(this.getName() + ":" + "fail to talk to solr when check", e);
+                            }
                         }
                     }
                     if ( procedure.fetch_runtime_index == elements.size() + procedure.end_to ) {

@@ -47,6 +47,8 @@ public class Schema {
     public int fetch_n_days = -1;
     public int fetch_n_jobs = -1;
 
+    public Boolean check_solr = false;
+
     public static void main(String[] args) {
         try {
             System.out.println("new schema from " + args[0]);
@@ -101,6 +103,10 @@ public class Schema {
         }
         if ( obj.get("fetch.n.jobs") != null ) {
             fetch_n_jobs = Integer.valueOf(((Long) obj.get("fetch.n.jobs")).intValue());
+        }
+
+        if ( obj.get("check_solr") != null ) {
+            check_solr = (Boolean)obj.get("check_solr");
         }
     }
     public String getName() { return name; }

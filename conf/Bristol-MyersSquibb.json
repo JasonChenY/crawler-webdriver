@@ -1,6 +1,6 @@
 {
   "name" : "Bristol-MyersSquibb",
-  "comment" : "check whether job exist in db already later",
+  "check_solr": true,
   "use_proxy": false,
   "driver": "phantomjs",
   "actions" :
@@ -10,7 +10,7 @@
       "how" : "url",
       "cmd" : "load",
       "expections" : [{
-        "condition" : "presenceOfElementsLocated",
+        "condition" : "presenceOfElementLocated",
         "element" : "//div[@class='search-result']",
       }]
     }
