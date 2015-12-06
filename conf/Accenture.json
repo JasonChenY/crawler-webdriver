@@ -24,7 +24,12 @@
         "actions": [
           {
             "element": "descendant::a[@class='job-title']",
-            "cmd": "openInNewTab",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "descendant::a[@class='job-title']",
+            "cmd": "click",
             "expections" : [
               {
                 "condition": "newWindowIsOpened",
