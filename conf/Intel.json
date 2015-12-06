@@ -99,6 +99,10 @@
                 "condition": "presenceOfElementLocated",
                 "element": "editablesection",
                 "how": "CLASS_NAME"
+              },
+              {
+                "condition": "visibilityOfElementLocated",
+                "element": "//div[@class='editablesection']/descendant::div/h2/span[text()='Primary Location' or text()='Other Locations']/parent::h2/following-sibling::span[3]"
               }
             ]
           }

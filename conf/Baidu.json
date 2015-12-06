@@ -66,6 +66,10 @@
                 "condition": "elementTextChanged",
                 "comment:element": "//DIV[@class='pagination']/descendant::A[@class='active']",
                 "element": "//div[@class='job-list']"
+              },
+              {
+                "condition": "elementToBeClickable",
+                "element": "//div[@class='job-list']/div[@class='list-body']/div[@class='list-row'][1]/div[1]/A"
               }
             ]
           },

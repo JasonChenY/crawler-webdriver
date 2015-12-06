@@ -84,6 +84,8 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 public class FetcherThread extends Thread {
     public static final Logger LOG = LoggerFactory.getLogger(FetcherThread.class);
     public final Schema _schema;
@@ -885,28 +887,26 @@ public class FetcherThread extends Thread {
     }
     private void PostProcessJob(final Job newjob, final Schema _schema) {
         // Generate unique job id
+        String id = (String)newjob.getField(Job.JOB_URL);
         JobUniqueIdCalc calc = _schema.job_unique_id_calc;
         if (calc != null && calc.how != null) {
             if (calc.how.equals("url_plus_title")) {
-                newjob.addField(Job.JOB_UNIQUE_ID, (String)newjob.getField(Job.JOB_URL) + (String)newjob.getField(Job.JOB_TITLE));
+                id += (String)newjob.getField(Job.JOB_TITLE);
             } else if (calc.how.equals("regex_on_url")) {
                 if ( calc.value != null && !calc.value.isEmpty() ) {
                     try {
                         Perl5Util plutil = new Perl5Util();
-                        String newurl = plutil.substitute(calc.value, (String)newjob.getField(Job.JOB_URL));
-                        newjob.addField(Job.JOB_UNIQUE_ID, newurl);
+                        id = plutil.substitute(calc.value, id);
                     } catch (MalformedPerl5PatternException me) {
                         LOG.warn(this.getName() + ":" +"Failed to generate unique id for job via regex " + calc.value);
-                        newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
                     }
                 } else {
                     LOG.warn(this.getName() + ":" +"No regex to generate unique id for job");
-                    newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
                 }
             }
-        } else {
-            newjob.addField(Job.JOB_UNIQUE_ID, newjob.getField(Job.JOB_URL));
         }
+
+        newjob.addField(Job.JOB_UNIQUE_ID, DigestUtils.md5Hex(id));
 
         if (!newjob.getFields().containsKey(Job.JOB_POST_DATE) ) {
             LOG.info(this.getName() + ":" +"job_post_date : not configured, use current time");

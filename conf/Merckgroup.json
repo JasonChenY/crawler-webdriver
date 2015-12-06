@@ -34,7 +34,7 @@
     {
       "element" : "//INPUT[@name='postedindays']",
       "cmd" : "sendKeys",
-      "value" : "30",
+      "value": "14"
     },
     {
       "element" : "dlgButton_61:",
@@ -83,7 +83,7 @@
           "transforms" : [
             {
               "how" : "dateFormat",
-              "value" : "dd MM yyyy",
+              "value" : "MM dd yyyy",
             }
           ]
         }
