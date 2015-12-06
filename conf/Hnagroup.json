@@ -1,16 +1,16 @@
 {
   "name": "Hnagroup",
+  "driver": "phantomjs"
   "actions" :
   [
     {
-      "element": "http://hr.hnagroup.com/Society.aspx",
+      "element": "http://hr.hnagroup.com/shzp",
       "how": "url",
       "cmd": "load",
       "expections": [
         {
-          "condition": "presenceOfElementLocated",
-          "element" : "gv_Browse",
-          "how": "ID",
+          "condition": "visibilityOfElementLocated",
+          "element" : "//div[@class='xyzpr']/table",
         },
       ],
     },
@@ -19,11 +19,15 @@
   "procedure" : {
     "procedure": {
       "loop": {
-        "xpath_prefix" : "//TABLE[@id='gv_Browse']/TBODY/TR",
+        "xpath_prefix" : "//div[@class='xyzpr']/table/TBODY/TR",
         "loop_type" : "begin",
         "begin_from" : 1,
-        "end_to" : -1,
         "actions": [
+          {
+            "element": "TD[1]/A",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
           {
             "element": "TD[1]/A",
             "cmd": "click",
@@ -32,40 +36,37 @@
                 "condition": "newWindowIsOpened",
               },
               {
-                "condition": "presenceOfElementLocated",
-                "element": "abouttext",
-                "how" : "CLASS_NAME",
+                "condition": "visibilityOfElementLocated",
+                "element": "//div[@class='zwsqxxb']",
               }
             ]
           },
         ],
       },
       "extracts": {
-        "job_expire_date": {
-          "element": "gv_Browse_ctl02_lbl_EndTime",
-          "how": "ID",
+        "job_category_domain": {
+          "element": "td[2]/span",
+        },
+        "job_sub_company": {
+          "element": "td[3]/span"
+        },
+        "job_location": {
+          "element": "td[4]/div",
+          "method": "getAttribute",
+          "value": "tips"
         }
       },
       "procedure": {
         "extracts": {
-          "job_title": {
-            "element": "lbl_PostName",
-            "how": "ID",
-          },
-          "job_category_domain": {
-            "element": "lbl_PostType",
-            "how": "ID",
-          },
           "job_description": {
-            "element" : "//DIV[@class='abouttext']/TABLE/TBODY/TR[6]/TD[*] | //DIV[@class='abouttext']/TABLE/TBODY/TR[7]/TD[*]",
+            "element" : "//div[@class='zwsqxxb']",
           },
-          "job_location": {
-            "element": "lbl_Place",
-            "how" : "ID",
+          "job_post_date": {
+            "element": "//div[@class='zwsqxxm']/descendant::td[starts-with(text(), '发布日期')]",
             "transforms" : [
               {
-                "how" : "location_regex",
-                "value" : "s#/#,#g",
+                "how" : "regex",
+                "value" : "s/发布日期：//g",
               }
             ]
           },
@@ -81,15 +82,18 @@
       },
     }
     "loop": {
-      "loop_type": "end",
+      "loop_type": "begin",
+      "loop_item_type": "page",
+      "loop_totalpages": {
+        "element": "//div[@class='pager']/descendant::a[last()-2]",
+      },
       "actions": [
         {
-          "element" : "//TABLE[@id='gv_Browse']/TBODY/TR[last()]/TD/DIV/A[last()-1]"
+          "element" : "//div[@class='pager']/descendant::a[text()=%d]",
           "cmd": "click",
           "expections": [{
-              "condition": "elementValueChanged",
-              "element": "txtgo",
-              "how" : "ID",
+              "condition": "elementTextChanged",
+              "element": "//div[@class='xyzpr']/table/TBODY/TR[2]/TD[1]/A",
           }]
         },
       ],
