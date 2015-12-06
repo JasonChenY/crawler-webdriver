@@ -1,6 +1,6 @@
 {
   "name" : "Vanke",
-  "driver": "chrome",
+  "driver": "phantomjs",
   "actions" :
   [
     {
@@ -23,7 +23,12 @@
         "actions": [
           {
             "element": "TD[3]/A",
-            "cmd": "openInNewTab",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "TD[3]/A",
+            "cmd": "click",
             "expections" : [
               {
                 "condition": "newWindowIsOpened",
