@@ -99,12 +99,6 @@
         "job_post_date": {
           "element": "TD[6]/DIV",
           "method" : "getText",
-          "transforms" : [
-            {
-              "how" : "dateFormat",
-              "value" : "dd MM yyyy",
-            }
-          ]
         },
         "job_title": {
           "element": "TD[2]/DIV/A"

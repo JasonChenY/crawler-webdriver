@@ -466,12 +466,19 @@ public class FetcherThread extends Thread {
                     break;
                 case selectByVisibleText:
                 case selectByValue:
+                case selectByIndex:
                     LOG.debug(this.getName() + ":" +"select " + action.setvalue + " for " + dbgstr);
                     Select dropdown = new Select(element);
                     if ( action.command.code == Schema.CmdType.selectByVisibleText )
                         dropdown.selectByVisibleText(action.setvalue);
-                    else
+                    else if ( action.command.code == Schema.CmdType.selectByValue )
                         dropdown.selectByValue(action.setvalue);
+                    else {
+                        try {
+                            int optionindex = Integer.parseInt(action.setvalue);
+                            dropdown.selectByIndex(optionindex);
+                        } catch ( Exception e ) {}
+                    }
                     break;
                 case openInNewTab:
                     LOG.debug(this.getName() + ":" +"openInNewTab " + dbgstr);
@@ -981,8 +988,9 @@ public class FetcherThread extends Thread {
                 } else if ( procedure.loop_totalpages != null ) {
                     String pagecount = (String)Extract(null, 0, procedure.loop_totalpages, "pagecount");
                     if ( pagecount == null ) {
-                        LOG.warn(this.getName() + ":" +"Procedure: loop of BEGIN type, loop_totalpages defined, but failed to extract valid value");
-                        return PROC_RESULT_FAIL;
+                        LOG.warn(this.getName() + ":" +"Procedure: loop of BEGIN type, loop_totalpages defined, but failed to extract valid value, use default 1");
+                        //return PROC_RESULT_FAIL;
+                        loop_totalpages = 1;
                     } else {
                         try {
                             loop_totalpages = Integer.parseInt(pagecount);

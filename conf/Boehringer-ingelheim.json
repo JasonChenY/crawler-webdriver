@@ -1,6 +1,7 @@
 {
   "name": "Boehringer-ingelheim",
   "use_proxy": true,
+  "driver": "chrome",
   "actions" :
   [
     {
@@ -23,76 +24,157 @@
           "condition": "newWindowIsOpened",
         },
         {
-          "condition" : "presenceOfElementLocated",
-          "element" : "contentlist",
-          "how" : "CLASS_NAME",
-        },
-        {
-          "comment:condition" : "presenceOfElementLocated",
-          "comment:element" : "pDateL",
-          "comment:how" : "ID",
-        },
+          "condition" : "visibilityOfElementLocated",
+          "element" : "POSTING_DATE-select",
+          "how" : "ID",
+        }
       ],
       "debug":false,
     },
     {
-      "element" : "pDateL",
+      "element" : "LOCATION-seeallolf",
       "how" : "ID",
-      "comment:cmd" : "selectByValue",
-      "value" : "31",
-    },
-    {
-      "element" : "srcsubmit",
-      "how" : "ID",
-      "comment:cmd" : "click",
+      "cmd" : "click",
       "expections" : [
         {
-          "condition" : "presenceOfElementLocated",
-          "element" : "contentlist",
-          "how" : "CLASS_NAME",
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//DIV[@id='dataTable_filter']/LABEL/SPAN/INPUT",
         }
       ]
-    }
+    },
+    {
+      "element" : "//DIV[@id='dataTable_filter']/LABEL/SPAN/INPUT",
+      "cmd" : "sendKeys",
+      "value" : "China"
+      "expections" : [
+        {
+          "condition" : "visibilityOfElementLocated",
+          "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']",
+        }
+      ]
+    },
+    {
+      "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']/following-sibling::*",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "elementToBeSelected",
+          "element" : "//TABLE[@id='dataTable']/TBODY/TR/TD[1]/DIV/LABEL/INPUT[@value='China']",
+        }
+      ]
+    },
+    {
+      "element" : "addAction",
+      "how" : "ID",
+      "cmd" : "click",
+      "expections" : [
+        {
+          "condition" : "elementTextChanged",
+          "element" : "currentPageInfo",
+          "how" : "ID",
+        },
+      ],
+    },
+    {
+      "element": "//select[@id='POSTING_DATE-select']",
+      "cmd": "selectByVisibleText",
+      "value": "Last 28 Days",
+      "expections" : [
+        {
+          "condition" : "elementTextChanged",
+          "element" : "currentPageInfo",
+          "how" : "ID",
+        },
+      ],
+    },
+    {
+      "element": "//select[@id='JOB_LOCALE-select']",
+      "cmd": "selectByIndex",
+      "value": "0",
+      "expections": [
+        {
+        "condition" : "presenceOfAllElementsLocatedBy",
+        "element" : "//TABLE[@id='jobs']/TBODY/TR",
+      }]
+    },
+    {
+      "element": "//select[@id='sortBySelect']",
+      "cmd": "selectByValue",
+      "value": "POSTING_DATE",
+      "expections" : [{
+        "condition" : "presenceOfAllElementsLocatedBy",
+        "element" : "//TABLE[@id='jobs']/TBODY/TR",
+      }],
+    },
   ],
-
-  "procedure" : {
+"procedure": {
+  "loop": {
+    "loop_type": "begin",
+    "loop_item_type": "other",
+    "xpath_prefix": "//select[@id='JOB_LOCALE-select']/option",
+    "actions": [
+      {
+        "element": ".",
+        "cmd": "click",
+        "expections": [
+          {
+            "condition" : "presenceOfAllElementsLocatedBy",
+            "element" : "//TABLE[@id='jobs']/TBODY/TR",
+          },
+        ],
+      },
+    ],
+  },
+  "procedure": {
     "procedure": {
       "loop": {
-        "xpath_prefix": "//TABLE[@class='contentlist']/TBODY/TR",
+        "xpath_prefix": "//TABLE[@id='jobs']/TBODY/TR",
         "loop_type": "begin",
-        "begin_from" : 0,
-        "end_to" : -1,
+        "begin_from": 0,
         "actions": [
           {
-            "element": "descendant::A[@title='View this job description']",
-            "comment:cmd": "openInNewTab",
-            "cmd": "click",
+            "element": "td[2]/descendant::A",
+            "cmd": "executeScript",
+            "value": "arguments[0].setAttribute('target', '_blank');"
+          },
+          {
+            "element": "td[2]/descendant::A",
+            "cmd": "executeScript",
+            "value": "arguments[0].click();"
             "expections": [
               {
-                "comment:condition": "newWindowIsOpened",
+                "condition": "newWindowIsOpened",
+              },
+              {
+                "condition": "presenceOfElementLocated",
+                "element": "editablesection",
+                "how": "CLASS_NAME",
               },
               {
                 "condition": "visibilityOfElementLocated",
                 "element": "editablesection",
-                "how" :"CLASS_NAME",
-              }],
-            "debug" : false,
+                "how": "CLASS_NAME",
+              }
+            ],
+            "debug": false,
           },
         ],
       },
       "extracts": {
         "job_location": {
-          "element": "descendant::DIV[@class='morelocation']",
-          "transforms" : [
-            {
-              "comment:how" : "location_regex",
-              "comment:value" : "s/([^\\s]*)\\s+(.*)/$2/g",
-              "how" : "tokenize",
-            }
-          ]
+          "element": "td[3]",
         },
         "job_title": {
-          "element": "descendant::A[@title='View this job description']"
+          "element": "td[2]/descendant::A"
+        },
+        "job_post_date": {
+          "element": "td[4]",
+          "transforms": [
+            {
+              "how": "dateFormat",
+              "value": "MMM dd yyyy",
+            }
+          ]
         }
       },
       "procedure": {
@@ -100,59 +182,35 @@
           "job_description": {
             "element": "editablesection",
             "how": "CLASS_NAME",
-          },
-          "job_url": {
-            "comment:how": "url",
-            "element": "requisitionDescriptionInterface.reqContestNumberValue.row1",
-            "how" : "ID",
-            "method" : "getText",
-            "transforms" : [
-              {
-                "how" : "insertBefore",
-                "value" : "https://tas-boehringer.taleo.net/careersection/global+template+career+section+28external29/jobdetail.ftl?job="
-              },
-            ],
-          },
+          }
         },
         "actions": [
           {
-            "comment:cmd": "restore",
-            "element": "//A[text()='Back to prior page']",
-            "cmd": "click",
-            "expections" : [
-              {
-                "condition" : "presenceOfElementLocated",
-                "element" : "contentlist",
-                "how" : "CLASS_NAME",
-              },],
+            "cmd": "restore",
           },
         ]
       },
     }
     "loop": {
-      "comment:xpath_prefix": "//SPAN[@class='pagerlink']",
-      "comment:loop_type": "begin",
-      "comment:loop_item_type" : "page",
-      "loop_type":"end",
+      "loop_type": "begin",
+      "loop_item_type": "page",
+      "loop_totalpages": {
+        "element": "//div[@id='jobPager']/descendant::ul[@class='pager']/li[last()]/a",
+      },
       "actions": [
         {
-          "element": "//A[@title='Go to the next page']",
+          "element": "//div[@id='jobPager']/descendant::ul[@class='pager']/descendant::a[text()=%d]",
           "cmd": "click",
-          "expections" : [
+          "expections": [
             {
-              "condition" : "elementTextChanged",
-              "comment:element" : "//SPAN[@class='pagerlink'][count(*)=0]",
-              "element" : "//SPAN[@class='pagerlinkselected']"
-            },
-            {
-              "condition" : "presenceOfElementLocated",
-              "element" : "contentlist",
-              "how" : "CLASS_NAME",
+              "condition": "elementTextChanged",
+              "element": "//span[@id='currentPageInfo']",
             },
           ],
         },
       ],
     }
   },
+}
 }
 

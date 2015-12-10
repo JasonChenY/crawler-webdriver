@@ -345,7 +345,7 @@ public class Schema {
     }
 
     public enum CmdType {None, Load, Set, Click, Submit, Back, Forward, Refresh, Restore,
-                         ScrollIntoView, selectByVisibleText, selectByValue, zoom,
+                         ScrollIntoView, selectByVisibleText, selectByIndex, selectByValue, zoom,
                          openInNewTab, sendKeys, switchToMainFrame, setPage, openInNewTab_ContextClick,
                          executeScript, moveToElement, executeScriptPostDate};
     public class Command {
@@ -394,6 +394,9 @@ public class Schema {
                             break;
                         case "selectByValue":
                             code = CmdType.selectByValue;
+                            break;
+                        case "selectByIndex":
+                            code = CmdType.selectByIndex;
                             break;
                         case "zoom":
                             code = CmdType.zoom;
