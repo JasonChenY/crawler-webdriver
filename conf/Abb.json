@@ -45,7 +45,8 @@
         "actions": [
           {
             "element": "TD[1]/A",
-            "cmd": "click",
+            "cmd": "executeScript",
+            "value": "arguments[0].click();",
             "expections": [
                  {
                      "condition": "newWindowIsOpened",
@@ -55,7 +56,7 @@
                      "element": "//DIV[@class='joSectionHeader' or @class='joSection']",
                  }
             ],
-            "debug" : true,
+            "debug" : false,
           },
         ],
       },
@@ -89,26 +90,22 @@
       },
     }
     "loop": {
-      "loop_type": "end",
+      "loop_type": "begin",
+      "loop_item_type": "page",
+      "loop_totalpages": {
+        "element": "//DIV[@class='jobOfferTable']/descendant::div[@class='abbPagPages']/descendant::a[last()]",
+      },
       "actions": [
         {
-          "comment:element" : "//DIV[@class='jobOfferTable']/DIV[@class='abbPagContainer']/DIV[@class='abbPagLinks']/A[@class='abbPagNext']",
-          "element" : "abbPagContainer",
-          "how":"CLASS_NAME",
-          "cmd":"ScrollIntoView",
-          "expections" : [{
-             "condition" : "elementToBeClickable",
-             "element" : "//DIV[@class='abbPagLinks']/A[@class='abbPagNext']",
-          }]
-        },
-        {
-          "element": "//DIV[@class='abbPagLinks']/A[@class='abbPagNext']",
-          "cmd": "click",
-          "expections": [{
-            "condition": "presenceOfElementLocated",
-            "element": "jobOffers",
-            "how":"ID",
-          }]
+          "element": "//DIV[@class='jobOfferTable']/descendant::div[@class='abbPagPages']/descendant::a[text()=%d]",
+          "cmd": "executeScript",
+          "value": "arguments[0].click();",
+          "expections": [
+            {
+              "condition": "elementInnerHTMLChanged",
+              "element": "//TABLE[@id='jobOffers']/TBODY/TR[1]",
+            }
+          ]
         },
       ],
     }
