@@ -12,7 +12,7 @@
           "element" : "//SELECT[@data-placeholder='Country']/OPTION[@value='CN']",
         },
       ],
-      "debug" : true
+      "debug" : false
     },
     {
       "element" : "//SELECT[@data-placeholder='Country']",
@@ -28,7 +28,7 @@
           "element": "//TABLE[@id='jobOffers']/TBODY/TR",
         },
       ],
-      "debug":true
+      "debug":false
     },
     {
       "element" : "jobOffers",
