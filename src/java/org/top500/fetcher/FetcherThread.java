@@ -179,8 +179,11 @@ public class FetcherThread extends Thread {
             String subdir = Long.toString(Thread.currentThread().getId());
             driver = WebDriverService.getWebDriver(driver_type, driver_download_directory + "/" + subdir, use_proxy?proxy_server:null);
             wait = new WebDriverWait(driver, driver_wait);
-
-            fetch();
+            if ( _schema.schemaType == Schema.SchemaType.fetch ) {
+                fetch();
+            } else {
+                verify();
+            }
 
             //Thread.sleep(1000);
         } catch (Throwable t) {
@@ -216,6 +219,37 @@ public class FetcherThread extends Thread {
             _schema.fetch_result = false;
         }
         //Thread.sleep(5000);
+    }
+
+    private void verify() throws Exception {
+        try {
+            String window = driver.getWindowHandle();
+            LOG.debug(this.getName() + ":" +" verify Inital window handle: " + window);
+            windows_stack.push(window);
+
+            for ( int i = 0; i < _joblist.count(); i++ ) {
+                Job job = _joblist.get(i);
+                if ( job.getFields().containsKey(Job.JOB_EXPIRE_DATE)
+                    && DateUtils.nDaysAgo((Date)job.getField(Job.JOB_EXPIRE_DATE), 1) ) {
+                        job.addField(Job.JOB_EXPIRED, true);
+                        LOG.debug(this.getName() + ": " + "job expired via job_expire_date");
+                        continue;
+                }
+                _schema.actions.actions.get(0).element.element = (String)job.getField(Job.JOB_URL);
+                if ( !Actions(null, 0, _schema.actions) ) {
+                    LOG.warn("Actions for " + job.getField(Job.JOB_URL) + " failed, expired or network unreable???");
+                    job.addField(Job.JOB_EXPIRED, true);
+                    continue;
+                }
+                int result = Procedures(_schema.procedures, job);
+                if ( result != PROC_RESULT_OK && result != PROC_RESULT_OK_NDAYS ) {
+                    job.addField(Job.JOB_EXPIRED, true);
+                }
+            }
+        } catch ( Exception e ) {
+            LOG.warn(this.getName() + ":" +"Exception: ", e);
+            _schema.fetch_result = false;
+        }
     }
 
     ////////////////////////driver part///////////////////////

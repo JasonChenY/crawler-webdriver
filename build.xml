@@ -11,6 +11,7 @@
  <property name="maven-repository-id" value="apache.releases.https" />
  <property name="crawler" value="${build.dir}/${artifactId}-${version}.jar" />
  <property name="crawler-server" value="${build.dir}/crawler-server-${version}.jar" />
+ <property name="verifier" value="${build.dir}/verifier-${version}.jar" />
 
  <path id="classpath">
   <pathelement location="${build.classes}" />
@@ -103,7 +104,28 @@
    </manifest>
   </jar>
  </target>
- <target name="build" depends="init, resolve-default, compile, crawler, crawler-server">
+
+ <target name="verifier" depends="compile" description="make jar file" >
+  <pathconvert property="libs" pathsep=" ">
+    <mapper>
+     <chainedmapper>
+      <flattenmapper />
+      <globmapper from="*" to="lib/*" />
+     </chainedmapper>
+    </mapper>
+    <fileset dir="${build.lib.dir}">
+     <include name="*.jar" />
+    </fileset>
+  </pathconvert>
+  <jar jarfile="${verifier}" basedir="${build.classes}">
+    <manifest>
+      <attribute name="Main-Class" value="org.top500.verifier.Verifier" />
+      <attribute name="Class-Path" value="conf/ ${libs}"></attribute>
+    </manifest>
+  </jar>
+ </target>
+
+ <target name="build" depends="init, resolve-default, compile, crawler, crawler-server, verifier">
      <copy todir="${build.conf}">
          <fileset dir="${conf.dir}" includes="*" />
      </copy>

@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.HashMap;
 import java.lang.StringBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.top500.fetcher.Job;
+import org.top500.fetcher.Joblist;
 import org.top500.utils.DateUtils;
 import org.top500.utils.StringUtils;
 import org.top500.utils.Configuration;
@@ -21,7 +23,10 @@ import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrDocument;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.SolrQuery;
 
 public class SolrIndexWriter {
 
@@ -125,7 +130,33 @@ public class SolrIndexWriter {
     }
 
     public void update(Job job) throws IOException {
-        write(job);
+        final SolrInputDocument inputDoc = new SolrInputDocument();
+        HashMap<String, Object> oper = new HashMap<String, Object>();
+        oper.put("set", true);
+
+        String key = Job.JOB_UNIQUE_ID;
+        Object val = job.getField(key);
+        inputDoc.addField(solrMapping.mapKey(key), val);
+        String sCopy = solrMapping.mapCopyKey(key);
+        if (sCopy != key) {
+            inputDoc.addField(sCopy, val);
+        }
+
+        key = Job.JOB_EXPIRED;
+        inputDoc.addField(key, oper);
+
+        inputDocs.add(inputDoc);
+        documentCount++;
+        if (inputDocs.size() >= batchSize) {
+            try {
+                LOG.info("Adding " + Integer.toString(inputDocs.size()) + " documents");
+                solr.add(inputDocs);
+                if ( (documentCount%100) == 0 ) commit();
+            } catch (final SolrServerException e) {
+                throw new IOException(e);
+            }
+            inputDocs.clear();
+        }
     }
 
     public void commit() throws IOException {
@@ -141,6 +172,26 @@ public class SolrIndexWriter {
 
     public SolrDocument getById(String id) throws SolrServerException, IOException {
         return solr.getById(null, id, null);
+    }
+
+    public Joblist query(SolrQuery query) {
+        LOG.debug("reach query");
+        Joblist jobs = new Joblist();
+        try {
+            QueryResponse rsp = solr.query(query);
+            SolrDocumentList hits = rsp.getResults();
+
+            for (SolrDocument doc : hits) {
+                Job job = new Job();
+                for (String fieldName : doc.getFieldNames()) {
+                    job.addField(fieldName, doc.getFieldValue(fieldName));
+                }
+                jobs.addJob(job);
+            }
+        } catch (Exception e ) {
+            LOG.warn("Failed to get jobs with SolrQuery", e);
+        }
+        return jobs;
     }
 
     public static IOException makeIOException(SolrServerException e) {

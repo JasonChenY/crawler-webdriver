@@ -355,6 +355,19 @@ public class DateUtils {
             return false;
         }
     }
+    public static boolean nDaysAgo(Date date, int days) {
+        if ( date == null ) return false;
+        if ( days == Integer.MAX_VALUE ) return false;
+        try {
+            long prev = date.getTime();
+            if ((System.currentTimeMillis() - prev) > days * 24 * 60 * 60 * 1000L)
+                return true;
+            else
+                return false;
+        } catch ( Exception e ) {
+            return false;
+        }
+    }
     public static int nDaysDelta(String date) {
         try {
             long prev = getThreadLocalDateFormat().parse(date).getTime();

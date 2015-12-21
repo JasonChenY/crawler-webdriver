@@ -70,7 +70,13 @@ public class Indexer extends RunListener {
                 /* Now to indexing in backgroupd */
                 try {
                     for (Job job : joblist.getJobs()) {
-                        writer.write(job);
+                        if ( job.getFields().containsKey(Job.JOB_EXPIRED)
+                                && ((boolean)job.getField(Job.JOB_EXPIRED)) ) {
+                            // if job contains job_expired and set to true, should be an updating
+                            writer.update(job);
+                        } else {
+                            writer.write(job);
+                        }
                     }
                     joblist.clear();
                 } catch ( Exception e ) {

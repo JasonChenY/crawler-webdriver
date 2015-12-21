@@ -49,6 +49,15 @@ public class Schema {
 
     public Boolean check_solr = false;
 
+    public SchemaType schemaType = SchemaType.fetch;
+
+    public static enum SchemaType {
+        fetch,
+        verify;
+        private SchemaType() {
+        }
+    }
+
     public static void main(String[] args) {
         try {
             System.out.println("new schema from " + args[0]);
@@ -475,6 +484,7 @@ public class Schema {
                 isFatal = (Boolean)obj.get("isFatal");
             }
         }
+        public void initElement() {element = new Element("", "");}
         public void print(String ident) {
             System.out.println(ident+"{");
             if ( element != null ) element.print(ident+"    ");
