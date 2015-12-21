@@ -126,29 +126,54 @@ public class Verifier extends RunListener {
         }
     }
 
-    public SolrQuery getQuery(int start, int rows) {
-        if ( query == null ) {
-            query = new SolrQuery("*:*");
+    private void initQuery() {
+        query = new SolrQuery("*:*");
 
-            query.addSort(Job.JOB_POST_DATE, ORDER.asc);
-            query.addField(Job.JOB_UNIQUE_ID);
-            query.addField(Job.JOB_URL);
-            query.addField(Job.JOB_COMPANY);
-            query.addField(Job.JOB_EXPIRE_DATE);
+        query.addSort(Job.JOB_POST_DATE, ORDER.asc);
+        query.addField(Job.JOB_UNIQUE_ID);
+        query.addField(Job.JOB_URL);
+        query.addField(Job.JOB_COMPANY);
+        query.addField(Job.JOB_EXPIRE_DATE);
 
-            query.setStart(start);
-            query.setRows(rows);
+        query.setStart(conf.getInt("verify.query.start", 0));
+        query.setRows(conf.getInt("verify.query.rows", 200));
 
-            query.addFilterQuery(Job.JOB_EXPIRED + ":false");
-        } else {
-            query.setStart(start);
+        query.addFilterQuery(Job.JOB_EXPIRED + ":false");
+    }
+    public void setNextQuery() {
+        query.setStart(query.getStart() + query.getRows());
+    }
+    public void setQueryCompany(String[] companies) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(Job.JOB_COMPANY);
+        sb.append(":(");
+        boolean first = true;
+        for ( int i = 0; i < companies.length; i++ ) {
+            String displayName = CompanyUtils.getDisplayName(companies[i]);
+            if (!displayName.equals("unknown")) {
+                if ( first ) {
+                    first = false;
+                } else {
+                    sb.append(" OR ");
+                }
+                sb.append("\"");
+                sb.append(displayName);
+                sb.append("\"");
+            } else {
+                LOG.warn("unknown QueryCompany" + companies[i]);
+            }
         }
-        return query;
+        sb.append(")");
+        if ( !first ) {
+            query.addFilterQuery(sb.toString());
+            LOG.debug(sb.toString());
+        }
     }
 
     public Verifier(String dir, Configuration conf) {
         this.conf = conf;
         initSchemas(dir);
+        initQuery();
     }
 
     public void verify(final RunNotifier notifier) throws Exception {
@@ -156,10 +181,7 @@ public class Verifier extends RunListener {
             public void run() {}
         });
 
-        int start = conf.getInt("verify.query.start", 0);
-        int rows = conf.getInt("verify.query.rows", 200);
         while ( true ) {
-            SolrQuery query = getQuery(start, rows);
             Joblist joblist = null;
             try {
                 joblist = SolrIndexWriter.getInstance(conf).query(query);
@@ -171,7 +193,7 @@ public class Verifier extends RunListener {
                 LOG.info("Verifying finished");
                 break;
             } else {
-                LOG.info("Verifying (start:" + start + "), rows(" + rows + ")jobs");
+                LOG.info("Verifying (start:" + query.getStart() + ") jobs");
             }
 
             Iterator<Job> iter = joblist.getJobs().iterator();
@@ -212,7 +234,7 @@ public class Verifier extends RunListener {
                 lock.wait();
             }
 
-            start += rows;
+            setNextQuery();
         }
 
         try {
@@ -267,6 +289,11 @@ public class Verifier extends RunListener {
         //Start Verifier
         try {
             Verifier verifier = new Verifier("conf", conf);
+            if ( args.length >= 1 ) {
+                LOG.debug("Verify jobs for specified companies");
+                verifier.setQueryCompany(args);
+            }
+
             RunNotifier notifier = new RunNotifier();
             notifier.addListener(verifier);
             notifier.addListener(indexer);
