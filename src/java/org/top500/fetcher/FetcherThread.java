@@ -103,6 +103,7 @@ public class FetcherThread extends Thread {
     private int driver_wait;
     private Boolean use_proxy = false;
     private String proxy_server = null;
+    private Boolean proxy_unavailable = false;
 
     private WebDriverService.DRIVER_TYPE driver_type = WebDriverService.DRIVER_TYPE.LOCAL_PHANTOMJS;
 
@@ -129,8 +130,9 @@ public class FetcherThread extends Thread {
             use_proxy = schema.use_proxy;
         }
         if ( (proxy_server == null || proxy_server.isEmpty()) && use_proxy ) {
-            LOG.warn(this.getName() + ":" +"no valid proxy specified");
+            LOG.warn(this.getName() + ":" +"no valid proxy specified, continue for fetch, but abort for verifier");
             use_proxy = false;
+            proxy_unavailable = true;
         }
 
         if ( schema.driver.equalsIgnoreCase("chrome") ) {
@@ -182,7 +184,9 @@ public class FetcherThread extends Thread {
             if ( _schema.schemaType == Schema.SchemaType.fetch ) {
                 fetch();
             } else {
-                verify();
+                if ( !proxy_unavailable ) {
+                    verify();
+                }
             }
 
             //Thread.sleep(1000);

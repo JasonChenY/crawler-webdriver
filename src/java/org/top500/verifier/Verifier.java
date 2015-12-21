@@ -42,6 +42,7 @@ public class Verifier extends RunListener {
     SolrQuery query = null;
     private final Object lock = new Object();
     int runningFetcherThread = 0;
+    int invalidated_total = 0;
 
     public Schema polishSchema(Schema schema) {
         // to use inner most procedure as the Procedure
@@ -139,9 +140,11 @@ public class Verifier extends RunListener {
         query.setRows(conf.getInt("verify.query.rows", 200));
 
         query.addFilterQuery(Job.JOB_EXPIRED + ":false");
+        query.addFilterQuery(Job.JOB_POST_DATE + ":[* TO " + DateUtils.getNDaysAgoDate(conf.getInt("verify.n.days", 15)) + "]");
     }
     public void setNextQuery() {
-        query.setStart(query.getStart() + query.getRows());
+        query.setStart(query.getStart() + query.getRows() - invalidated_total);
+        invalidated_total = 0;
     }
     public void setQueryCompany(String[] companies) {
         StringBuilder sb = new StringBuilder();
@@ -264,8 +267,15 @@ public class Verifier extends RunListener {
         if ( invalidated == scanned ) {
             LOG.warn(thread.getName() + ": all jobs invalidated???, hold on cross check network");
             joblist.clear();
+            invalidated = 0;
         }
 
+        // consider delta in next batch's query.
+        // problem new 'expired' job might not be synced to solr yet
+        // if adjust the 'start-=invalidated_total' in query, there might be some duplicate entries,
+        // but worst case(most jobs expired) at most 50 entries duplicated, because index will commit for every 50 jobs.
+        // perfect solution is to query next batch until sync finished.
+        invalidated_total += invalidated;
         runningFetcherThread--;
 
         if ( runningFetcherThread == 0 ) {

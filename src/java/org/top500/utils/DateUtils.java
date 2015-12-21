@@ -341,6 +341,16 @@ public class DateUtils {
         
         return getThreadLocalDateFormat().format(today);
     }
+    public static String getNDaysAgoDate(int ndays) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -ndays);
+        calendar.clear(Calendar.MINUTE);
+        calendar.clear(Calendar.SECOND);
+        calendar.clear(Calendar.MILLISECOND);
+        Date ndaysago =  calendar.getTime();
+
+        return getThreadLocalDateFormat().format(ndaysago);
+    }
     public static boolean nDaysAgo(String date, int days) {
         /* Assuming date in "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" format because we generating it with this format */
         if ( date == null ) return false;
