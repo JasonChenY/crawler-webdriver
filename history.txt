@@ -3,3 +3,10 @@ ABB: CookieConsentBtn removed.
 Nike: Adding Proxy function (need access google CDN), delay 5 seconds before click country selection.
 Boehringer-ingelheim: Big, totally different: pDateL removed, cant select jobs via date; new website cannt openInNewTab
 Abbott: job_title A anchor tag changed.
+
+todo:
+
+1. apple use ElementsNumChanged to check a page is loaded, which will cause problem for verifier.
+2. check why solr will receive page request with incorrect 'start, rows'.
+3. improve verifier, is it possible to save jobs for company , where in one batch all jobs are invalidated,
+then recheck this in next batch, if any job is passed, then add all those jobs as invalidated.

@@ -43,6 +43,10 @@ public class Verifier extends RunListener {
     private final Object lock = new Object();
     int runningFetcherThread = 0;
     int invalidated_total = 0;
+    //following variables are for reverifying invalidated jobs.
+    Joblist verifyJoblist = new Joblist();
+    int max_verifyTimes = 3;
+    int verifyTimes = 0;
 
     public Schema polishSchema(Schema schema) {
         // to use inner most procedure as the Procedure
@@ -70,13 +74,29 @@ public class Verifier extends RunListener {
 
                 // hack last actions' expection
                 if ( action.expections != null ) {
-                    for (int i = 0; i < action.expections.expections.size(); i++ ) {
-                        if ( action.expections.expections.get(i).condition.equals("newWindowIsOpened")
-                           ||action.expections.expections.get(i).condition.equals("newWindowIsOpenedBackground") ) {
-                            action.expections.expections.remove(i);
-                            break;
+                    Iterator<Schema.Expection> iter = action.expections.expections.iterator();
+                    while(iter.hasNext()) {
+                        Schema.Expection expectation = iter.next();
+                        switch (expectation.condition) {
+                            case "newWindowIsOpened":
+                            case "newWindowIsOpenedBackground":
+                            case "elementsNumChanged":
+                                iter.remove();
+                                break;
                         }
                     }
+/*
+                    for (int i = 0; i < action.expections.expections.size(); i++ ) {
+                        String condition = action.expections.expections.get(i).condition;
+                        switch ( condition ) {
+                            case "newWindowIsOpened":
+                            case "newWindowIsOpenedBackground":
+                            case "elementsNumChanged":
+                                action.expections.expections.remove(i);
+                                break;
+                        }
+                    }
+*/
                 }
                 // hook new action into schema
                 schema.actions.actions.clear();
@@ -177,8 +197,50 @@ public class Verifier extends RunListener {
         this.conf = conf;
         initSchemas(dir);
         initQuery();
+        max_verifyTimes = conf.getInt("verify.max_verifyTimes", 3)-1;
     }
 
+    private void verifyBatch(Joblist joblist, FetcherPool fetcherPool, final RunNotifier notifier ) throws Exception {
+        Iterator<Job> iter = joblist.getJobs().iterator();
+        while(iter.hasNext()){
+            Job job = iter.next();
+
+            String companyName = (String)job.getField(Job.JOB_COMPANY);
+            Schema schema = schemas.get(companyName);
+            if ( schema == null ) {
+                LOG.warn("Unknow company:" + companyName + ", skipped");
+                iter.remove();
+                continue;
+            }
+            final FetcherThread thread = new FetcherThread(schema.getName(), schema);
+            thread.getJoblist().addJob(job);
+            iter.remove();
+
+            if ( !schema.verify_single ) {
+                while (iter.hasNext()) {
+                    Job jobtmp = iter.next();
+
+                    if (((String) jobtmp.getField(Job.JOB_COMPANY)).equals(companyName)) {
+                        thread.getJoblist().addJob(jobtmp);
+                        iter.remove();
+                    }
+                }
+            }
+
+            fetcherPool.execute(new Runnable() {
+                @Override
+                public void run() {
+                    thread.run(notifier);
+                }
+            });
+            runningFetcherThread++;
+            iter = joblist.getJobs().iterator();
+        }
+
+        synchronized (lock) {
+            lock.wait();
+        }
+    }
     public void verify(final RunNotifier notifier) throws Exception {
         FetcherPool fetcherPool = new FetcherPool(conf.getInt("verify.thread.size", 1), new Runnable() {
             public void run() {}
@@ -199,45 +261,30 @@ public class Verifier extends RunListener {
                 LOG.info("Verifying (start:" + query.getStart() + ") jobs");
             }
 
-            Iterator<Job> iter = joblist.getJobs().iterator();
-            while(iter.hasNext()){
-                Job job = iter.next();
-
-                String companyName = (String)job.getField(Job.JOB_COMPANY);
-                Schema schema = schemas.get(companyName);
-                if ( schema == null ) {
-                    LOG.warn("Unknow company:" + companyName + ", skipped");
-                    iter.remove();
-                    continue;
-                }
-                final FetcherThread thread = new FetcherThread(schema.getName(), schema);
-                thread.getJoblist().addJob(job);
-                iter.remove();
-
-                while (iter.hasNext()) {
-                    Job jobtmp = iter.next();
-
-                    if ( ((String)jobtmp.getField(Job.JOB_COMPANY)).equals(companyName) ) {
-                        thread.getJoblist().addJob(jobtmp);
-                        iter.remove();
-                    }
-                }
-
-                fetcherPool.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        thread.run(notifier);
-                    }
-                });
-                runningFetcherThread++;
-                iter = joblist.getJobs().iterator();
-            }
-
-            synchronized (lock) {
-                lock.wait();
-            }
+            verifyBatch(joblist, fetcherPool, notifier);
 
             setNextQuery();
+        }
+
+        while ( (verifyTimes++<=max_verifyTimes) && (verifyJoblist.count()>0) ) {
+            LOG.info("============reverify jobs(" + verifyTimes + ")=========");
+            Joblist joblist = verifyJoblist;
+            for ( int i = 0; i < joblist.count(); i++ ) {
+                //reset the flag.
+                joblist.get(i).addField(Job.JOB_EXPIRED, false);
+            }
+            verifyJoblist = new Joblist();
+            verifyBatch(joblist, fetcherPool, notifier);
+        }
+
+        if ( verifyJoblist.count() > 0 ) {
+            //all jobs of specific company failed to be verified,
+            //most possibly there is some schema change, raise ALARM
+            LOG.warn("============Failed to judge verification of jobs for company=========");
+            for ( int i = 0; i < verifyJoblist.count(); i++ ) {
+                LOG.warn((String)verifyJoblist.get(i).getField(Job.JOB_COMPANY)
+                        + ":" + (String)verifyJoblist.get(i).getField(Job.JOB_URL));
+            }
         }
 
         try {
@@ -256,7 +303,7 @@ public class Verifier extends RunListener {
         Iterator<Job> iter = joblist.getJobs().iterator();
         while(iter.hasNext()){
             Job job = iter.next();
-            if ( job.getFields().containsKey(Job.JOB_EXPIRED)) {
+            if ( (job.getFields().containsKey(Job.JOB_EXPIRED)) && ((Boolean)job.getField(Job.JOB_EXPIRED)) ) {
                 LOG.info("Invalidate job: " + (String)job.getField(Job.JOB_URL));
             } else {
                 LOG.debug("Keep job: " + (String)job.getField(Job.JOB_URL));
@@ -265,9 +312,14 @@ public class Verifier extends RunListener {
         }
         int invalidated = joblist.count();
         if ( invalidated == scanned ) {
-            LOG.warn(thread.getName() + ": all jobs invalidated???, hold on cross check network");
-            joblist.clear();
-            invalidated = 0;
+            if ( (verifyTimes<max_verifyTimes) || (joblist.count() > 1) ) {
+                LOG.info(thread.getName() + ": all jobs invalidated???, hold on for reverify");
+                verifyJoblist.addAll(joblist.getJobs());
+                joblist.clear();
+                invalidated = 0;
+            } else {
+                LOG.warn(thread.getName() + ": all jobs invalidated(verify_single) for " + max_verifyTimes + " times, invalidated it");
+            }
         }
 
         // consider delta in next batch's query.

@@ -95,7 +95,7 @@ public class SolrIndexWriter {
             try {
                 LOG.info("Adding " + Integer.toString(inputDocs.size()) + " documents");
                 solr.add(inputDocs);
-                if ( (documentCount%100) == 0 ) commit();
+                //if ( (documentCount%100) == 0 ) commit();
             } catch (final SolrServerException e) {
                 throw new IOException(e);
             }
@@ -151,7 +151,7 @@ public class SolrIndexWriter {
             try {
                 LOG.info("Adding " + Integer.toString(inputDocs.size()) + " documents");
                 solr.add(inputDocs);
-                if ( (documentCount%100) == 0 ) commit();
+                //if ( (documentCount%100) == 0 ) commit();
             } catch (final SolrServerException e) {
                 throw new IOException(e);
             }

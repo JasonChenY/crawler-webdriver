@@ -2,6 +2,7 @@
   "name" : "Apple",
   "use_proxy": false,
   "driver": "phantomjs",
+  "verify_single": true,
   "actions" :
   [
     {
@@ -49,6 +50,11 @@
             "element": "td[@class='title']/descendant::a",
             "cmd": "click",
             "expections": [
+              {
+                "comment": "this is only used for verifying",
+                "condition": "visibilityOfElementLocated",
+                "element": "//div[@class='requisition' and contains(@style,'display: block;')]/div[@id='job']/ul[@class='sosumi']/li[2]"
+              },
               {
                 "condition": "elementsNumChanged",
                 "element": "//div[@id='job_description']/descendant::div[@class='requisition']"

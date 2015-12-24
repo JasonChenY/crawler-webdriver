@@ -49,6 +49,8 @@ public class Schema {
 
     public Boolean check_solr = false;
 
+    public Boolean verify_single = false;
+
     public SchemaType schemaType = SchemaType.fetch;
 
     public static enum SchemaType {
@@ -116,6 +118,10 @@ public class Schema {
 
         if ( obj.get("check_solr") != null ) {
             check_solr = (Boolean)obj.get("check_solr");
+        }
+
+        if ( obj.get("verify_single") != null ) {
+            verify_single = (Boolean)obj.get("verify_single");
         }
     }
     public String getName() { return name; }
