@@ -357,7 +357,7 @@ public class DateUtils {
         if ( days == Integer.MAX_VALUE ) return false;
         try {
             long prev = getThreadLocalDateFormat().parse(date).getTime();
-            if ((System.currentTimeMillis() - prev) > days * 24 * 60 * 60 * 1000L) 
+            if ((System.currentTimeMillis() - prev)/(24 * 60 * 60 * 1000L) > days)
                 return true;
             else
                 return false;
@@ -370,7 +370,7 @@ public class DateUtils {
         if ( days == Integer.MAX_VALUE ) return false;
         try {
             long prev = date.getTime();
-            if ((System.currentTimeMillis() - prev) > days * 24 * 60 * 60 * 1000L)
+            if ((System.currentTimeMillis() - prev)/(24 * 60 * 60 * 1000L) > days)
                 return true;
             else
                 return false;

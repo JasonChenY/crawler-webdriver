@@ -237,8 +237,10 @@ public class Verifier extends RunListener {
             iter = joblist.getJobs().iterator();
         }
 
-        synchronized (lock) {
-            lock.wait();
+        if ( runningFetcherThread > 0 ) {
+            synchronized (lock) {
+                lock.wait();
+            }
         }
     }
     public void verify(final RunNotifier notifier) throws Exception {

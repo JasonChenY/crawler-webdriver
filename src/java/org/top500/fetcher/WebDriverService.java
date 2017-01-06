@@ -35,15 +35,15 @@ public class WebDriverService {
     private static PhantomJSDriverService phantomJSDriverService = null;
     public static void CreateAndStartService() throws Exception {
         Configuration _conf = Configuration.getInstance();
-        if ( (chromeDriverService == null) && (_conf.get("fetch.webdriver.chrome.exec") != null) ) {
+        if ( (chromeDriverService == null) ) { 
             chromeDriverService = new ChromeDriverService.Builder()
-                    .usingDriverExecutable(new File(_conf.get("fetch.webdriver.chrome.exec")))
+                    .usingDriverExecutable(new File(_conf.get("fetch.webdriver.chrome.exec", "lib/chromedriver")))
                             //.usingAnyFreePort()
                     .usingPort(_conf.getInt("fetch.webdriver.chrome.port", 8899))
                     .build();
             chromeDriverService.start();
         }
-        if ( (phantomJSDriverService == null) && (_conf.get("fetch.webdriver.phantomjs.exec") != null) ) {
+        if ( (phantomJSDriverService == null) ) { 
             String args[] = {
                 "--web-security=false",
                 "--ssl-protocol=any",
@@ -52,7 +52,7 @@ public class WebDriverService {
                 "--disk-cache=true"
             };
             phantomJSDriverService = new PhantomJSDriverService.Builder()
-                    .usingPhantomJSExecutable(new File(_conf.get("fetch.webdriver.phantomjs.exec")))
+                    .usingPhantomJSExecutable(new File(_conf.get("fetch.webdriver.phantomjs.exec", "lib/phantomjs")))
                     //.usingGhostDriver(new File("ghostDriverfile"))
                     .usingPort(_conf.getInt("fetch.webdriver.phantomjs.port", 8898))
                     .usingCommandLineArguments(args)

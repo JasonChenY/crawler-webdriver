@@ -16,9 +16,9 @@
       }]
     },
     {
-      "element": "//div[@class='pagination']/descendant::a[last()-1]",
-      "cmd": "click",
-      "expections": [{
+      "comment:element": "//div[@class='pagination']/descendant::a[last()-1]",
+      "comment:cmd": "click",
+      "comment:expections": [{
         "condition": "elementsTextChanged",
         "element": "//div[@class='pagination']/descendant::li[@class='active']/a",
       }]
@@ -56,7 +56,7 @@
         "job_category_domain": {
           "element": "td[2]/span",
         },
-        "comment:job_post_date": {
+        "job_post_date": {
           "element" : "td[5]/span",
         },
         "job_description": {
@@ -70,7 +70,7 @@
       },
       "procedure": {
         "extracts": {
-          "job_post_date": {
+          "comment:job_post_date": {
             "element": "//div[@class='detail-box']/table[contains(@class,'detail-table')]/descendant::td[text()='发布时间：']/following-sibling::td[1]",
           },
           "job_sub_company": {
@@ -88,7 +88,7 @@
       "loop_type": "end",
       "actions": [
         {
-          "element": "//div[@class='pagination']/descendant::a[@title='上一页']",
+          "element": "//div[@class='pagination']/descendant::a[@title='下一页']",
           "cmd": "click",
           "expections": [{
             "condition": "elementsTextChanged",

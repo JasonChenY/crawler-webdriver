@@ -11,13 +11,26 @@ export CLASSPATH
 #java org.top500.indexer.Indexer
 #java org.top500.utils.LocationUtils
 #java org.top500.utils.DateUtils
+usage() {
+echo "$0                   ----to fetch
+         resume            ----to resume from point stopped last time
+         verify            ----to verify whether job still valid
+         verify name       ----to verify jobs for single company";
+}
 
-if [[ $# -ge 1 ]] && [[ $1 = "resume" ]]; then
-java org.top500.fetcher.Fetcher  /tmp/fetchstatus.data
+if [ $# -ge 1 ]; then
+   if [ $1 = "resume" ]; then
+      java org.top500.fetcher.Fetcher  /tmp/fetchstatus.data
+   elif [ $1 = "verify" ]; then
+      if [[ $# -ge 2 ]]; then
+         java org.top500.verifier.Verifier $2
+      else
+         java org.top500.verifier.Verifier
+      fi 
+   else
+      usage
+   fi
 else
-java org.top500.fetcher.Fetcher conf/seed.txt regular
-#java org.top500.fetcher.Fetcher fetchstatus-2015-09-08T15:08:04.590Z.data resume
-#java org.top500.fetcher.Fetcher fetchstatus-2015-09-08T15:08:04.590Z.data regular
+   java org.top500.fetcher.Fetcher conf/seed.txt regular
 fi
-
 

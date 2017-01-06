@@ -173,7 +173,7 @@ public class Fetcher extends RunListener {
                         if ( last_fetch_time == null ) {
                             LOG.info(company + " Fetch jobs within configured " + fetch_n_days + " days");
                             schemas.add(schema);
-                        } else if ( DateUtils.nDaysAgo(last_fetch_time, fetch_n_days - 1) ) {
+                        } else if ( DateUtils.nDaysAgo(last_fetch_time, fetch_n_days) ) {
                             int delta = DateUtils.nDaysDelta(last_fetch_time);
                             if ( delta != 0 ) {
                                 schema.fetch_n_days = delta;
