@@ -234,8 +234,9 @@ public class FetcherThread extends Thread {
             for ( int i = 0; i < _joblist.count(); i++ ) {
                 Job job = _joblist.get(i);
                 if ( job.getFields().containsKey(Job.JOB_EXPIRE_DATE)
-                    && DateUtils.nDaysAgo((Date)job.getField(Job.JOB_EXPIRE_DATE), 1) ) {
+                    && DateUtils.nDaysAgo((Date)job.getField(Job.JOB_EXPIRE_DATE), 0) ) {
                         job.addField(Job.JOB_EXPIRED, true);
+                        job.setExpiredViaDate(true);
                         LOG.debug(this.getName() + ": " + "job expired via job_expire_date");
                         continue;
                 }
@@ -904,7 +905,7 @@ public class FetcherThread extends Thread {
                 return value;
             }
         } catch ( Exception e ) {
-            LOG.warn(this.getName() + ":" + key +  (ele.isFatal?" fatal ":" non-fatal ") + " extracts failed", e);
+            LOG.warn(this.getName() + ":" + key +  (ele.isFatal?" fatal ":" non-fatal ") + " extracts failed");
             return null;
         }
     }

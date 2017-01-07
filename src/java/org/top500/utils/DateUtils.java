@@ -270,10 +270,10 @@ public class DateUtils {
         }
         return months;
     }
-    public static String formatDate(String str) {
+    public static String formatDate(String str) throws Exception {
         return formatDate(str, true);
     }
-    public static String formatDate(String str, boolean fix) {
+    public static String formatDate(String str, boolean fix) throws Exception {
         str = str.trim();
         /* Microsoft use some chinese word */
         for ( int i = 0; i < months.size(); i++ ) {
@@ -290,20 +290,21 @@ public class DateUtils {
                 Date d = new Date(ms);
                 str = getThreadLocalDateFormat().format(d);
             } catch ( java.lang.NumberFormatException npe ) {
-                LOG.warn(" invalid date format(need extend our schema): " + str);
-                if ( fix )
+                if ( fix ) {
+                    LOG.info(" invalid date format, use current date (need extend our schema): " + str);
                     str = getThreadLocalDateFormat().format(new Date());
-                else
-                    return "";
+                } else {
+                    throw new Exception("Failed to formatDate from " + str);
+                }
             }
         }
         return str;
     }
 
-    public static String formatDate(String d, String format) {
+    public static String formatDate(String d, String format) throws Exception {
         return formatDate(d, format, true);
     }
-    public static String formatDate(String d, String format, boolean fix) {
+    public static String formatDate(String d, String format, boolean fix) throws Exception {
         if ( format != null && !format.isEmpty() ){
             try {
                 Perl5Util plutil = new Perl5Util();

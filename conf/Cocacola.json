@@ -1,6 +1,6 @@
 {
   "name" : "COCA-COLA",
-  "use_proxy": true,
+  "use_proxy": false,
   "driver": "phantomjs",
   "actions" :
   [
@@ -90,7 +90,8 @@
                 "how" : "dateFormat",
                 "value" : "MMM dd yyyy"
               }
-            ]
+            ],
+            "isFatal": false
           }
         },
         "actions": [

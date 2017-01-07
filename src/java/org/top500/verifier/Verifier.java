@@ -6,6 +6,7 @@ import org.top500.fetcher.Job;
 import org.top500.fetcher.Joblist;
 
 import java.io.File;
+import java.lang.StringBuffer;
 import java.lang.System;
 import java.util.Map;
 import java.util.HashMap;
@@ -282,11 +283,15 @@ public class Verifier extends RunListener {
         if ( verifyJoblist.count() > 0 ) {
             //all jobs of specific company failed to be verified,
             //most possibly there is some schema change, raise ALARM
-            LOG.warn("============Failed to judge verification of jobs for company=========");
+            StringBuilder sb = new StringBuilder();
+            sb.append("============Failed to verify following jobs:(pls confirm validitiy of schema)=========\n");
             for ( int i = 0; i < verifyJoblist.count(); i++ ) {
-                LOG.warn((String)verifyJoblist.get(i).getField(Job.JOB_COMPANY)
-                        + ":" + (String)verifyJoblist.get(i).getField(Job.JOB_URL));
+                sb.append(verifyJoblist.get(i).getField(Job.JOB_COMPANY));
+                sb.append(":");
+                sb.append(verifyJoblist.get(i).getField(Job.JOB_URL));
+                sb.append("\n");
             }
+            LOG.warn(sb.toString());
         }
 
         try {
@@ -301,35 +306,63 @@ public class Verifier extends RunListener {
     public void Finished(Object o) {
         FetcherThread thread = (FetcherThread)o;
         Joblist joblist = thread.getJoblist();
-        int scanned = joblist.count();
+        boolean all_invalidated = true;
         Iterator<Job> iter = joblist.getJobs().iterator();
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("Prepare to invalidate following jobs: \n");
         while(iter.hasNext()){
             Job job = iter.next();
             if ( (job.getFields().containsKey(Job.JOB_EXPIRED)) && ((Boolean)job.getField(Job.JOB_EXPIRED)) ) {
-                LOG.info("Invalidate job: " + (String)job.getField(Job.JOB_URL));
+                sb.append(job.getField(Job.JOB_URL));
+                sb.append("\n");
             } else {
-                LOG.debug("Keep job: " + (String)job.getField(Job.JOB_URL));
                 iter.remove();
+                all_invalidated = false;
             }
         }
-        int invalidated = joblist.count();
-        if ( invalidated == scanned ) {
-            if ( (verifyTimes<max_verifyTimes) || (joblist.count() > 1) ) {
-                LOG.info(thread.getName() + ": all jobs invalidated???, hold on for reverify");
-                verifyJoblist.addAll(joblist.getJobs());
-                joblist.clear();
-                invalidated = 0;
-            } else {
-                LOG.warn(thread.getName() + ": all jobs invalidated(verify_single) for " + max_verifyTimes + " times, invalidated it");
+        LOG.info(sb.toString());
+
+        if ( all_invalidated ) {
+            boolean verify_single = false;
+            if ( joblist.count() == 1 ) {
+                /* only one job in this batch, maybe belong to verify_single case */
+                String companyName = (String)(joblist.get(0)).getField(Job.JOB_COMPANY);
+                Schema schema = schemas.get(companyName);
+                verify_single = schema.verify_single;
+            }
+            if ( !verify_single ) {
+                boolean to_reverify = false;
+                if (verifyTimes < max_verifyTimes) {
+                    LOG.info(thread.getName() + ": all jobs (to be scanned) invalidated, verify one more time");
+                    to_reverify = true;
+                } else {
+                    if (!conf.getBoolean("verify.invalidate_uncertain_jobs", false)) {
+                        to_reverify = true;
+                    }
+                }
+
+                if ( to_reverify ) {
+                    /* filter out the jobs that are expired directly via job_expire_date */
+                    iter = joblist.getJobs().iterator();
+                    while(iter.hasNext()){
+                        Job job = iter.next();
+                        if ( !job.isExpiredViaDate() ) {
+                            verifyJoblist.addJob(job);
+                            iter.remove();
+                        } else {
+                            invalidated_total++;
+                            // consider delta in next batch's query.
+                            // problem new 'expired' job might not be synced to solr yet
+                            // if adjust the 'start-=invalidated_total' in query, there might be some duplicate entries,
+                            // but worst case(most jobs expired) at most 50 entries duplicated, because index will commit for every 50 jobs.
+                            // perfect solution is to query next batch until sync finished.
+                        }
+                    }
+                }
             }
         }
 
-        // consider delta in next batch's query.
-        // problem new 'expired' job might not be synced to solr yet
-        // if adjust the 'start-=invalidated_total' in query, there might be some duplicate entries,
-        // but worst case(most jobs expired) at most 50 entries duplicated, because index will commit for every 50 jobs.
-        // perfect solution is to query next batch until sync finished.
-        invalidated_total += invalidated;
         runningFetcherThread--;
 
         if ( runningFetcherThread == 0 ) {

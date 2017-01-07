@@ -20,9 +20,11 @@ public class Job {
     public static final String JOB_EXPIRED = "job_expired";
 
     final Map<String, Object> fields;
+    boolean expiredViaDate = false;
 
     public Job() {
         fields = new HashMap<String, Object>();
+        expiredViaDate = false;
     }
 
     public void addField(String key, Object value) {
@@ -42,4 +44,7 @@ public class Job {
     public final Map<String, Object> getFields() {
         return fields;
     }
+
+    public void setExpiredViaDate(boolean expired) { expiredViaDate = expired; }
+    public boolean isExpiredViaDate() { return expiredViaDate; }
 }
