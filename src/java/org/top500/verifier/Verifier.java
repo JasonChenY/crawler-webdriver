@@ -208,7 +208,7 @@ public class Verifier extends RunListener {
             String companyName = (String)job.getField(Job.JOB_COMPANY);
             Schema schema = schemas.get(companyName);
             if ( schema == null ) {
-                LOG.warn("Unknow company:" + companyName + ", skipped");
+                LOG.info("Unknow company:" + companyName + ", verify skipped");
                 iter.remove();
                 continue;
             }

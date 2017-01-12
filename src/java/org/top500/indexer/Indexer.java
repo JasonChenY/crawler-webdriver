@@ -1,6 +1,7 @@
 package org.top500.indexer;
 
 import java.io.IOException;
+import java.lang.StringBuffer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,17 +28,20 @@ public class Indexer extends RunListener {
 
     public void Started(Object o) {
         FetcherThread thread = (FetcherThread) o;
-        LOG.debug("Indexer RunListener get Started for " + thread.getName());
+        LOG.debug("Indexer started for " + thread.getName());
     }
 
     public void Finished(Object o) {
         FetcherThread thread = (FetcherThread) o;
-        LOG.debug("Indexer RunListener get Finished for " + thread.getName() + ",fetched " + thread.getJoblist().count() + " jobs");
+        StringBuffer sb = new StringBuffer();
+        sb.append("Indexer finished for " + thread.getName() + ", " + thread.getJoblist().count() + " jobs: \n");
 
         Joblist joblist = thread.getJoblist();
         for (int i = 0; i < joblist.count(); i++) {
-            LOG.debug((String)joblist.get(i).getField(Job.JOB_URL));
+            sb.append(joblist.get(i).getField(Job.JOB_URL));
+            sb.append("\n");
         }
+        LOG.debug(sb.toString());
 
         synchronized (finish_queue){
             finish_queue.add(o);
@@ -106,7 +110,7 @@ public class Indexer extends RunListener {
     }
 
     public void Stop() {
-        LOG.warn("Graceful Stop Indexer");
+        LOG.info("Graceful Stop Indexer");
         isStopped = true;
         synchronized (lock) {
             lock.notify();

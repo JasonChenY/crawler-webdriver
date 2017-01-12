@@ -175,7 +175,6 @@ public class SolrIndexWriter {
     }
 
     public Joblist query(SolrQuery query) {
-        LOG.debug("reach query");
         Joblist jobs = new Joblist();
         try {
             QueryResponse rsp = solr.query(query);
