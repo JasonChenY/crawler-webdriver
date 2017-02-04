@@ -119,7 +119,7 @@ public class WebDriverService {
             // Control LogLevel for GhostDriver, via CLI arguments
             capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS, new String[] {"--logLevel=DEBUG"});
 
-            capabilities.setBrowserName("phantomjs");
+            capabilities.setBrowserName("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0");
 
             url = ((type==DRIVER_TYPE.PHANTOMJS)?_conf.get("fetch.webdriver.phantomjs.host", "http://localhost"):"http://localhost") + ":"
                     + Integer.toString(_conf.getInt("fetch.webdriver.phantomjs.port", 8898));

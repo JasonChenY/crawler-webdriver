@@ -126,7 +126,7 @@ public class Fetcher extends RunListener {
         Configuration conf = Configuration.getInstance();
 
         // File for output fetching results.
-        String date = DateUtils.getThreadLocalDateFormat().format(new Date());
+        String date = (new java.text.SimpleDateFormat("yyyy-MM-dd.HH:mm:ss")).format(new Date());
         PrintWriter output = null;
         try {
             output = new PrintWriter("/tmp/fetchstatus-" + date + ".data");
