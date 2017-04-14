@@ -87,6 +87,9 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.top500.indexer.SolrIndexWriter;
 
+import org.jsoup.examples.HtmlToPlainText;
+import org.jsoup.Jsoup;
+
 public class FetcherThread extends Thread {
     public static final Logger LOG = LoggerFactory.getLogger(FetcherThread.class);
     public final Schema _schema;
@@ -993,6 +996,10 @@ public class FetcherThread extends Thread {
         if (!newjob.getFields().containsKey(Job.JOB_EXPIRED) ) {
             newjob.addField(Job.JOB_EXPIRED, false);
         }
+
+        String job_description = (String)newjob.getField(Job.JOB_DESCRIPTION);
+        String stripped = new HtmlToPlainText().getPlainText(Jsoup.parse(job_description));
+        newjob.addField(Job.JOB_DESCRIPTION+"_stripped", stripped);
     }
 
     private static int PROC_RESULT_FAIL = 0;
