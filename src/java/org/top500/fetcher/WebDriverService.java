@@ -35,7 +35,8 @@ public class WebDriverService {
     private static PhantomJSDriverService phantomJSDriverService = null;
     public static void CreateAndStartService() throws Exception {
         Configuration _conf = Configuration.getInstance();
-        if ( (chromeDriverService == null) ) { 
+        // comment fetch.webdriver.chrome.exec to disable chromedriver on linux server
+        if ( (chromeDriverService == null) && (_conf.get("fetch.webdriver.chrome.exec") != null) ) {
             chromeDriverService = new ChromeDriverService.Builder()
                     .usingDriverExecutable(new File(_conf.get("fetch.webdriver.chrome.exec", "lib/chromedriver")))
                             //.usingAnyFreePort()
